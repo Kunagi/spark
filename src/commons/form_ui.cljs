@@ -21,6 +21,7 @@
    ;; [commons.mui :as ui]
    [commons.form :as form]
    [commons.context :as context]
+   [commons.repository :as repository]
    [commons.firestore :as fs]
    ))
 
@@ -258,6 +259,7 @@
 
 
 (defnc FieldCardArea [{:keys [entity update-f field]}]
+  (u/log-deprecated "use CommandCardArea")
   (s/assert map? entity)
   (s/assert ::form/field field)
   (let [id (or (-> field :id)
@@ -313,7 +315,11 @@
         label (get field :label)
         value (get doc id)
         submit #(let [changes {id (get % id)}]
-                  (fs/update-fields> (or doc doc-path) changes))
+                  (if doc
+                    (repository/update-doc> doc changes)
+                    (do
+                      (u/log-deprecated "use doc, not doc-path")
+                      (fs/update-fields> doc-path changes))))
         type (get field :type)]
     ($ FormCardArea
        {:form {:fields [(assoc field :value value)]

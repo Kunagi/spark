@@ -22,8 +22,6 @@
    [commons.logging :refer [log]]
    [commons.utils :as u]
    [commons.models :as models]
-   [commons.firestore :as fs]
-   [commons.firestore-hooks :as firestore-hooks]
    [commons.firebase-storage :as storage]
    [commons.runtime :as runtime]
    [commons.context :as context]

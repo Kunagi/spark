@@ -136,3 +136,9 @@
     (js/console.log "direct invocation:" (sum 1 2 3))
     (-> (apply> sum [1 2 3])
         (.then #(js/console.log "promise result #1:" %)))))
+
+
+;;; deprecations
+
+(defn log-deprecated [info]
+  (js/console.error "DEPRECATED" (js/Error info)))
