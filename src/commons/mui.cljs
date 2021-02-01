@@ -477,7 +477,7 @@
 ;;; desktop
 ;;;
 
-(defnc PageContentWrapper []
+(defnc PageContent []
   (let [page (context/use-page)]
     ($ mui/Container
         {:maxWidth (get page :max-width "sm")}
@@ -487,7 +487,7 @@
      ))
 
 
-(defnc PageSwitch [{:keys [pages devtools-component]}]
+(defnc PageSwitch [{:keys [pages devtools-component children]}]
   ($ router/Switch
      (for [page pages]
        ($ router/Route
@@ -497,7 +497,7 @@
            {:context context/page
             :value page}
            ($ :div
-              ($ PageContentWrapper)
+              children
               ($ ErrorDialog)
               ($ FormDialogsContainer)
               (when (and  ^boolean js/goog.DEBUG devtools-component)
@@ -515,6 +515,19 @@
    (str (resource/inline "../spa/version.txt"))
    " · "
    (str (resource/inline "../spa/version-time.txt"))))
+
+
+(defnc AppFrame [{:keys [pages children theme styles]}]
+  ($ mui/ThemeProvider
+     {:theme (-> theme clj->js
+                 mui-styles/createMuiTheme mui-styles/responsiveFontSizes)}
+     ($ mui/CssBaseline)
+     (let [class (use-styles-class styles)]
+       ($ router/BrowserRouter {}
+          ($ PageSwitch {:pages pages}
+             ($ :div
+                {:class class}
+                children))))))
 
 ;;;
 ;;; storage
@@ -594,6 +607,8 @@
                {:key (-> ^js picture-ref)
                 :path picture-ref
                 :height "200px"}))))))
+
+
 
 ;;;
 ;;; auth
