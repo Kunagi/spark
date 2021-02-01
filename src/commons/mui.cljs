@@ -1,6 +1,6 @@
 (ns commons.mui
   (:require-macros [commons.mui]
-                   [spark.react :refer [use-state use-effect defnc $]]
+                   [spark.react :refer [use-state use-effect defnc $ provider]]
                    [clojure.string :as str])
   (:require
    [clojure.spec.alpha :as s]
@@ -505,7 +505,7 @@
        ($ router/Route
           {:key (-> page :path)
            :path (-> page :path)}
-          (context/provider
+          (provider
            {:context context/page
             :value page}
            ($ :div

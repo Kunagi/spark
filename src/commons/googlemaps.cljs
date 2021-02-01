@@ -5,7 +5,7 @@
 
    [commons.logging :refer [log]]
    [commons.context :as c.context]
-   [commons.mui :as cui :refer [defnc $ <>]]
+   [commons.mui :as cui :refer [defnc $]]
    ))
 
 
@@ -50,10 +50,10 @@
            markers
            position]}]
   (let [map-element-id (or id "map")
-        [gmap set-gmap] (c.context/use-state nil)
+        [gmap set-gmap] (cui/use-state nil)
         [old-markers set-old-markers] (c.context/use-state nil)]
 
-    (c.context/use-effect
+    (cui/use-effect
      :always
      (when-not (= markers old-markers)
        (set-old-markers markers)
@@ -116,7 +116,7 @@
   [{:keys [id height zoom markers]}]
   (let [[position set-position] (c.context/use-state :loading)]
 
-    (c.context/use-effect
+    (cui/use-effect
      :once
      (js/setTimeout
       #(js/navigator.geolocation.getCurrentPosition
