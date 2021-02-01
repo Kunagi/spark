@@ -53,3 +53,15 @@
                                 v))
                        {} child-values )]
     (update-doc> doc values)))
+
+
+(defn transact-doc-update> [Col doc-id update-f]
+  (firestore/load-and-save>
+   [(models/col-path Col) doc-id]
+   (fn [doc]
+     (let [doc (update-f doc)]
+       (if (= :db/delete doc)
+         doc
+         (assoc doc
+                :id doc-id
+                :ts-updated [:db/timestamp]))))))
