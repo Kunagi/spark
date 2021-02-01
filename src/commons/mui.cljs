@@ -516,18 +516,24 @@
    " · "
    (str (resource/inline "../spa/version-time.txt"))))
 
+(defnc AuthCompletedGuard [{:keys [children padding]}]
+  (let [auth-completed (context/use-auth-completed)]
+    ($ ValueLoadGuard {:value auth-completed :padding padding}
+       children)))
 
 (defnc AppFrame [{:keys [pages children theme styles]}]
-  ($ mui/ThemeProvider
-     {:theme (-> theme clj->js
-                 mui-styles/createMuiTheme mui-styles/responsiveFontSizes)}
-     ($ mui/CssBaseline)
-     (let [class (use-styles-class styles)]
-       ($ router/BrowserRouter {}
-          ($ PageSwitch {:pages pages}
-             ($ :div
-                {:class class}
-                children))))))
+  (let [class (use-styles-class styles)]
+    ($ mui/ThemeProvider
+       {:theme (-> theme clj->js
+                   mui-styles/createMuiTheme mui-styles/responsiveFontSizes)}
+       ($ AuthCompletedGuard
+          {:padding 4}
+          ($ mui/CssBaseline)
+          ($ router/BrowserRouter {}
+             ($ PageSwitch {:pages pages}
+                ($ :div
+                   {:class class}
+                   children)))))))
 
 ;;;
 ;;; storage
@@ -613,8 +619,3 @@
 ;;;
 ;;; auth
 ;;;
-
-(defnc AuthCompletedGuard [{:keys [children padding]}]
-  (let [auth-completed (context/use-auth-completed)]
-    ($ ValueLoadGuard {:value auth-completed :padding padding}
-       children)))
