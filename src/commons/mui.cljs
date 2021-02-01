@@ -1,13 +1,14 @@
 (ns commons.mui
   (:require-macros [commons.mui]
+                   [spark.react :refer [use-state use-effect defnc $]]
                    [clojure.string :as str])
   (:require
+   [clojure.spec.alpha :as s]
    [clojure.string :as str]
    [cljs.pprint :refer [pprint]]
    [shadow.resource :as resource]
-   [cljs-bean.core :as cljs-bean]
 
-   [helix.core :refer [defnc $]]
+   [helix.core]
    [helix.dom :as d]
 
    ["react" :as react]
@@ -26,7 +27,11 @@
    [commons.runtime :as runtime]
    [commons.context :as context]
    [commons.form-ui :as form-ui]
+
+   [commons.firestore :as firestore]
+   [commons.firestore-hooks :as firestore-hooks]
    ))
+
 
 
 (def StringVectorChips form-ui/StringVectorChips)
@@ -48,6 +53,14 @@
   (-> react (.createContext value)))
 
 ;;;
+;;; repository
+;;;
+
+(def use-doc context/use-doc)
+(def use-col context/use-col)
+(def use-col-subset context/use-col-subset)
+
+;;;
 ;;; Styles / Theme
 ;;;
 
@@ -61,14 +74,15 @@
      (clj->js (styles-f theme)))))
 
 (defn use-styles-class [styles-f]
-  (let [theme (use-theme)
-        styles-f-wrapper (fn [theme]
-                           {:root (if (fn? styles-f)
-                                    (styles-f theme)
-                                    styles-f)})
-        use-styles (make-styles styles-f-wrapper)
-        ^js styles (use-styles theme)]
-    (-> styles .-root)))
+  (when styles-f
+    (let [theme (use-theme)
+          styles-f-wrapper (fn [theme]
+                             {:root (if (fn? styles-f)
+                                      (styles-f theme)
+                                      styles-f)})
+          use-styles (make-styles styles-f-wrapper)
+          ^js styles (use-styles theme)]
+      (-> styles .-root))))
 
 ;;;
 ;;; styles
@@ -134,26 +148,26 @@
 
 
 (defnc ValueLoadGuard [{:keys [children value padding]}]
-  (if value
-    children
-    (let [theme (mui-styles/useTheme)]
+  (let [theme (mui-styles/useTheme)]
+    (if value
+      children
       ($ :div
-         {:style {:display :flex
-                  :padding (when padding (-> theme (.spacing padding)))
-                  :justify-content "space-around"}}
-         ($ mui/CircularProgress)))))
+          {:style {:display :flex
+                   :padding (when padding (-> theme (.spacing padding)))
+                   :justify-content "space-around"}}
+          ($ mui/CircularProgress)))))
 
 (defnc ValuesLoadGuard [{:keys [children values padding]}]
-  (if (reduce (fn [ret value]
-                (and ret value))
-              true values)
-    children
-    (let [theme (mui-styles/useTheme)]
+  (let [theme (mui-styles/useTheme)]
+    (if (reduce (fn [ret value]
+                  (and ret value))
+                true values)
+      children
       ($ :div
-         {:style {:display :flex
-                  :padding (when padding (-> theme (.spacing padding)))
-                  :justify-content "space-around"}}
-         ($ mui/CircularProgress)))))
+          {:style {:display :flex
+                   :padding (when padding (-> theme (.spacing padding)))
+                   :justify-content "space-around"}}
+          ($ mui/CircularProgress)))))
 
 
 (defnc Stack [{:keys [children spacing]}]
@@ -387,7 +401,7 @@
         color (or color
                   (when (-> command :inconspicuous?) "default")
                   "primary")
-        styles-class (when styles (use-styles-class styles))
+        styles-class (use-styles-class styles)
         classes (str/join " " [class styles-class])]
     (if to
       ($ mui/Button
@@ -564,9 +578,9 @@
 (defnc StorageImageActionArea
   [{:keys [id storage-path upload-text
            img-style]}]
-  (let [[url set-url] (context/use-state :loading)]
+  (let [[url set-url] (use-state :loading)]
 
-    (context/use-effect
+    (use-effect
      :always
      (-> (storage/url> storage-path)
          (.then set-url))
@@ -596,7 +610,7 @@
 
 (defnc StorageImagesScroller [{:keys [storage-path reload-on-change]}]
   (let [[bilder-files reload] (context/use-storage-files storage-path)
-        [reload-marker set-reload-marker] (context/use-state reload-on-change)]
+        [reload-marker set-reload-marker] (use-state reload-on-change)]
     (when (not= reload-marker reload-on-change)
       (reload)
       (set-reload-marker reload-on-change))
