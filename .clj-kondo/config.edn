@@ -1,0 +1,4 @@
+{:lint-as {
+           helix.core/defnc               clojure.core/defn
+           commons.models/def-model       clojure.core/def
+           }}
