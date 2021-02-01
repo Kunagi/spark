@@ -66,7 +66,7 @@
                           :auth-email email
                           :auth-domain (email-domain email)
                           :auth-display-name (-> auth-user .-displayName)})
-             user (u/update-if user update-user)]
+             user (u/update-if user update-user auth-user)]
          user)))))
 
 

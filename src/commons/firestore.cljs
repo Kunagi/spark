@@ -236,8 +236,4 @@
                 (let [data (update-f nil)]
                   (if (seq data)
                     (create-doc> doc-path data)
-                    (js/Promise.resolve nil))))
-             #(log ::load-and-save>-FAILED
-                   :doc-path doc-path
-                   :update-f update-f
-                   :exception %))))
+                    (js/Promise.resolve nil)))))))

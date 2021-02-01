@@ -87,7 +87,7 @@
           [:doc $Doc]
           ])
   (-> model
-      (assoc :path (-> model :model/symbol str/lower-case))
+      (u/assoc-if-missing :path (-> model :model/symbol str/lower-case))
       )
   )
 
