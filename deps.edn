@@ -1,0 +1,26 @@
+{:paths ["src" "resources"]
+ :deps  {
+         org.clojure/clojurescript {:mvn/version "1.10.758"}
+         org.clojure/spec.alpha {:mvn/version "0.2.187"}
+
+         lilactown/helix {:mvn/version "0.0.13"}
+         cljs-bean/cljs-bean {:mvn/version "1.6.0"}
+         metosin/malli {:mvn/version "0.2.1"}
+         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}
+         }
+
+ :aliases {
+           :test
+           {:extra-paths ["test"]
+            :extra-deps  {expectations/clojure-test {:mvn/version "RELEASE"}}}
+
+           :shadow-cljs
+           {:extra-paths ["dev" "test"]
+            :extra-deps  {thheller/shadow-cljs {:mvn/version "RELEASE"}
+                          binaryage/devtools   {:mvn/version "RELEASE"}
+                          cider/cider-nrepl    {:mvn/version "RELEASE"}}
+            :main-opts   ["-m" "shadow.cljs.devtools.cli"]}
+
+           :build-release
+           {:extra-deps {thheller/shadow-cljs {:mvn/version "RELEASE"}}
+            :main-opts ["-m" "shadow.cljs.devtools.cli" "release" "spa" "gcf"]}}}
