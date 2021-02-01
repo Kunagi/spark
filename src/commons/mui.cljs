@@ -1,13 +1,15 @@
 (ns commons.mui
   (:require-macros [commons.mui]
-                   [spark.react :refer [use-state use-effect defnc $ provider]]
+                   [spark.react :refer [use-state use-effect defnc $ provider
+                                        use-context create-context]]
                    [clojure.string :as str])
   (:require
    [clojure.spec.alpha :as s]
    [clojure.string :as str]
    [cljs.pprint :refer [pprint]]
    [shadow.resource :as resource]
-
+   [cljs-bean.core :as cljs-bean]
+   [camel-snake-kebab.core :as csk]
    [helix.core]
    [helix.dom :as d]
 
@@ -22,16 +24,18 @@
 
    [commons.logging :refer [log]]
    [commons.utils :as u]
+   [spark.react :as spark-react]
    [commons.models :as models]
    [commons.firebase-storage :as storage]
    [commons.runtime :as runtime]
-   [commons.context :as context]
    [commons.form-ui :as form-ui]
+   [commons.auth :as auth]
 
-   [commons.firestore :as firestore]
    [commons.firestore-hooks :as firestore-hooks]
    ))
 
+
+(def atom-hook spark-react/atom-hook)
 
 
 (def StringVectorChips form-ui/StringVectorChips)
@@ -56,9 +60,129 @@
 ;;; repository
 ;;;
 
-(def use-doc context/use-doc)
-(def use-col context/use-col)
-(def use-col-subset context/use-col-subset)
+(defn use-doc
+  "React hook for a document."
+  ([Col doc-id]
+   (use-doc (when doc-id [(models/col-path Col) doc-id])))
+  ([path]
+   (let [DATA (firestore-hooks/doc-sub path)
+         [doc set-doc] (use-state @DATA)
+         watch-ref (random-uuid)]
+
+     (use-effect
+      :always
+      (set-doc @DATA)
+      (add-watch DATA
+                 watch-ref
+                 (fn [_ _ _ nv]
+                   (set-doc nv)))
+
+      #(remove-watch DATA watch-ref))
+
+     doc)))
+
+
+(defn use-col
+  "React hook for a collection."
+  [path]
+  (log ::use-col
+       :path path)
+  (let [path (if (map? path)
+               (models/col-path path)
+               path)
+        DATA (firestore-hooks/col-sub path)
+        [docs set-docs] (use-state @DATA)
+        watch-ref (random-uuid)]
+
+    (use-effect
+     :always
+     (set-docs @DATA)
+     (add-watch DATA
+                watch-ref
+                (fn [_ _ _ nv]
+                  (set-docs nv)))
+
+     #(remove-watch DATA watch-ref))
+
+    docs))
+
+
+(defn use-cols-union
+  "React hook for a union of collections."
+  [paths]
+  (log ::use-cols-union
+       :paths paths)
+  (->> paths
+       (reduce (fn [ret path]
+                 (let [docs (use-col path)]
+                   (reduce (fn [ret doc]
+                             (assoc ret (-> doc  :id) doc))
+                           ret docs)))
+               {})
+       vals))
+
+
+(defn use-col-subset [col-subset args]
+  (if (models/col-subset-is-union? col-subset)
+    (use-cols-union (models/col-subset-union-paths col-subset args))
+    (use-col (models/col-subset-path col-subset args))))
+
+
+;;;
+;;; routing
+;;;
+;; TODO deprecated
+(defn use-params []
+  (->> (router/useParams)
+       cljs-bean/->clj
+       (reduce (fn [m [k v]]
+                 (assoc m (csk/->kebab-case k) v))
+               {})))
+
+;; TODO deprecated
+(defn use-param [param-key]
+  (-> (use-params) (get param-key)))
+
+
+(defn use-params-2 []
+  (->> (router/useParams)
+       cljs-bean/->clj
+       (reduce (fn [m [k v]]
+                 (assoc m k v))
+               {})))
+
+(defn use-param-2 [param-key]
+  (-> (use-params-2) (get param-key)))
+
+
+
+;;;
+;;; page and context data
+;;;
+
+(def DATA_RESOLVER (atom nil))
+
+
+(def PAGE (create-context {:page nil :data nil}))
+
+(defn use-page []
+  (let [data-resolver @DATA_RESOLVER
+        _ (when-not data-resolver
+            (throw (ex-info "DATA_RESOLVER not initialized"
+                            {})))
+        page (use-context PAGE)
+        data (reduce (fn [m [k identifier]]
+                       (assoc m k (data-resolver identifier)))
+                     {} (-> page :data))]
+    (assoc page :data data)))
+
+
+(defn use-context-data []
+  (let [page (use-page)
+        params (use-params)
+        data (merge params
+                    (-> page :data))]
+    data))
 
 ;;;
 ;;; Styles / Theme
@@ -84,6 +208,53 @@
           ^js styles (use-styles theme)]
       (-> styles .-root))))
 
+
+;;;
+;;; auth
+;;;
+
+
+(def use-auth-completed (atom-hook auth/AUTH_COMPLETED))
+
+(def use-auth-user (atom-hook auth/USER))
+
+(defn use-uid []
+  (when-let [user (use-auth-user)]
+    (-> ^js user .-uid)))
+
+
+;;;
+;;; storage
+;;;
+
+
+(defn use-storage-files [path]
+  (let [[files set-files] (use-state [])
+        reload-f (fn []
+                   (-> (storage/list-files> path)
+                       (.then (fn [^js result]
+                                (set-files (-> result .-items js->clj))))))]
+
+    (use-effect
+     :once
+     (reload-f)
+     nil)
+
+    [files reload-f]))
+
+
+(defn use-storage-url [path]
+  (let [[url set-url] (use-state nil)]
+
+    (use-effect
+     :always
+     (-> (storage/url> path)
+         (.then set-url))
+     nil)
+
+    url))
+
+
 ;;;
 ;;; styles
 ;;;
@@ -95,11 +266,6 @@
    :background-position-y "top"
    :background-size "contain"})
 
-;;;
-;;; Hooks
-;;;
-
-(def atom-hook context/atom-hook)
 
 
 ;;;
@@ -197,7 +363,7 @@
 
 (defonce ERROR (atom nil))
 
-(def use-error (commons.context/atom-hook ERROR))
+(def use-error (atom-hook ERROR))
 
 (defn show-error [error]
   (runtime/report-error error)
@@ -305,7 +471,7 @@
 
 (defn- new-command-on-click [command context then]
   (runtime/validate-command command)
-  (let [ui-context (context/use-context-data)
+  (let [ui-context (use-context-data)
         form (-> command :form)]
     (if-not form
       #(-> (runtime/execute-command> command (merge ui-context context))
@@ -383,7 +549,7 @@
   (when command
     (log ::Button.DEPRECATED.with-command
          {:command command}))
-  (let [context (merge (context/use-context-data)
+  (let [context (merge (use-context-data)
                        context)
         command (u/trampoline-if command)
         command (when command (-> command upgrade-legacy-command complete-command ))
@@ -430,7 +596,7 @@
 
 (defnc IconButton [{:keys [icon onClick color size command theme className
                            then context]}]
-  (let [context (merge (context/use-context-data)
+  (let [context (merge (use-context-data)
                        context)
         command (u/trampoline-if command)
         command (when command (-> command upgrade-legacy-command complete-command ))
@@ -490,7 +656,7 @@
 ;;;
 
 (defnc PageContent []
-  (let [page (context/use-page)]
+  (let [page (use-page)]
     ($ mui/Container
         {:maxWidth (get page :max-width "sm")}
         ($ ValuesLoadGuard {:values (-> page :data vals)
@@ -506,7 +672,7 @@
           {:key (-> page :path)
            :path (-> page :path)}
           (provider
-           {:context context/page
+           {:context PAGE
             :value page}
            ($ :div
               children
@@ -529,7 +695,7 @@
    (str (resource/inline "../spa/version-time.txt"))))
 
 (defnc AuthCompletedGuard [{:keys [children padding]}]
-  (let [auth-completed (context/use-auth-completed)]
+  (let [auth-completed (use-auth-completed)]
     ($ ValueLoadGuard {:value auth-completed :padding padding}
        children)))
 
@@ -568,7 +734,7 @@
 
 
 (defnc StorageImg [{:keys [path height style]}]
-  (let [url (context/use-storage-url path)]
+  (let [url (use-storage-url path)]
     ($ :img
        {:src url
         :height height
@@ -609,7 +775,7 @@
 
 
 (defnc StorageImagesScroller [{:keys [storage-path reload-on-change]}]
-  (let [[bilder-files reload] (context/use-storage-files storage-path)
+  (let [[bilder-files reload] (use-storage-files storage-path)
         [reload-marker set-reload-marker] (use-state reload-on-change)]
     (when (not= reload-marker reload-on-change)
       (reload)

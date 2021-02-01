@@ -4,7 +4,7 @@
    ["@material-ui/core" :as mui]
 
    [commons.logging :refer [log]]
-   [commons.context :as c.context]
+    
    [commons.mui :as cui :refer [defnc $]]
    ))
 
@@ -51,7 +51,7 @@
            position]}]
   (let [map-element-id (or id "map")
         [gmap set-gmap] (cui/use-state nil)
-        [old-markers set-old-markers] (c.context/use-state nil)]
+        [old-markers set-old-markers] (cui/use-state nil)]
 
     (cui/use-effect
      :always
@@ -89,7 +89,7 @@
 
 
 (defnc PositionInput [{:keys [set-position]}]
-  (let [[ort set-ort] (c.context/use-state (js/window.localStorage.getItem "standort"))]
+  (let [[ort set-ort] (cui/use-state (js/window.localStorage.getItem "standort"))]
     ($ :div
        ($ :form
           {:onSubmit (fn [^js event]
@@ -114,7 +114,7 @@
 
 (defnc Map
   [{:keys [id height zoom markers]}]
-  (let [[position set-position] (c.context/use-state :loading)]
+  (let [[position set-position] (cui/use-state :loading)]
 
     (cui/use-effect
      :once

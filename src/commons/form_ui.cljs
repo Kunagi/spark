@@ -8,19 +8,15 @@
    [helix.hooks :as hooks]
    [helix.dom :as d]
 
-   ["react-router-dom" :as router]
 
    ["@material-ui/core" :as mui]
-   ["@material-ui/core/styles" :as mui-styles]
-
    ["material-ui-chip-input" :default ChipInput]
 
    [commons.utils :as u]
    [commons.logging :refer [log]]
-   [commons.context :as c.context]
    ;; [commons.mui :as ui]
    [commons.form :as form]
-   [commons.context :as context]
+   [spark.react :as react]
    [commons.repository :as repository]
    [commons.firestore :as fs]
    ))
@@ -40,7 +36,7 @@
                     :id form-id)]
     (swap! DIALOG_FORMS assoc form-id form)))
 
-(def use-dialog-forms (context/atom-hook DIALOG_FORMS))
+(def use-dialog-forms (react/atom-hook DIALOG_FORMS))
 
 ;; (defnc DialogFormsDebugCard []
 ;;   ($ mui/Card

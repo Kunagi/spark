@@ -29,8 +29,8 @@
 (defmacro $ [type & args] `(helix/$ ~type ~@args))
 (defmacro <> [& children] `(helix/<> ~@children))
 (defmacro create-context [& body] `(helix/create-context ~@body))
-(defmacro use-context [& body] `(helix/use-context ~@body))
 (defmacro provider [config & children] `(helix/provider ~config ~@children))
 
+(defmacro use-context [& body] `(helix-hooks/use-context ~@body))
 (defmacro use-state [& body] `(helix-hooks/use-state ~@body))
 (defmacro use-effect [& body] `(helix-hooks/use-effect ~@body))
