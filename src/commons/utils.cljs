@@ -59,16 +59,25 @@
     (trampoline fn-or-value)
     fn-or-value))
 
+
 (defn fn->value
   [fn-or-value & args]
   (if (fn? fn-or-value)
     (apply fn-or-value args)
     fn-or-value))
 
+
 (defn safe-apply [f args]
   (if f
     (apply f args)
     (first args)))
+
+
+(defn update-if
+  [v f & more-args]
+  (if f
+    (apply f (into [v] more-args))
+    v))
 
 ;;; edn
 

@@ -1,6 +1,8 @@
 (ns commons.auth
   (:require
-   [commons.logging :refer [log]]))
+   [commons.logging :refer [log]]
+   [commons.utils :as u]
+   [commons.repository :as repository]))
 
 
 (defonce SIGN_IN-F (atom nil))
@@ -47,8 +49,30 @@
                       (redirect-to-home))))))))
 
 
-(defn initialize [{:keys [set-user sign-in]}]
-  (log ::initialize)
+(defn- email-domain [email]
+  (when email (-> email (.substring (-> email (.indexOf "@") inc)))))
+
+
+(defn update-user-doc [Col ^js auth-user update-user]
+  (log ::update-user-doc
+       :col Col)
+  (let [uid (-> auth-user .-uid)
+        email (-> auth-user .-email)]
+    (repository/transact-doc-update>
+     Col uid
+     (fn [db-user]
+       (let [user (merge db-user
+                         {:uid uid
+                          :auth-email email
+                          :auth-domain (email-domain email)
+                          :auth-display-name (-> auth-user .-displayName)})
+             user (u/update-if user update-user)]
+         user)))))
+
+
+(defn initialize [{:keys [user-Col update-user set-user sign-in]}]
+  (log ::initialize
+       :user-Col user-Col)
   (reset! SIGN_IN-F sign-in)
   (let [auth (-> firebase .auth)]
     (-> auth (.useDeviceLanguage))
@@ -64,7 +88,11 @@
                  (when-not user
                    (redirect-to-home)))
                (reset! USER user)
-               (set-user user))
+               (when user
+                 (when user-Col
+                   (update-user-doc user-Col user update-user)))
+               (when set-user
+                 (set-user user)))
              (when-not auth-completed?
                (reset! AUTH_COMPLETED true))))))
     (process-sign-in-with-email-link)))
