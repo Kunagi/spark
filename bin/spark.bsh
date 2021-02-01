@@ -1,0 +1,177 @@
+#!/bin/bash -e
+
+
+function echo-task {
+    echo ""
+    echo "[ spark: $1 ]"
+    echo ""
+}
+
+
+###
+### npm-install
+###
+
+function clean {
+    echo-task "clean"
+
+    rm -rf .cpcache
+    rm -rf node_modules
+    rm -rf firebase/public/*
+    rm -rf firebase/functions/*.js
+    rm -rf firebase/functions/node_modules
+}
+
+if [ $1 = "clean" ]
+then
+    clean
+    exit 0
+fi
+
+
+###
+### npm-install
+###
+
+function npm-install {
+    echo-task "npm-install"
+
+    cd firebase/functions
+    npm install
+
+    cd ../..
+    npm install
+}
+
+if [ $1 = "npm-install" ]
+then
+    npm-install
+    exit 0
+fi
+
+
+###
+### shadow-watch
+###
+
+function shadow-watch {
+    echo-task "shadow-watch"
+
+    date -Iminutes > src/spa/version-time.txt
+    gnome-terminal -t "Shadow-CLJS watch" -- clojure -A:shadow-cljs watch spa gcf test
+}
+
+if [ $1 = "shadow-watch" ]
+then
+    shadow-watch
+    exit 0
+fi
+
+###
+### collect-spa-resources
+###
+
+function collect-spa-resources {
+    echo-task "collect-spa-resources"
+
+    mkdir -p firebase/public/js/
+    cp -rv resources/spa/* firebase/public/
+
+    if [ -e .spark/collect-spa-resources ]
+    then
+        .spark/collect-spa-resources
+    fi
+
+}
+
+###
+### firebase-emulators
+###
+
+function firebase-emulators {
+    echo-task "firebase-emulators"
+    collect-spa-resources
+    cd firebase
+    touch functions/index.js
+    gnome-terminal -t "Firebase Emulators" -- firebase emulators:start --import=./dev-data --export-on-exit
+    cd ..
+
+}
+
+if [ $1 = "firebase-emulators" ]
+then
+    firebase-emulators
+    exit 0
+fi
+
+
+###
+### dev
+###
+
+if [ $1 = "dev" ]
+then
+    clean
+    npm-install
+    shadow-watch
+    firebase-emulators
+    exit 0
+fi
+
+
+###
+### release
+###
+
+function bump-version {
+    echo-task "bump-version"
+
+    VERSION=`cat src/spa/version.txt`
+    VERSION=$((VERSION+1))
+    echo "Bumping Version to $VERSION"
+    echo $VERSION > src/spa/version.txt
+    git add src/spa/version.txt
+    git commit -m "version bump: $VERSION"
+}
+
+function assert-git-clean {
+    if [[ -n $(git status -s) ]]; then
+        echo 'git is dirty'
+        exit 1
+    fi
+}
+
+function release {
+    echo-task "release"
+
+    VERSION=`cat src/spa/version.txt`
+
+    sed -i -e "s/main\.js/main\.v${VERSION}\.js/g" firebase/public/index.html
+
+    date -Iminutes > src/spa/version-time.txt
+
+    clojure -A:build-release --config-merge "{:release-version \"v"${VERSION}"\"}"
+
+    bump-version
+
+    cd firebase
+    firebase deploy
+    cd ..
+}
+
+if [ $1 = "release" ]
+then
+    assert-git-clean
+    clean
+    npm-install
+    collect-spa-resources
+    release
+    exit 0
+fi
+
+###
+### usage
+###
+
+echo "Unsupported spark command: " $1
+
