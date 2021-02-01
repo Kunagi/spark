@@ -132,6 +132,7 @@ function bump-version {
     echo $VERSION > src/spa/version.txt
     git add src/spa/version.txt
     git commit -m "version bump: $VERSION"
+    git push
 }
 
 function assert-git-clean {
