@@ -1,6 +1,6 @@
-(ns commons.notifications
+(ns spark.notifications
   (:require
-   [commons.logging :refer [log]]))
+   [spark.logging :refer [log]]))
 
 
 (defn info []

@@ -1,10 +1,10 @@
-(ns commons.firestore-hooks
+(ns spark.firestore-hooks
   (:require
    [clojure.spec.alpha :as s]
    [helix.hooks :as hooks]
 
-   [commons.logging :refer [log]]
-   [commons.firestore :as fs]))
+   [spark.logging :refer [log]]
+   [spark.firestore :as fs]))
 
 
 (defn doc-atom [path]

@@ -1,5 +1,5 @@
-(ns commons.mui
-  (:require-macros [commons.mui]
+(ns spark.ui
+  (:require-macros [spark.ui]
                    [spark.react :refer [use-state use-effect defnc $ provider
                                         use-context create-context]]
                    [clojure.string :as str])
@@ -22,16 +22,16 @@
    ["material-ui-chip-input" :default ChipInput]
 
 
-   [commons.logging :refer [log]]
-   [commons.utils :as u]
+   [spark.logging :refer [log]]
+   [spark.utils :as u]
    [spark.react :as spark-react]
-   [commons.models :as models]
-   [commons.firebase-storage :as storage]
-   [commons.runtime :as runtime]
-   [commons.form-ui :as form-ui]
-   [commons.auth :as auth]
+   [spark.models :as models]
+   [spark.firebase-storage :as storage]
+   [spark.runtime :as runtime]
+   [spark.form-ui :as form-ui]
+   [spark.auth :as auth]
 
-   [commons.firestore-hooks :as firestore-hooks]
+   [spark.firestore-hooks :as firestore-hooks]
    ))
 
 

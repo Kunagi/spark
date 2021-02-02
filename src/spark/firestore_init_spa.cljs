@@ -1,7 +1,7 @@
-(ns commons.firestore-init-spa
+(ns spark.firestore-init-spa
   (:require
-   [commons.logging :refer [log]]
-   [commons.firestore :as firestore]))
+   [spark.logging :refer [log]]
+   [spark.firestore :as firestore]))
 
 
 (log ::init

@@ -1,10 +1,10 @@
-(ns commons.firestore
+(ns spark.firestore
   (:require
    [clojure.spec.alpha :as s]
 
    [cljs-bean.core :as cljs-bean]
-   [commons.logging :refer [log]]
-   [commons.utils :as u]))
+   [spark.logging :refer [log]]
+   [spark.utils :as u]))
 
 
 (defn doc? [doc]

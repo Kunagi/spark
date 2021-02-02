@@ -1,6 +1,6 @@
-(ns commons.firebase-storage
+(ns spark.firebase-storage
   (:require
-   [commons.logging :refer [log]]))
+   [spark.logging :refer [log]]))
 
 
 (defn storage []

@@ -1,8 +1,8 @@
-(ns commons.effects
+(ns spark.effects
   (:require
-   [commons.logging :refer [log]]
-   [commons.runtime :as runtime]
-   [commons.repository :as repository]))
+   [spark.logging :refer [log]]
+   [spark.runtime :as runtime]
+   [spark.repository :as repository]))
 
 
 

@@ -1,4 +1,4 @@
-(ns commons.form-ui
+(ns spark.form-ui
   (:require
    [clojure.spec.alpha :as s]
    [cljs.pprint :refer [pprint]]
@@ -12,13 +12,13 @@
    ["@material-ui/core" :as mui]
    ["material-ui-chip-input" :default ChipInput]
 
-   [commons.utils :as u]
-   [commons.logging :refer [log]]
-   ;; [commons.mui :as ui]
-   [commons.form :as form]
+   [spark.utils :as u]
+   [spark.logging :refer [log]]
+   ;; [spark.mui :as ui]
+   [spark.form :as form]
    [spark.react :as react]
-   [commons.repository :as repository]
-   [commons.firestore :as fs]
+   [spark.repository :as repository]
+   [spark.firestore :as fs]
    ))
 
 

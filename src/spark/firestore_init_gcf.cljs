@@ -1,8 +1,8 @@
-(ns commons.firestore-init-gcf
+(ns spark.firestore-init-gcf
   (:require
    ["firebase-admin" :as admin]
 
-   [commons.firestore :as firestore]))
+   [spark.firestore :as firestore]))
 
 
 (defonce initialized

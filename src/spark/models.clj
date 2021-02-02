@@ -1,4 +1,4 @@
-(ns commons.models
+(ns spark.models
   (:require
    [clojure.string :as str]))
 

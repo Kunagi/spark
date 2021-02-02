@@ -1,11 +1,11 @@
-(ns commons.googlemaps
+(ns spark.googlemaps
   (:require
 
    ["@material-ui/core" :as mui]
 
-   [commons.logging :refer [log]]
+   [spark.logging :refer [log]]
     
-   [commons.mui :as ui :refer [defnc $]]
+   [spark.ui :as ui :refer [defnc $]]
    ))
 
 

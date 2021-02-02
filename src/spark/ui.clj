@@ -1,4 +1,4 @@
-(ns commons.mui
+(ns spark.ui
   (:require
    [spark.react :as r]))
 

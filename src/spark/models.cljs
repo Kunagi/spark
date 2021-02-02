@@ -1,10 +1,10 @@
-(ns commons.models
-  (:require-macros [commons.models])
+(ns spark.models
+  (:require-macros [spark.models])
   (:require
    [clojure.string :as str]
    [malli.core :as m]
    [malli.error :as me]
-   [commons.utils :as u]
+   [spark.utils :as u]
    ))
 
 

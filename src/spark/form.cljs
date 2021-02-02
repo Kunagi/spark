@@ -1,8 +1,8 @@
-(ns commons.form
+(ns spark.form
   (:require
    [clojure.spec.alpha :as s]
-   [commons.logging :refer [log]]
-   [commons.models :as models]
+   [spark.logging :refer [log]]
+   [spark.models :as models]
 
    [clojure.string :as str]))
 

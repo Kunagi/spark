@@ -1,9 +1,9 @@
-(ns commons.runtime
+(ns spark.runtime
   (:require
    [malli.core :as m]
    [malli.error :as me]
-   [commons.logging :refer [log]]
-   [commons.models :as models]))
+   [spark.logging :refer [log]]
+   [spark.models :as models]))
 
 
 (def $Command

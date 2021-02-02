@@ -1,4 +1,4 @@
-(ns commons.logging
+(ns spark.logging
   (:require
    [cljs.pprint :refer [pprint]]))
 

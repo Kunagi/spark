@@ -1,11 +1,11 @@
-(ns commons.repository
+(ns spark.repository
   (:require
    [clojure.string :as str]
-   [commons.logging :refer [log]]
-   [commons.runtime :as runtime]
-   [commons.utils :as u]
-   [commons.models :as models]
-   [commons.firestore :as firestore]))
+   [spark.logging :refer [log]]
+   [spark.runtime :as runtime]
+   [spark.utils :as u]
+   [spark.models :as models]
+   [spark.firestore :as firestore]))
 
 
 (defn create-doc> [Col values]

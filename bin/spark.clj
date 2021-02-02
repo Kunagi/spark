@@ -10,7 +10,7 @@
 
 (require '[babashka.deps :as deps])
 
-(deps/add-deps '{:deps {clj-commons/fs {:mvn/version "1.5.2"}}})
+(deps/add-deps '{:deps {clj-spark/fs {:mvn/version "1.5.2"}}})
 
 (require '[me.raynes.fs :as fs])
 

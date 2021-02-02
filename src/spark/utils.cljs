@@ -1,4 +1,4 @@
-(ns commons.utils
+(ns spark.utils
   (:require
    [clojure.spec.alpha :as s]
    [cljs.pprint :refer [pprint]]))

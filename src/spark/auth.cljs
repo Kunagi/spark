@@ -1,8 +1,8 @@
-(ns commons.auth
+(ns spark.auth
   (:require
-   [commons.logging :refer [log]]
-   [commons.utils :as u]
-   [commons.repository :as repository]))
+   [spark.logging :refer [log]]
+   [spark.utils :as u]
+   [spark.repository :as repository]))
 
 
 (defonce SIGN_IN-F (atom nil))
