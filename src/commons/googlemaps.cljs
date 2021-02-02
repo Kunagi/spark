@@ -5,7 +5,7 @@
 
    [commons.logging :refer [log]]
     
-   [commons.mui :as cui :refer [defnc $]]
+   [commons.mui :as ui :refer [defnc $]]
    ))
 
 
@@ -50,10 +50,10 @@
            markers
            position]}]
   (let [map-element-id (or id "map")
-        [gmap set-gmap] (cui/use-state nil)
-        [old-markers set-old-markers] (cui/use-state nil)]
+        [gmap set-gmap] (ui/use-state nil)
+        [old-markers set-old-markers] (ui/use-state nil)]
 
-    (cui/use-effect
+    (ui/use-effect
      :always
      (when-not (= markers old-markers)
        (set-old-markers markers)
@@ -89,7 +89,7 @@
 
 
 (defnc PositionInput [{:keys [set-position]}]
-  (let [[ort set-ort] (cui/use-state (js/window.localStorage.getItem "standort"))]
+  (let [[ort set-ort] (ui/use-state (js/window.localStorage.getItem "standort"))]
     ($ :div
        ($ :form
           {:onSubmit (fn [^js event]
@@ -114,9 +114,9 @@
 
 (defnc Map
   [{:keys [id height zoom markers]}]
-  (let [[position set-position] (cui/use-state :loading)]
+  (let [[position set-position] (ui/use-state :loading)]
 
-    (cui/use-effect
+    (ui/use-effect
      :once
      (js/setTimeout
       #(js/navigator.geolocation.getCurrentPosition
