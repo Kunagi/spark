@@ -5,7 +5,7 @@
 
    [spark.logging :refer [log]]
     
-   [spark.ui :as ui :refer [defnc $]]
+   [spark.ui :as ui :refer [defnc $ devcard]]
    ))
 
 
@@ -46,9 +46,9 @@
 (defnc MapWithPosition
   [{:keys [id
            height
-           zoom
            markers
            position]}]
+  (assert position)
   (let [map-element-id (or id "map")
         [gmap set-gmap] (ui/use-state nil)
         [old-markers set-old-markers] (ui/use-state nil)]
@@ -57,11 +57,12 @@
      :always
      (when-not (= markers old-markers)
        (set-old-markers markers)
-       (log ::Map.init-map)
+       (log ::Map.init-map
+            :position position)
        (let [gmap (init-map
                    map-element-id
                    {:center position
-                    :zoom (or zoom 10)})]
+                    :zoom 10})]
          (set-gmap gmap)
          (doseq [marker markers]
            (create-marker gmap marker))))
@@ -70,6 +71,19 @@
     ($ :div
        {:id map-element-id
         :style {:height (or height "40vh")}})))
+
+(devcard
+ MapWithPosition
+ ($ :div {:style {:width "200px"}}
+    ($ MapWithPosition
+       {:id "test-MapWithPosition"
+        :height "200px"
+        :position {:lat 52.1875305
+                   :lng 9.0788149}
+        :markers [{:title "Bodega"
+                   :label "Bodega"
+                   :position {:lat 52.1875305
+                              :lng 9.0788149}}]})))
 
 
 (defn geocode-address> [address]
@@ -111,24 +125,31 @@
               :autoComplete "address-level2"
               :autoFocus true})))))
 
+(devcard
+ PositionInput
+ ($ PositionInput {:set-position js/alert}))
+
 
 (defnc Map
-  [{:keys [id height zoom markers]}]
-  (let [[position set-position] (ui/use-state :loading)]
+  [{:keys [id height markers
+           force-position-input?]}]
+  (let [[position set-position] (ui/use-state (when-not force-position-input?
+                                                :loading))]
 
     (ui/use-effect
      :once
-     (js/setTimeout
-      #(js/navigator.geolocation.getCurrentPosition
-        (fn [^js position]
-          (log ::Map.position
-               :position position)
-          (set-position {:lat (-> position .-coords .-latitude)
-                         :lng (-> position .-coords .-longitude)}))
-        (fn [error]
-          (set-position nil)
-          (log ::Map.Error
-               :error error))) 1000)
+     (when-not force-position-input?
+       (js/setTimeout
+        #(js/navigator.geolocation.getCurrentPosition
+          (fn [^js position]
+            (log ::Map.position
+                 :position position)
+            (set-position {:lat (-> position .-coords .-latitude)
+                           :lng (-> position .-coords .-longitude)}))
+          (fn [error]
+            (set-position nil)
+            (log ::Map.Error
+                 :error error))) 1000))
      nil)
 
     (case position
@@ -148,9 +169,24 @@
       ($ MapWithPosition
          {:id id
           :height height
-          :zoom zoom
           :markers markers
           :position position}))))
+
+(devcard
+ Map
+ ($ :div {:style {:width "300px"}}
+    ($ Map
+       {:id "test-Map1"
+        :height "200px"
+        :markers [{:title "A Title" :label "A Label"
+                   :position {:lat 52.1875305 :lng 9.0788149}}]}))
+ ($ :div {:style {:width "300px"}}
+    ($ Map
+       {:id "test-Map2"
+        :height "200px"
+        :force-position-input? true
+        :markers [{:title "A Title" :label "A Label"
+                   :position {:lat 52.1875305 :lng 9.0788149}}]})))
 
 
 (defn compute-distance-text> [origin destination]
