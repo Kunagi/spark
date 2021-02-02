@@ -314,6 +314,9 @@
    {:class "material-icons"}
    icon-name))
 
+(defn unsplash [width id]
+  (str "https://images.unsplash.com/photo-" id "?&w=" width))
+
 ;;;
 ;;; common components
 ;;;
