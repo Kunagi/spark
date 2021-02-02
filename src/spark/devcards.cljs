@@ -87,11 +87,13 @@
     ($ :div
        {:style {:display "grid"
                 :grid-template-columns "170px auto"
-                :grid-gap "8px"}}
+                :grid-gap "8px"
+                :min-height "100vh"}}
        ($ Selector)
-       (when selected-devcard
-         ($ Devcard
-            {:devcard selected-devcard})))))
+       ($ :div
+          (when selected-devcard
+            ($ Devcard
+               {:devcard selected-devcard}))))))
 
 
 (def devcards-page
