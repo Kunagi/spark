@@ -418,7 +418,7 @@
                    :font-weight 900
                    :color (-> theme .-palette .-primary .-main)}}
           message)
-       (when dat
+       (when (seq dat)
          ($ :div
             {:style {:max-height "200px"
                      :overflow "auto"}}
@@ -442,9 +442,13 @@
 (devcard
  ErrorInfo
  ($ ErrorInfo {:error "Just Text"})
- ($ ErrorInfo {:error (ex-info "Clojure Exception"
+ ($ ErrorInfo {:error (ex-info "Clojure Exception with Data"
                                {:with "data"
                                 :and :info})})
+ ($ ErrorInfo {:error (ex-info "Clojure Exception with Cause"
+                               {}
+                               (ex-info "Root Cause" {}))})
+ ($ ErrorInfo {:error (js/Error. "JavaScript Error")})
  )
 
 (defnc ErrorDialog []
@@ -546,8 +550,19 @@
           :startIcon icon
           :size size
           :className classes}
-         (models/command-label command))
-      )))
+         (models/command-label command)))))
+
+(devcard
+ CommandButton
+ ($ CommandButton {:command {:label "click me" :f (fn [_] [])}})
+ ($ CommandButton {:command {:label "click me" :f (fn [_] [])
+                             :inconspicuous? true}})
+ ($ CommandButton {:command {:label "click me" :f (fn [_] [])
+                             :icon "thumb_up"}})
+ ($ CommandButton {:command {:label "click me" :f (fn [_] [])
+                             :icon "thumb_up"}
+                   :as-icon? true}))
+
 
 (defnc CommandCardArea [{:keys [command children context then]}]
   (let [command (u/trampoline-if command)
@@ -832,8 +847,3 @@
                 :path picture-ref
                 :height "200px"}))))))
 
-
-
-;;;
-;;; auth
-;;;

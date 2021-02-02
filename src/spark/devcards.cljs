@@ -13,17 +13,6 @@
                  :grid-template-columns "1fr 1fr"
                  :grid-gap "8px"}}
         ($ :div
-           {:style {:display "flex"
-                    :place-content "center"
-                    :place-items "center"}}
-           ($ :div
-              {:style {:border "1px dotted grey"
-                       :padding "8px"
-                       :max-width "600px"
-                       :margin "0 auto"
-                       :overflow "auto"}}
-              ((-> example :f))))
-        ($ :div
            {:style {:white-space "pre-wrap"
                     :font-family "monospace"
                     :overflow "auto"
@@ -31,7 +20,19 @@
                     :color "#eee"
                     :padding "8px"
                     :border-radius "4px"}}
-           (-> example :code)))))
+           (-> example :code))
+        ($ :div
+           {:style {:display "flex"
+                    :place-content "center"
+                    :place-items "center"}}
+           ($ :div
+              {:style {:border "1px dotted #ddd"
+                       :padding "8px"
+                       :max-width "600px"
+                       :margin "0 auto"
+                       :overflow "auto"}}
+              ((-> example :f))))
+        )))
 
 
 (defnc Devcard [{:keys [devcard]}]
