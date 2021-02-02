@@ -1,11 +1,33 @@
 #!/bin/bash -e
 
+
+function usage {
+    echo ""
+    echo "The spark didn't work."
+    echo ""
+    echo "    $(tput setab 1)$(tput setaf 7) $1 $(tput sgr0)"
+    echo ""
+    echo "Usage: spark <command>"
+    echo ""
+    echo "where <command> is one of:"
+    echo "    $(tput rev)dev$(tput sgr0), release, "
+    echo "    shadow-watch, firebase-emulators"
+    echo "    clean, npm-install, collect-spa-resources"
+    echo ""
+    exit 1
+}
+
+
 if [ $# -eq 0 ]
 then
-    echo "Usage: <command>"
+    usage "Missing argument."
     exit 1
 fi
 
+
+###
+### helpers
+###
 
 function echo-task {
     echo ""
@@ -177,7 +199,8 @@ then
 fi
 
 ###
-### usage
+### fallback
 ###
 
-echo "Unsupported command: " $1
+
+usage "Unsupported command: $1"
