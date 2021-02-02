@@ -501,8 +501,9 @@
 
 
 (defnc CommandButton [{:keys [command context then
+                              icon as-icon? icon-theme
                               variant color size
-                              icon as-icon? icon-theme]}]
+                              class styles]}]
   (let [command (u/trampoline-if command)
         onClick (wrap-in-error-handler (new-command-on-click command context then))
         variant (or variant "contained")
@@ -512,19 +513,23 @@
         icon (when-let [icon (or icon
                                  (-> command :icon))]
                ($ Icon {:name icon
-                        :theme icon-theme}))]
+                        :theme icon-theme}))
+        styles-class (use-styles-class styles)
+        classes (str/join " " [class styles-class])]
     (if as-icon?
       ($ mui/IconButton
          {:onClick onClick
           :color color
-          :size size}
+          :size size
+          :className classes}
          icon)
       ($ mui/Button
          {:onClick onClick
           :variant variant
           :color color
           :startIcon icon
-          :size size}
+          :size size
+          :className classes}
          (models/command-label command))
       )))
 
