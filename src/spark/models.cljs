@@ -156,7 +156,8 @@
 (defn Command [model]
   (validate-model-schema
    model [:map
-          [:label {:optional true} string?]])
+          [:label {:optional true} string?]
+          [:context-args {:optional true} vector?]])
   (-> model
       ))
 
