@@ -56,6 +56,79 @@
 (defn create-context [value]
   (-> react (.createContext value)))
 
+
+
+;;;
+;;; routing
+;;;
+;; TODO deprecated
+(defn use-params []
+  (->> (router/useParams)
+       cljs-bean/->clj
+       (reduce (fn [m [k v]]
+                 (assoc m (csk/->kebab-case k) v))
+               {})))
+
+;; TODO deprecated
+(defn use-param [param-key]
+  (-> (use-params) (get param-key)))
+
+
+(defn use-params-2 []
+  (->> (router/useParams)
+       cljs-bean/->clj
+       (reduce (fn [m [k v]]
+                 (assoc m k v))
+               {})))
+
+(defn use-param-2 [param-key]
+  (-> (use-params-2) (get param-key)))
+
+;;;
+;;; auth
+;;;
+
+
+(def use-auth-completed (atom-hook auth/AUTH_COMPLETED))
+
+(def use-auth-user (atom-hook auth/USER))
+
+(defn use-uid []
+  (when-let [user (use-auth-user)]
+    (-> ^js user .-uid)))
+
+
+;;;
+;;; page and context data
+;;;
+
+(def DATA_RESOLVER (atom nil))
+
+
+(def PAGE (create-context {:page nil :data nil}))
+
+(defn use-page []
+  (let [data-resolver @DATA_RESOLVER
+        _ (when-not data-resolver
+            (throw (ex-info "DATA_RESOLVER not initialized"
+                            {})))
+        page (use-context PAGE)
+        data (reduce (fn [m [k identifier]]
+                       (assoc m k (data-resolver identifier)))
+                     {} (-> page :data))]
+    (assoc page :data data)))
+
+
+(defn use-context-data []
+  (let [page (use-page)
+        params (use-params)
+        uid (use-uid)
+        data (merge params
+                    (-> page :data))
+        data (assoc data :uid uid)]
+    data))
+
+
 ;;;
 ;;; repository
 ;;;
@@ -122,67 +195,16 @@
        vals))
 
 
-(defn use-col-subset [col-subset args]
-  (if (models/col-subset-is-union? col-subset)
-    (use-cols-union (models/col-subset-union-paths col-subset args))
-    (use-col (models/col-subset-path col-subset args))))
+(defn use-col-subset
+  ([ColSubset]
+   (use-col-subset ColSubset {}))
+  ([ColSubset args]
+   (let [context (merge (use-context-data)
+                        args)]
+     (if (models/col-subset-is-union? ColSubset)
+       (use-cols-union (models/col-subset-union-paths ColSubset context))
+       (use-col (models/col-subset-path ColSubset context))))))
 
-
-;;;
-;;; routing
-;;;
-;; TODO deprecated
-(defn use-params []
-  (->> (router/useParams)
-       cljs-bean/->clj
-       (reduce (fn [m [k v]]
-                 (assoc m (csk/->kebab-case k) v))
-               {})))
-
-;; TODO deprecated
-(defn use-param [param-key]
-  (-> (use-params) (get param-key)))
-
-
-(defn use-params-2 []
-  (->> (router/useParams)
-       cljs-bean/->clj
-       (reduce (fn [m [k v]]
-                 (assoc m k v))
-               {})))
-
-(defn use-param-2 [param-key]
-  (-> (use-params-2) (get param-key)))
-
-
-
-;;;
-;;; page and context data
-;;;
-
-(def DATA_RESOLVER (atom nil))
-
-
-(def PAGE (create-context {:page nil :data nil}))
-
-(defn use-page []
-  (let [data-resolver @DATA_RESOLVER
-        _ (when-not data-resolver
-            (throw (ex-info "DATA_RESOLVER not initialized"
-                            {})))
-        page (use-context PAGE)
-        data (reduce (fn [m [k identifier]]
-                       (assoc m k (data-resolver identifier)))
-                     {} (-> page :data))]
-    (assoc page :data data)))
-
-
-(defn use-context-data []
-  (let [page (use-page)
-        params (use-params)
-        data (merge params
-                    (-> page :data))]
-    data))
 
 ;;;
 ;;; Styles / Theme
@@ -209,18 +231,6 @@
       (-> styles .-root))))
 
 
-;;;
-;;; auth
-;;;
-
-
-(def use-auth-completed (atom-hook auth/AUTH_COMPLETED))
-
-(def use-auth-user (atom-hook auth/USER))
-
-(defn use-uid []
-  (when-let [user (use-auth-user)]
-    (-> ^js user .-uid)))
 
 
 ;;;

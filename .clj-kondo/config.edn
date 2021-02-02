@@ -1,5 +1,6 @@
 {:lint-as {
-           spark.react/defnc        clojure.core/defn
-           spark.mui/defnc        clojure.core/defn
+           spark.react/defnc      clojure.core/defn
+           helix.core/defnc       clojure.core/defn
+           spark.ui/defnc         clojure.core/defn
            spark.models/def-model clojure.core/def
            }}
