@@ -58,8 +58,9 @@
           {:style {:position "fixed"}}
           ($ ui/SimpleCard
              ($ :div
-                {:style {:width "110px"
-                         :max-height "80vh"}}
+                {:style {:width "130px"
+                         :max-height "80vh"
+                         :overflow "auto"}}
                 (for [group groups]
                   ($ :div
                      {:key group}
@@ -85,7 +86,7 @@
         selected-devcard (-> ui/DEVCARDS deref (get selected-devcard-id))]
     ($ :div
        {:style {:display "grid"
-                :grid-template-columns "150px auto"
+                :grid-template-columns "170px auto"
                 :grid-gap "8px"}}
        ($ Selector)
        (when selected-devcard
