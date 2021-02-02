@@ -1,5 +1,5 @@
 (ns spark.ui
-  (:require-macros [spark.ui]
+  (:require-macros [spark.ui :refer [devcard]]
                    [spark.react :refer [use-state use-effect defnc $ provider
                                         use-context create-context]]
                    [clojure.string :as str])
@@ -277,6 +277,15 @@
    :background-size "contain"})
 
 
+;;;
+;;; devcards
+;;;
+
+(def DEVCARDS (atom {}))
+
+(defn reg-devcard [devcard]
+  (swap! DEVCARDS assoc (-> devcard :id) devcard))
+
 
 ;;;
 ;;; common ui functions
@@ -430,6 +439,13 @@
        (when cause
          ($ ErrorInfo {:error cause})))))
 
+(devcard
+ ErrorInfo
+ ($ ErrorInfo {:error "Just Text"})
+ ($ ErrorInfo {:error (ex-info "Clojure Exception"
+                               {:with "data"
+                                :and :info})})
+ )
 
 (defnc ErrorDialog []
   (let [error (use-error)]
@@ -651,6 +667,11 @@
            (when title ($ CardOverline {:text title}))
            ($ Stack children)))))
 
+(devcard
+ SimpleCard
+ ($ SimpleCard
+    {:title "example title"}
+    "Example content."))
 
 (defnc CardRow [{:keys [children]}]
   (d/div
@@ -680,21 +701,25 @@
      ))
 
 
+(defonce ADDITIONAL_PAGES (atom nil))
+
+
 (defnc PageSwitch [{:keys [pages devtools-component children]}]
-  ($ router/Switch
-     (for [page pages]
-       ($ router/Route
-          {:key (-> page :path)
-           :path (-> page :path)}
-          (provider
-           {:context PAGE
-            :value page}
-           ($ :div
-              children
-              ($ ErrorDialog)
-              ($ FormDialogsContainer)
-              (when (and  ^boolean js/goog.DEBUG devtools-component)
-                ($ devtools-component))))))))
+  (let [pages (concat @ADDITIONAL_PAGES pages)]
+    ($ router/Switch
+       (for [page pages]
+         ($ router/Route
+            {:key (-> page :path)
+             :path (-> page :path)}
+            (provider
+             {:context PAGE
+              :value page}
+             ($ :div
+                children
+                ($ ErrorDialog)
+                ($ FormDialogsContainer)
+                (when (and  ^boolean js/goog.DEBUG devtools-component)
+                  ($ devtools-component)))))))))
 
 
 (defnc VersionInfo []
