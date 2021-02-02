@@ -557,14 +557,16 @@
 
 (devcard
  CommandButton
- ($ CommandButton {:command {:label "click me" :f (fn [_] [])}})
- ($ CommandButton {:command {:label "click me" :f (fn [_] [])
+ ($ CommandButton {:command {:label "default" :f (fn [_] [])}})
+ ($ CommandButton {:command {:label "inconspicuous" :f (fn [_] [])
                              :inconspicuous? true}})
- ($ CommandButton {:command {:label "click me" :f (fn [_] [])
+ ($ CommandButton {:command {:label "with icon" :f (fn [_] [])
                              :icon "thumb_up"}})
- ($ CommandButton {:command {:label "click me" :f (fn [_] [])
+ ($ CommandButton {:command {:label "only icon" :f (fn [_] [])
                              :icon "thumb_up"}
-                   :as-icon? true}))
+                   :as-icon? true})
+ ($ CommandButton {:command {:label "color: secondary" :f (fn [_] [])}
+                   :color "secondary"}))
 
 
 (defnc CommandCardArea [{:keys [command children context then]}]
@@ -757,19 +759,26 @@
     ($ ValueLoadGuard {:value auth-completed :padding padding}
        children)))
 
-(defnc AppFrame [{:keys [pages children theme styles]}]
+
+(defnc AppFrame-inner [{:keys [children styles pages]}]
   (let [class (use-styles-class styles)]
-    ($ mui/ThemeProvider
-       {:theme (-> theme clj->js
-                   mui-styles/createMuiTheme mui-styles/responsiveFontSizes)}
-       ($ AuthCompletedGuard
-          {:padding 4}
-          ($ mui/CssBaseline)
-          ($ router/BrowserRouter {}
-             ($ PageSwitch {:pages pages}
-                ($ :div
-                   {:class class}
-                   children)))))))
+    ($ AuthCompletedGuard
+       {:padding 4}
+       ($ mui/CssBaseline)
+       ($ router/BrowserRouter {}
+          ($ PageSwitch {:pages pages}
+             ($ :div
+                {:class class}
+                children)))))
+  )
+
+(defnc AppFrame [{:keys [pages children theme styles]}]
+  ($ mui/ThemeProvider
+     {:theme (-> theme clj->js
+                 mui-styles/createMuiTheme mui-styles/responsiveFontSizes)}
+     ($ AppFrame-inner {:styles styles
+                        :pages pages}
+        children)))
 
 ;;;
 ;;; storage
