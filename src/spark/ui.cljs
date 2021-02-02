@@ -772,12 +772,12 @@
                 children)))))
   )
 
-(defnc AppFrame [{:keys [pages children theme styles]}]
+(defnc AppFrame [{:keys [spa children theme styles]}]
   ($ mui/ThemeProvider
      {:theme (-> theme clj->js
                  mui-styles/createMuiTheme mui-styles/responsiveFontSizes)}
      ($ AppFrame-inner {:styles styles
-                        :pages pages}
+                        :pages (models/spa-pages  spa )}
         children)))
 
 ;;;

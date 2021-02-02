@@ -269,6 +269,10 @@
 (defn Spa [model]
   (validate-model-schema
    model [:map
-          ])
+          [:pages [:vector map?]]])
   (-> model
       ))
+
+
+(defn spa-pages [spa]
+  (-> spa :pages))
