@@ -1,5 +1,5 @@
 (ns spark.react
-  (:require-macros [spark.react :refer [use-state use-effect]])
+  (:require-macros [spark.react])
   (:require
    [helix.hooks :as helix-hooks]))
 
@@ -12,7 +12,7 @@
      (let [[value set-value] (helix-hooks/use-state @ATOM)
            watch-key (random-uuid)]
 
-       (use-effect
+       (helix-hooks/use-effect
         :once
         (set-value @ATOM)
         (add-watch ATOM watch-key
