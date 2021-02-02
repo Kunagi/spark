@@ -1,9 +1,15 @@
 #!/bin/bash -e
 
+if [ $# -eq 0 ]
+then
+    echo "Usage: <command>"
+    exit 1
+fi
+
 
 function echo-task {
     echo ""
-    echo "[ spark: $1 ]"
+    echo "$(tput rev)[ spark: $1 ] $(tput sgr0)"
     echo ""
 }
 
@@ -174,5 +180,4 @@ fi
 ### usage
 ###
 
-echo "Unsupported spark command: " $1
-
+echo "Unsupported command: " $1
