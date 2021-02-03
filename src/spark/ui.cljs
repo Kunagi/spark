@@ -349,12 +349,18 @@
 (defn tdiv-red [] (tdiv "#c62828"))
 (defn tdiv-blue [] (tdiv "#1565c0"))
 (defn tdiv-green [] (tdiv "#2e7d32"))
-(defn tdiv-yellw [] (tdiv "#f9a825"))
+(defn tdiv-yellow [] (tdiv "#f9a825"))
 
 (devcard
  grid
  (grid [:auto :auto] (tdiv-red) (tdiv-blue))
- (grid [:auto :auto] {:grid-gap 10} (tdiv-red) (tdiv-blue)))
+ (grid [:auto :auto] {:grid-gap 10} (tdiv-red) (tdiv-blue))
+ (grid [:auto "200px" :auto] {:grid-gap 10} (tdiv-red) (tdiv-yellow) (tdiv-blue))
+ (div
+  {:width "200px"}
+  (grid ["repeat(auto-fit, minmax(64px, 1fr))"] {:grid-gap 10}
+        (tdiv-red) (tdiv-yellow) (tdiv-blue) (tdiv-green)
+        (tdiv-red) (tdiv-yellow) (tdiv-blue) (tdiv-green))))
 
 (defn icon [icon-name]
   (d/div
