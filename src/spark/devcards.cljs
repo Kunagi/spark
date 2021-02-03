@@ -92,7 +92,11 @@
 (def devcards-page
   {:path "/ui/devcards"
    :max-width false
-   :content DevcardsPageContent})
+   :content DevcardsPageContent
+   :update-context (fn [context]
+                     (let [params (ui/use-params)]
+                       (js/console.log "UPDATE CONTEXT")
+                       (assoc context :developer "witek")))})
 
 
 (reset! ui/ADDITIONAL_PAGES [devcards-page])

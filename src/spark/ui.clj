@@ -27,7 +27,7 @@
         lets []
 
         lets (if-let [syms (get opts :from-context)]
-               (let [lets (into lets [`~'context_ `(use-context-data)])]
+               (let [lets (into lets [`~'context_ `(use-spark-context)])]
                  (reduce (fn [lets sym]
                            (into lets
                                  [`~sym `(or ~sym
