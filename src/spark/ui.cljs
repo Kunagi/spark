@@ -813,7 +813,10 @@
 (defonce ADDITIONAL_PAGES (atom nil))
 
 
+
 (defnc PageWrapper [{:keys [spa page devtools-component children]}]
+  {:helix/features {:check-invalid-hooks-usage false}}
+  ;; (log ::render-PageWrapper)
   (let [context (use-spark-context)
         params (use-params-2)
 
@@ -826,9 +829,18 @@
         context (u/safe-apply update-context [context])
         update-context (-> page :update-context)
         context (u/safe-apply update-context [context])
+
+        docs (reduce (fn [docs [k Doc]]
+                       (let [id (get context k)
+                             doc (use-doc Doc id)]
+                         (assoc docs k doc)))
+                     {} (-> page :use-docs))
+        context (merge context docs)
         ]
+
     ($ ValuesLoadGuard
-       {:values (map #(get context %) (-> page :wait-for))
+       {:values (concat (mapv #(get context %) (-> page :wait-for))
+                        (vals docs))
         :padding 4}
        (provider
         {:context SPARK_CONTEXT :value context}
