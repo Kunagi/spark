@@ -54,6 +54,7 @@ function echo-task {
 function clean {
     echo-task "clean"
 
+    rm -rf target
     rm -rf .cpcache
     rm -rf node_modules
     rm -rf firebase/public/*
@@ -96,6 +97,7 @@ fi
 function shadow-watch {
     echo-task "shadow-watch"
 
+    mkdir -p target
     date -Iminutes > src/spa/version-time.txt
     gnome-terminal -t "Shadow-CLJS watch" -- clojure -A:shadow-cljs watch spa gcf test
 }
@@ -160,8 +162,8 @@ if [ $1 = "dev" ]
 then
     clean
     npm-install
-    shadow-watch
     firebase-emulators
+    shadow-watch
     exit 0
 fi
 
@@ -170,13 +172,17 @@ fi
 ### doc
 ###
 
+DOC_SRC_DIR=dev-doc
+DOC_DST_DIR=firebase/public/dev
+
 function build-docs {
     echo-task "build-docs"
-    asciidoctor -b html5 dev-doc/main.adoc -o firebase/public/dev/doc.html
+    asciidoctor -b html5 $DOC_SRC_DIR/main.adoc -o $DOC_DST_DIR/doc.html
 }
 
 if [ $1 = "build-docs" ]
 then
+    #generate-docs
     build-docs
     exit 0
 fi
@@ -213,6 +219,7 @@ function release {
 
     date -Iminutes > src/spa/version-time.txt
 
+    mkdir -d target
     clojure -A:build-release --config-merge "{:release-version \"v"${VERSION}"\"}"
 
     bump-version

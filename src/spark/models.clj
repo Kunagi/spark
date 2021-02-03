@@ -1,6 +1,4 @@
-(ns spark.models
-  (:require
-   [clojure.string :as str]))
+(ns spark.models)
 
 
 (defmacro def-model [sym model-def]
@@ -11,8 +9,9 @@
   (let [[constructor model] model-def
         symbol-name (-> sym name )
         calling-namespace-name (name (ns-name *ns*))
+        id (str calling-namespace-name "/" symbol-name)
         model (assoc model
-                     :model/id (str calling-namespace-name "/" symbol-name)
+                     :model/id id
                      :model/namespace calling-namespace-name
                      :model/symbol symbol-name
                      :model/constructor constructor)]
