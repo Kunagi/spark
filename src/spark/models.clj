@@ -16,8 +16,4 @@
                      :model/namespace calling-namespace-name
                      :model/symbol symbol-name
                      :model/constructor constructor)]
-    (if constructor
-      `(def ~sym (~constructor ~model))
-      `(def ~sym ~model))))
-
-
+    `(def ~sym (-> ~model ~constructor reg-model))))

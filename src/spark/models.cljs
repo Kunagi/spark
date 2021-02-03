@@ -8,6 +8,21 @@
    ))
 
 
+;;; registry
+
+(defonce MODELS (atom {}))
+
+(defn reg-model [model]
+  (swap! MODELS assoc (-> model :model/id) model)
+  model)
+
+
+(defn models-by-constructor [constructor]
+  (->> @MODELS
+       vals
+       (filter #(= (:model/constructor %) constructor))))
+
+
 ;;; validation helpers
 
 
@@ -87,9 +102,9 @@
           [:doc $Doc]
           ])
   (-> model
+      (assoc :id (-> model :model/symbol str/lower-case keyword))
       (u/assoc-if-missing :path (-> model :model/symbol str/lower-case))
-      )
-  )
+      ))
 
 (defn col-doc-name [col]
   (-> col :doc :name))
