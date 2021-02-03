@@ -79,7 +79,7 @@
 (defnc DevcardsPageContent []
   (let [selected-devcard-id (use-selected-devcard-id)
         selected-devcard (-> ui/DEVCARDS deref (get selected-devcard-id))]
-    (ui/grid [170 :auto] {:grid-gap 8}
+    (ui/grid ["170px" :auto] {:grid-gap 8}
 
              ($ Selector)
 
