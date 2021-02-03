@@ -5,7 +5,7 @@
 
 
 (defnc Example [{:keys [devcard example label]}]
-  ($ ui/Stack
+  (ui/stack
      (ui/div "Example " label)
      (ui/div
       {:display :grid
@@ -34,13 +34,12 @@
 
 
 (defnc Devcard [{:keys [devcard]}]
-  ($ ui/Stack
-     {:spacing 4}
-     (for [[idx example] (map-indexed vector (-> devcard :examples))]
-       ($ Example {:key idx
-                   :devcard devcard
-                   :example example
-                   :label (str "#" (inc idx))}))))
+  (ui/stack-4
+   (for [[idx example] (map-indexed vector (-> devcard :examples))]
+     ($ Example {:key idx
+                 :devcard devcard
+                 :example example
+                 :label (str "#" (inc idx))}))))
 
 
 (defonce SELECTED_DEVCARD_ID (atom nil))

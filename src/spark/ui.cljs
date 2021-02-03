@@ -1,5 +1,7 @@
 (ns spark.ui
-  (:require-macros [spark.ui :refer [devcard div grid]]
+  (:require-macros [spark.ui :refer [devcard div grid
+                                     stack stack-0 stack-1 stack-2
+                                     stack-3 stack-4 stack-5]]
                    [spark.react :refer [use-state use-effect defnc $ provider
                                         use-context create-context]]
                    [clojure.string :as str])
@@ -219,18 +221,46 @@
    (fn [theme]
      (clj->js (styles-f theme)))))
 
+
+(defn- conform-style-value [v]
+  (cond
+    (vector? v)(->> v (map conform-style-value) (str/join " "))
+    (string? v) v
+    (keyword? v) (name v)
+    (number? v) (str v"px")
+    :else v))
+
+
+(defn- conform-style [styles]
+  (reduce (fn [styles [k v]]
+            (assoc styles k (conform-style-value v)))
+          {} styles))
+
+(defn- conform-styles-selector [s]
+  (cond
+    (keyword? s) (str "& " (name s))
+    (str/starts-with? s "& ") s
+    :else (str "& " s)))
+
+(defn- conform-styles [styles]
+  (reduce (fn [styles [k v]]
+            (assoc styles
+                   (conform-styles-selector k)
+                   (conform-style v)))
+          {} styles))
+
+
 (defn use-styles-class [styles-f]
   (when styles-f
     (let [theme (use-theme)
           styles-f-wrapper (fn [theme]
-                             {:root (if (fn? styles-f)
-                                      (styles-f theme)
-                                      styles-f)})
+                             {:root (conform-styles
+                                     (if (fn? styles-f)
+                                       (styles-f theme)
+                                       styles-f))})
           use-styles (make-styles styles-f-wrapper)
           ^js styles (use-styles theme)]
       (-> styles .-root))))
-
-
 
 
 ;;;
@@ -313,10 +343,12 @@
   ($ :div
      {:style {:background-color color
               :min-width "64px"
-              :min-height "64px"}}))
+              :min-height "16px"}}))
 
-(defn tdiv-red [] (tdiv "red"))
-(defn tdiv-blue [] (tdiv "blue"))
+(defn tdiv-red [] (tdiv "#c62828"))
+(defn tdiv-blue [] (tdiv "#1565c0"))
+(defn tdiv-green [] (tdiv "#2e7d32"))
+(defn tdiv-yellw [] (tdiv "#f9a825"))
 
 (devcard
  grid
@@ -427,7 +459,7 @@
 
 
 (defnc ErrorInfo [{:keys [error]}]
-  (let [[message dat stack cause] (destructure-error error)
+  (let [[message dat stacktrace cause] (destructure-error error)
         theme (use-theme)]
     ($ Stack
        ($ :div
@@ -440,7 +472,7 @@
             {:style {:max-height "200px"
                      :overflow "auto"}}
             (data dat)))
-       (when stack
+       (when stacktrace
          ($ :div
             {:style {:max-height "200px"
                      :overflow "auto"
@@ -452,7 +484,7 @@
                      :border-radius "4px"
                      :margin "1px"
                      }}
-            stack))
+            stacktrace))
        (when cause
          ($ ErrorInfo {:error cause})))))
 
@@ -774,8 +806,28 @@
        children)))
 
 
+(defn- app-styles [styles]
+  (fn [theme]
+    (merge {
+            :.stack {:display :grid :grid-gap (-> theme (.spacing 1))}
+            :.stack-0 {:display :grid}
+            :.stack-1 {:display :grid :grid-gap (-> theme (.spacing 1))}
+            :.stack-2 {:display :grid :grid-gap (-> theme (.spacing 2))}
+            :.stack-3 {:display :grid :grid-gap (-> theme (.spacing 3))}
+            :.stack-4 {:display :grid :grid-gap (-> theme (.spacing 4))}
+            :.stack-5 {:display :grid :grid-gap (-> theme (.spacing 5))}
+            }
+           (styles theme))))
+
+(devcard
+ stack
+ (stack (tdiv-red) (tdiv-blue) (tdiv-green))
+ (stack-0 (tdiv-red) (tdiv-blue) (tdiv-green))
+ (stack-1 (tdiv-red) (tdiv-blue) (tdiv-green))
+ (stack-2 (tdiv-red) (tdiv-blue) (tdiv-green)))
+
 (defnc AppFrame-inner [{:keys [children styles pages]}]
-  (let [class (use-styles-class styles)]
+  (let [class (use-styles-class (app-styles styles))]
     ($ AuthCompletedGuard
        {:padding 4}
        ($ mui/CssBaseline)

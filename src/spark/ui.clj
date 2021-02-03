@@ -74,3 +74,15 @@
     `($ :div
         {:style ~style}
         ~@children)))
+
+
+(defn- div-class [class children]
+  `($ :div {:className ~class} ~@children))
+
+(defmacro stack [& children] (div-class "stack" children))
+(defmacro stack-0 [& children] (div-class "stack-0" children))
+(defmacro stack-1 [& children] (div-class "stack-1" children))
+(defmacro stack-2 [& children] (div-class "stack-2" children))
+(defmacro stack-3 [& children] (div-class "stack-3" children))
+(defmacro stack-4 [& children] (div-class "stack-4" children))
+(defmacro stack-5 [& children] (div-class "stack-5" children))
