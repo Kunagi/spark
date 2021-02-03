@@ -27,7 +27,12 @@
         lets []
 
         lets (if-let [syms (get opts :from-context)]
-               (into lets [ `{:keys [~@syms]} `(use-context-data)])
+               (let [lets (into lets [`~'context_ `(use-context-data)])]
+                 (reduce (fn [lets sym]
+                           (into lets
+                                 [`~sym `(or ~sym
+                                             (get ~'context_ ~(keyword sym)))]))
+                         lets syms))
                lets)
 
         body (if (seq lets)
