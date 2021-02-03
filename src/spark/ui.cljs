@@ -444,7 +444,9 @@
           {:style {:display :flex
                    :padding (when padding (-> theme (.spacing padding)))
                    :justify-content "space-around"}}
-          ($ mui/CircularProgress)))))
+          ($ mui/CircularProgress)
+          #_(when ^boolean goog.DEBUG
+            (data values))))))
 
 
 (defnc Stack [{:keys [children spacing]}]
