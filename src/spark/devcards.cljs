@@ -100,3 +100,6 @@
   {:path "/ui/devcards"
    :max-width false
    :content DevcardsPageContent})
+
+
+(reset! ui/ADDITIONAL_PAGES [devcards-page])
