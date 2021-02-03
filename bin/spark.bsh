@@ -14,7 +14,7 @@ function echo-usage {
     echo ""
     echo "where <command> is one of:"
     echo "    $(tput rev)dev$(tput sgr0), release, "
-    echo "    shadow-watch, firebase-emulators"
+    echo "    shadow-watch, firebase-emulators, build-docs,"
     echo "    clean, npm-install, collect-spa-resources"
     echo ""
 }
@@ -167,6 +167,21 @@ fi
 
 
 ###
+### doc
+###
+
+function build-docs {
+    echo-task "build-docs"
+    asciidoctor -b html5 dev-doc/main.adoc -o firebase/public/dev/doc.html
+}
+
+if [ $1 = "build-docs" ]
+then
+    build-docs
+    exit 0
+fi
+
+###
 ### release
 ###
 
@@ -217,6 +232,7 @@ then
     clean
     npm-install
     collect-spa-resources
+    build-docs
     release
     exit 0
 fi
