@@ -232,7 +232,9 @@
 
 (defn- conform-style [styles]
   (reduce (fn [styles [k v]]
-            (assoc styles k (conform-style-value v)))
+            (if (and (string? k) (str/starts-with? "&" k))
+              (assoc styles k (conform-style v))
+              (assoc styles k (conform-style-value v))))
           {} styles))
 
 (defn- conform-styles-selector [s]
@@ -253,7 +255,7 @@
   (when styles-f
     (let [theme (use-theme)
           styles-f-wrapper (fn [theme]
-                             {:root (conform-styles
+                             {:root (conform-style
                                      (if (fn? styles-f)
                                        (styles-f theme)
                                        styles-f))})
@@ -807,16 +809,17 @@
 
 (defn- app-styles [styles]
   (fn [theme]
-    (merge {
-            :.stack {:display :grid :grid-gap (-> theme (.spacing 1))}
-            :.stack-0 {:display :grid}
-            :.stack-1 {:display :grid :grid-gap (-> theme (.spacing 1))}
-            :.stack-2 {:display :grid :grid-gap (-> theme (.spacing 2))}
-            :.stack-3 {:display :grid :grid-gap (-> theme (.spacing 3))}
-            :.stack-4 {:display :grid :grid-gap (-> theme (.spacing 4))}
-            :.stack-5 {:display :grid :grid-gap (-> theme (.spacing 5))}
-            }
-           (styles theme))))
+    (conform-styles
+     (merge {
+             :.stack {:display :grid :grid-gap (-> theme (.spacing 1))}
+             :.stack-0 {:display :grid}
+             :.stack-1 {:display :grid :grid-gap (-> theme (.spacing 1))}
+             :.stack-2 {:display :grid :grid-gap (-> theme (.spacing 2))}
+             :.stack-3 {:display :grid :grid-gap (-> theme (.spacing 3))}
+             :.stack-4 {:display :grid :grid-gap (-> theme (.spacing 4))}
+             :.stack-5 {:display :grid :grid-gap (-> theme (.spacing 5))}
+             }
+            (styles theme)))))
 
 (devcard
  stack
