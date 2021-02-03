@@ -1,5 +1,5 @@
 (ns spark.ui
-  (:require-macros [spark.ui :refer [devcard]]
+  (:require-macros [spark.ui :refer [devcard div grid]]
                    [spark.react :refer [use-state use-effect defnc $ provider
                                         use-context create-context]]
                    [clojure.string :as str])
@@ -308,6 +308,20 @@
                }}
       (with-out-str (pprint data))))))
 
+
+(defn tdiv [color]
+  ($ :div
+     {:style {:background-color color
+              :min-width "64px"
+              :min-height "64px"}}))
+
+(defn tdiv-red [] (tdiv "red"))
+(defn tdiv-blue [] (tdiv "blue"))
+
+(devcard
+ grid
+ (grid [:auto :auto] (tdiv-red) (tdiv-blue))
+ (grid [:auto :auto] {:grid-gap 10} (tdiv-red) (tdiv-blue)))
 
 (defn icon [icon-name]
   (d/div
