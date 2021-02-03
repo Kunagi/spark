@@ -397,12 +397,12 @@
        (str greeting " " uid "!"))
      ($ TestComponent-2 {:greeting "hello"}))
 
- (do (def-ui TestComponent-3 [{:keys [uid greeting]}]
+ (do (def-ui TestComponent-3 [uid greeting]
        {:from-context [uid]}
        (str greeting " " uid "!"))
      (stack
       ($ TestComponent-3 {:greeting "hello"})
-      (data (macroexpand-1 '(def-ui TestComponent-3 [{:keys [uid greeting]}]
+      (data (macroexpand-1 '(def-ui TestComponent-3 [uid greeting]
                               {:from-context [uid]}
                               (str greeting " " uid "!")))))))
 
@@ -823,13 +823,22 @@
     data))
 
 
-(defnc PageWrapper [{:keys [page devtools-component children]}]
-  (let [spark-context (use-spark-context)
-        spark-context (assoc spark-context :spark/page page)
+(defnc PageWrapper [{:keys [spa page devtools-component children]}]
+  (let [context (use-spark-context)
+        params (use-params-2)
+
+        context (assoc context :spark/page page)
+        context (merge context params)
+
+        ;; TODO query parameters form request
+
+        update-context (-> spa :update-page-context)
+        context (u/safe-apply update-context [context])
         update-context (-> page :update-context)
-        spark-context (u/safe-apply update-context [spark-context])]
+        context (u/safe-apply update-context [context])
+        ]
     (provider
-     {:context SPARK_CONTEXT :value spark-context}
+     {:context SPARK_CONTEXT :value context}
      (provider ;; TODO deprecated, kill it
       {:context PAGE :value page}
       ($ :div
@@ -840,15 +849,18 @@
            ($ devtools-component)))))))
 
 
-(defnc PageSwitch [{:keys [pages devtools-component children]}]
-  (let [pages (concat @ADDITIONAL_PAGES pages)
+(defnc PageSwitch [{:keys [spa devtools-component children]}]
+  (let [pages (models/spa-pages spa )
+        pages (concat @ADDITIONAL_PAGES pages)
         ]
     ($ router/Switch
        (for [page pages]
          ($ router/Route
             {:key (-> page :path)
              :path (-> page :path)}
-            ($ PageWrapper {:page page :devtools-component devtools-component}
+            ($ PageWrapper {:spa spa
+                            :page page
+                            :devtools-component devtools-component}
                children))))))
 
 
@@ -891,23 +903,26 @@
  (stack-1 (tdiv-red) (tdiv-blue) (tdiv-green))
  (stack-2 (tdiv-red) (tdiv-blue) (tdiv-green)))
 
-(defnc AppFrame-inner [{:keys [children styles pages]}]
+(defnc AppFrame-inner [{:keys [children styles spa]}]
   (let [class (use-styles-class (app-styles styles))]
     ($ AuthCompletedGuard
        {:padding 4}
        ($ mui/CssBaseline)
        ($ router/BrowserRouter {}
-          ($ PageSwitch {:pages pages}
+          ($ PageSwitch {:spa spa}
              ($ :div
                 {:class class}
                 children)))))
   )
 
 (defnc AppFrame [{:keys [spa children theme styles]}]
+  (log ::render-AppFrame)
   (let [uid (use-uid)
         spark-context {:spark/spa spa
                        :spark/page :MISSING!
-                       :uid uid}]
+                       :uid uid}
+        update-app-context (-> spa :update-app-context)
+        spark-context (u/safe-apply update-app-context [spark-context])]
     ($ mui/ThemeProvider
        {:theme (-> theme clj->js
                    mui-styles/createMuiTheme
@@ -916,7 +931,8 @@
         {:context SPARK_CONTEXT
          :value spark-context}
         ($ AppFrame-inner {:styles styles
-                           :pages (models/spa-pages  spa )}
+                           :spa spa
+                           }
            children)))))
 
 ;;;

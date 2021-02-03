@@ -16,6 +16,11 @@
   (let [[docstring params body] (if (string? params)
                                   [params (first body) (rest body)]
                                   [nil params body])
+
+        params (if (-> params first map?)
+                 params
+                 [{:keys params}])
+
         opts? (map? (first body))
         opts (if opts?
                (first body)
@@ -41,7 +46,8 @@
                body)]
     `(defnc
        ~type
-       ~@(when docstring [docstring]) ~params
+       ~@(when docstring [docstring])
+       ~params
        ~@body)))
 
 
