@@ -227,7 +227,6 @@
     (vector? v)(->> v (map conform-style-value) (str/join " "))
     (string? v) v
     (keyword? v) (name v)
-    (number? v) (str v"px")
     :else v))
 
 
