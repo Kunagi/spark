@@ -812,16 +812,6 @@
 
 (defonce ADDITIONAL_PAGES (atom nil))
 
-(defn- page-context-data [page]
-  (let [data-resolver @DATA_RESOLVER
-        _ (when-not data-resolver
-            (throw (ex-info "DATA_RESOLVER not initialized"
-                            {})))
-        data (reduce (fn [m [k identifier]]
-                       (assoc m k (data-resolver identifier)))
-                     {} (-> page :data))]
-    data))
-
 
 (defnc PageWrapper [{:keys [spa page devtools-component children]}]
   (let [context (use-spark-context)
@@ -837,16 +827,19 @@
         update-context (-> page :update-context)
         context (u/safe-apply update-context [context])
         ]
-    (provider
-     {:context SPARK_CONTEXT :value context}
-     (provider ;; TODO deprecated, kill it
-      {:context PAGE :value page}
-      ($ :div
-         children
-         ($ ErrorDialog)
-         ($ FormDialogsContainer)
-         (when (and  ^boolean js/goog.DEBUG devtools-component)
-           ($ devtools-component)))))))
+    ($ ValuesLoadGuard
+       {:values (map #(get context %) (-> page :wait-for))
+        :padding 4}
+       (provider
+        {:context SPARK_CONTEXT :value context}
+        (provider ;; TODO deprecated, kill it
+         {:context PAGE :value page}
+         ($ :div
+            children
+            ($ ErrorDialog)
+            ($ FormDialogsContainer)
+            (when (and  ^boolean js/goog.DEBUG devtools-component)
+              ($ devtools-component))))))))
 
 
 (defnc PageSwitch [{:keys [spa devtools-component children]}]
