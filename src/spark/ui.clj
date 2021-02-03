@@ -12,7 +12,7 @@
 (defmacro use-effect [& body] `(r/use-effect ~@body))
 
 
-(defmacro def-cmp [type params & body]
+(defmacro def-ui [type params & body]
   (let [[docstring params body] (if (string? params)
                                   [params (first body) (rest body)]
                                   [nil params body])
@@ -40,7 +40,7 @@
        ~@body)))
 
 
-(defmacro devcard [sym & examples]
+(defmacro test-ui [sym & examples]
   (let [symbol-name (-> sym name )
         calling-namespace-name (name (ns-name *ns*))
         examples examples

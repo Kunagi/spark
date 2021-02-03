@@ -1,5 +1,5 @@
 (ns spark.ui
-  (:require-macros [spark.ui :refer [def-cmp devcard div grid
+  (:require-macros [spark.ui :refer [def-ui test-ui div grid
                                      stack stack-0 stack-1 stack-2
                                      stack-3 stack-4 stack-5]]
                    [spark.react :refer [use-state use-effect defnc $ provider
@@ -313,7 +313,7 @@
 
 
 ;;;
-;;; devcards
+;;; test-ui
 ;;;
 
 (def DEVCARDS (atom {}))
@@ -356,7 +356,7 @@
 (defn tdiv-green [] (tdiv "#2e7d32"))
 (defn tdiv-yellow [] (tdiv "#f9a825"))
 
-(devcard
+(test-ui
  grid
  (grid [:auto :auto] (tdiv-red) (tdiv-blue))
  (grid [:auto :auto] {:grid-gap 10} (tdiv-red) (tdiv-blue))
@@ -380,18 +380,18 @@
 ;;; def-cmp
 ;;;
 
-(devcard
- def-cmp
- (do (def-cmp TestComponent-1 []
+(test-ui
+ def-ui
+ (do (def-ui TestComponent-1 []
        "hello world")
      ($ TestComponent-1))
 
- (do (def-cmp TestComponent-2 [{:keys [uid greeting]}]
+ (do (def-ui TestComponent-2 [{:keys [uid greeting]}]
        {:from-context [uid]}
        (str greeting " " uid "!"))
      (stack
       ($ TestComponent-2 {:greeting "hello"})
-      (data (macroexpand-1 '(def-cmp TestComponent-2 [{:keys [uid greeting]}]
+      (data (macroexpand-1 '(def-ui TestComponent-2 [{:keys [uid greeting]}]
                               {:from-context [uid]}
                               (str greeting " " uid "!"))))
       )))
@@ -522,7 +522,7 @@
        (when cause
          ($ ErrorInfo {:error cause})))))
 
-(devcard
+(test-ui
  ErrorInfo
  ($ ErrorInfo {:error "Just Text"})
  ($ ErrorInfo {:error (ex-info "Clojure Exception with Data"
@@ -635,7 +635,7 @@
           :className classes}
          (models/command-label command)))))
 
-(devcard
+(test-ui
  CommandButton
  ($ CommandButton {:command {:label "default" :f (fn [_] [])}})
  ($ CommandButton {:command {:label "inconspicuous" :f (fn [_] [])
@@ -767,7 +767,7 @@
            (when title ($ CardOverline {:text title}))
            ($ Stack children)))))
 
-(devcard
+(test-ui
  SimpleCard
  ($ SimpleCard
     {:title "example title"}
@@ -854,7 +854,7 @@
              }
             (styles theme)))))
 
-(devcard
+(test-ui
  stack
  (stack (tdiv-red) (tdiv-blue) (tdiv-green))
  (stack-0 (tdiv-red) (tdiv-blue) (tdiv-green))

@@ -5,7 +5,7 @@
 
    [spark.logging :refer [log]]
     
-   [spark.ui :as ui :refer [defnc $ devcard]]
+   [spark.ui :as ui :refer [defnc $ test-ui]]
    ))
 
 
@@ -72,7 +72,7 @@
        {:id map-element-id
         :style {:height (or height "40vh")}})))
 
-(devcard
+(test-ui
  MapWithPosition
  ($ :div {:style {:width "200px"}}
     ($ MapWithPosition
@@ -125,7 +125,7 @@
               :autoComplete "address-level2"
               :autoFocus true})))))
 
-(devcard
+(test-ui
  PositionInput
  ($ PositionInput {:set-position js/alert}))
 
@@ -172,7 +172,7 @@
           :markers markers
           :position position}))))
 
-(devcard
+(test-ui
  Map
  ($ :div {:style {:width "300px"}}
     ($ Map
