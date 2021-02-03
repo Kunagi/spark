@@ -3,7 +3,7 @@
 
 function echo-error {
     echo ""
-    echo "The spark didn't light a fire."
+    echo "The spark didn't light the fire."
     echo ""
     echo "    $(tput setab 1)$(tput setaf 7) $1 $(tput sgr0)"
     echo ""
