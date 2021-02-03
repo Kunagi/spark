@@ -1,5 +1,5 @@
 (ns spark.ui
-  (:require-macros [spark.ui :refer [devcard div grid
+  (:require-macros [spark.ui :refer [def-cmp devcard div grid
                                      stack stack-0 stack-1 stack-2
                                      stack-3 stack-4 stack-5]]
                    [spark.react :refer [use-state use-effect defnc $ provider
@@ -296,10 +296,14 @@
     url))
 
 
+
+
+
 ;;;
 ;;; styles
 ;;;
 
+;; TODO deprecated
 (defn style-bg-img [url]
   {:background-image (str "url(" url ")")
    :background-repeat "no-repeat"
@@ -316,6 +320,7 @@
 
 (defn reg-devcard [devcard]
   (swap! DEVCARDS assoc (-> devcard :id) devcard))
+
 
 
 ;;;
@@ -369,6 +374,28 @@
 
 (defn unsplash [width id]
   (str "https://images.unsplash.com/photo-" id "?&w=" width))
+
+
+;;;
+;;; def-cmp
+;;;
+
+(devcard
+ def-cmp
+ (do (def-cmp TestComponent-1 []
+       "hello world")
+     ($ TestComponent-1))
+
+ (do (def-cmp TestComponent-2 [{:keys [uid greeting]}]
+       {:from-context [uid]}
+       (str greeting " " uid "!"))
+     (stack
+      ($ TestComponent-2 {:greeting "hello"})
+      (data (macroexpand-1 '(def-cmp TestComponent-2 [{:keys [uid greeting]}]
+                              {:from-context [uid]}
+                              (str greeting " " uid "!"))))
+      )))
+
 
 ;;;
 ;;; common components

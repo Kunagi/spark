@@ -12,6 +12,33 @@
 (defmacro use-effect [& body] `(r/use-effect ~@body))
 
 
+(defmacro def-cmp [type params & body]
+  (let [[docstring params body] (if (string? params)
+                                  [params (first body) (rest body)]
+                                  [nil params body])
+        opts? (map? (first body))
+        opts (if opts?
+               (first body)
+               {})
+        body (if opts?
+               (rest body)
+               body)
+
+        lets []
+
+        lets (if-let [syms (get opts :from-context)]
+               (into lets [ `{:keys [~@syms]} `(use-context-data)])
+               lets)
+
+        body (if (seq lets)
+               `((let [~@lets]
+                   ~@body))
+               body)]
+    `(defnc
+       ~type
+       ~@(when docstring [docstring]) ~params
+       ~@body)))
+
 
 (defmacro devcard [sym & examples]
   (let [symbol-name (-> sym name )
