@@ -7,7 +7,7 @@
 
 
 ;;;
-;;; col
+;;; cols
 ;;;
 
 (defn col-section [col]
@@ -33,14 +33,34 @@
        (map col-section)
        (str/join "\n")))
 
+;;;
+;;; commands
+;;;
+
+
+(defn command-section [cmd]
+  (str (adoc/section "=" (-> cmd :model/symbol))
+       (adoc/section (-> cmd :dev-doc))
+       (adoc/table "cols=2*"
+                   [["Symbol" (adoc/monospace (-> cmd :model/id))]
+                    ["Label" (-> cmd :label)]])))
+
+(defn commands-sections []
+  (->> (models/models-by-constructor models/Command)
+       (sort-by :model/symbol)
+       (map command-section)
+       (str/join "\n")))
 
 ;;;
 ;;; Shadow-CLJS hook
 ;;;
 
+(defn- send-doc [type adoc]
+  (browser/send-text-to-url-via-img
+   (str "http://localhost:8000/write-" type "-doc?")
+   adoc))
 
 (defn ^:dev/after-load after-load []
-  (browser/send-text-to-url-via-img
-   "http://localhost:8000/write-cols-doc?"
-   (cols-sections))
+  (send-doc "cols" (cols-sections))
+  (send-doc "commands" (commands-sections))
   )
