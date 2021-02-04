@@ -1,7 +1,47 @@
 (ns spark.devcards
   (:require
+   [spark.core :as spark]
    [spark.ui :as ui :refer [defnc $]])
   )
+
+(defn expect [expected provided]
+  (if (= expected provided)
+    provided
+    (throw (ex-info "result does'n meet expectations"
+                    {:expected expected
+                     :provided provided}))))
+
+(defn- colored-data [color data])
+
+(defnc FnResult [{:keys [example]}]
+  (ui/div
+   {:border "1px dotted #ddd"
+    :padding "8px"
+    :max-width "600px"
+    :margin "0 auto"
+    :overflow "auto"}
+   (try
+     (let [result ((-> example :f) expect)]
+       (ui/colored-data-block "#333" "#6f6" result))
+     (catch :default error
+       (let [ex-data (ex-data error)]
+         (if (-> ex-data :expected)
+           (ui/stack
+            "result:"
+            (ui/colored-data-block "#c00" "#fff" (-> ex-data :provided))
+            "doesn't meet expectations:"
+            (ui/colored-data-block "#333" "#6f6" (-> ex-data :expected)))
+           ($ ui/ErrorInfo {:error error})))))))
+
+
+(defnc UiResult [{:keys [example]}]
+  (ui/div
+   {:border "1px dotted #ddd"
+    :padding "8px"
+    :max-width "600px"
+    :margin "0 auto"
+    :overflow "auto"}
+   ((-> example :f))))
 
 
 (defnc Example [{:keys [devcard example label]}]
@@ -24,13 +64,12 @@
        {:display "flex"
         :place-content "center"
         :place-items "center"}
-       (ui/div
-        {:border "1px dotted #ddd"
-         :padding "8px"
-         :max-width "600px"
-         :margin "0 auto"
-         :overflow "auto"}
-        ((-> example :f)))))))
+       (case (-> devcard :type)
+         :ui ($ UiResult {:example example})
+         :fn ($ FnResult {:example example})
+         (ui/stack
+          "Unsupported Devcard Type"
+          (ui/data devcard)))))))
 
 
 (defnc Devcard [{:keys [devcard]}]
@@ -47,7 +86,7 @@
 (def use-selected-devcard-id (ui/atom-hook SELECTED_DEVCARD_ID))
 
 (defnc Selector []
-  (let [devcards (->> ui/DEVCARDS deref vals (group-by :namespace))
+  (let [devcards (->> spark/TESTS deref vals (group-by :namespace))
         groups (-> devcards keys sort)
         selected-devcard-id (use-selected-devcard-id)]
     (ui/div
@@ -78,7 +117,7 @@
 
 (defnc DevcardsPageContent []
   (let [selected-devcard-id (use-selected-devcard-id)
-        selected-devcard (-> ui/DEVCARDS deref (get selected-devcard-id))]
+        selected-devcard (-> spark/TESTS deref (get selected-devcard-id))]
     (ui/grid ["170px" :auto] {:grid-gap 8}
 
              ($ Selector)

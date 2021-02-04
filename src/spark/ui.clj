@@ -65,6 +65,7 @@
                        examples)]
     `(reg-devcard
       (assoc ~devcard
+             :type :ui
              :examples ~examples))))
 
 

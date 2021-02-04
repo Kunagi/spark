@@ -27,6 +27,7 @@
    [spark.logging :refer [log]]
    [spark.utils :as u]
    [spark.react :as spark-react]
+   [spark.core :as spark]
    [spark.models :as models]
    [spark.firebase-storage :as storage]
    [spark.runtime :as runtime]
@@ -167,10 +168,13 @@
   "React hook for a collection."
   [path]
   (log ::use-col
-       :path path)
-  (let [path (if (map? path)
+       :path path
+       :doc? (spark/opts path))
+  (let [path (cond
+               (spark/doc? path) (spark/doc-col-path path)
+               (map? path)
                (models/col-path path)
-               path)
+               :else path)
         DATA (firestore-hooks/col-sub path)
         [docs set-docs] (use-state @DATA)
         watch-ref (random-uuid)]
@@ -318,20 +322,30 @@
    :background-size "contain"})
 
 
-;;;
-;;; test-ui
-;;;
 
-(def DEVCARDS (atom {}))
 
 (defn reg-devcard [devcard]
-  (swap! DEVCARDS assoc (-> devcard :id) devcard))
+  (spark/reg-test devcard))
 
 
 
 ;;;
 ;;; common ui functions
 ;;;
+
+(defn colored-data-block [background-color color data]
+  (d/div
+   {:style {:white-space "pre-wrap"
+            :font-family :monospace
+            :overflow "auto"
+            :width "100%"
+            :background-color background-color
+            :color color
+            :padding "1rem"
+            :border-radius "4px"
+            :margin "1px"
+            }}
+   (with-out-str (pprint data))))
 
 (defn data [& datas]
   (d/div
@@ -342,13 +356,11 @@
                :font-family :monospace
                :overflow "auto"
                :width "100%"
-               :background-color "#333"
                :color "#6f6"
                :padding "1rem"
                :border-radius "4px"
-               :margin "1px"
-               }}
-      (with-out-str (pprint data))))))
+               :margin "1px"}}
+      (colored-data-block "#333" "#6f6" data)))))
 
 
 (defn tdiv [color]
