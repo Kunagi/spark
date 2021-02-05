@@ -8,13 +8,7 @@
 (defonce TESTS (atom {}))
 
 (defn reg-test [test]
-  ;; TODO disable for production
   (swap! TESTS assoc (-> test :id) test))
-
-;;;
-;;; test helpers
-;;;
-
 
 ;;;
 ;;;

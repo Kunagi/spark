@@ -8,22 +8,24 @@
 ;;   nil)
 
 
+;; TODO disable for production
 (defmacro defn-test [[sym & refers] & examples]
-  (let [symbol-name (-> sym name )
-        calling-namespace-name (name (ns-name *ns*))
-        examples examples
-        devcard {:id (str calling-namespace-name "/" symbol-name)
-                 :namespace calling-namespace-name
-                 :symbol symbol-name}
-        examples (mapv (fn [example]
-                         {:code (with-out-str (pprint example))
-                          :f `(fn [~'expect]
-                                ~example)})
-                       examples)]
-    `(reg-test
-      (assoc ~devcard
-             :type :fn
-             :examples ~examples))))
+  (when (= :dev (:shadow.build/mode &env))
+    (let [symbol-name (-> sym name )
+          calling-namespace-name (name (ns-name *ns*))
+          examples examples
+          devcard {:id (str calling-namespace-name "/" symbol-name)
+                   :namespace calling-namespace-name
+                   :symbol symbol-name}
+          examples (mapv (fn [example]
+                           {:code (with-out-str (pprint example))
+                            :f `(fn [~'expect]
+                                  ~example)})
+                         examples)]
+      `(reg-test
+        (assoc ~devcard
+               :type :fn
+               :examples ~examples)))))
 
 
 (defmacro def-doc [sym [opts & fields]]
