@@ -9,7 +9,7 @@
 
 
 ;; TODO disable for production
-(defmacro defn-test [[sym & refers] & examples]
+(defmacro def-test [[sym & refers] & examples]
   (when (= :dev (:shadow.build/mode &env))
     (let [symbol-name (-> sym name )
           calling-namespace-name (name (ns-name *ns*))

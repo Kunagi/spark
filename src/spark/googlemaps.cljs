@@ -5,7 +5,7 @@
 
    [spark.logging :refer [log]]
     
-   [spark.ui :as ui :refer [defnc $ test-ui]]
+   [spark.ui :as ui :refer [defnc $ def-ui-test]]
    ))
 
 
@@ -72,18 +72,17 @@
        {:id map-element-id
         :style {:height (or height "40vh")}})))
 
-(test-ui
- MapWithPosition
- ($ :div {:style {:width "200px"}}
-    ($ MapWithPosition
-       {:id "test-MapWithPosition"
-        :height "200px"
-        :position {:lat 52.1875305
-                   :lng 9.0788149}
-        :markers [{:title "Bodega"
-                   :label "Bodega"
-                   :position {:lat 52.1875305
-                              :lng 9.0788149}}]})))
+(def-ui-test [MapWithPosition]
+  ($ :div {:style {:width "200px"}}
+     ($ MapWithPosition
+        {:id "test-MapWithPosition"
+         :height "200px"
+         :position {:lat 52.1875305
+                    :lng 9.0788149}
+         :markers [{:title "Bodega"
+                    :label "Bodega"
+                    :position {:lat 52.1875305
+                               :lng 9.0788149}}]})))
 
 
 (defn geocode-address> [address]
@@ -125,9 +124,8 @@
               :autoComplete "address-level2"
               :autoFocus true})))))
 
-(test-ui
- PositionInput
- ($ PositionInput {:set-position js/alert}))
+(def-ui-test [PositionInput]
+  ($ PositionInput {:set-position js/alert}))
 
 
 (defnc Map
@@ -172,21 +170,20 @@
           :markers markers
           :position position}))))
 
-(test-ui
- Map
- ($ :div {:style {:width "300px"}}
-    ($ Map
-       {:id "test-Map1"
-        :height "200px"
-        :markers [{:title "A Title" :label "A Label"
-                   :position {:lat 52.1875305 :lng 9.0788149}}]}))
- ($ :div {:style {:width "300px"}}
-    ($ Map
-       {:id "test-Map2"
-        :height "200px"
-        :force-position-input? true
-        :markers [{:title "A Title" :label "A Label"
-                   :position {:lat 52.1875305 :lng 9.0788149}}]})))
+(def-ui-test [Map]
+  ($ :div {:style {:width "300px"}}
+     ($ Map
+        {:id "test-Map1"
+         :height "200px"
+         :markers [{:title "A Title" :label "A Label"
+                    :position {:lat 52.1875305 :lng 9.0788149}}]}))
+  ($ :div {:style {:width "300px"}}
+     ($ Map
+        {:id "test-Map2"
+         :height "200px"
+         :force-position-input? true
+         :markers [{:title "A Title" :label "A Label"
+                    :position {:lat 52.1875305 :lng 9.0788149}}]})))
 
 
 (defn compute-distance-text> [origin destination]

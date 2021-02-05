@@ -1,5 +1,5 @@
 (ns spark.core
-  (:require-macros [spark.core :refer [defn-test]]))
+  (:require-macros [spark.core :refer [def-test]]))
 
 ;;;
 ;;; test registry
@@ -17,7 +17,7 @@
 (defn opts [map-schema]
   (-> map-schema second))
 
-(defn-test [opts expect]
+(def-test [opts expect]
   (expect {:opt "value"}
           (opts [:map {:opt "value"}])))
 
@@ -29,7 +29,7 @@
           (and (map? opts)
                (opts (keyword (name type) "id")))))))
 
-(defn-test [type-of? expect]
+(def-test [type-of? expect]
   (expect true
           (type-of? :doc [:map {:doc/id "some.Doc"}]))
   (type-of? :doc [:map {:something :else}]))

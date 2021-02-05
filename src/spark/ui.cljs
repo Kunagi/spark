@@ -1,5 +1,5 @@
 (ns spark.ui
-  (:require-macros [spark.ui :refer [def-ui test-ui div grid
+  (:require-macros [spark.ui :refer [def-ui def-ui-test div grid
                                      stack stack-0 stack-1 stack-2
                                      stack-3 stack-4 stack-5]]
                    [spark.react :refer [use-state use-effect defnc $ provider
@@ -374,8 +374,7 @@
 (defn tdiv-green [] (tdiv "#2e7d32"))
 (defn tdiv-yellow [] (tdiv "#f9a825"))
 
-(test-ui
- grid
+(def-ui-test [grid]
  (grid [:auto :auto] (tdiv-red) (tdiv-blue))
  (grid [:auto :auto] {:grid-gap 10} (tdiv-red) (tdiv-blue))
  (grid [:auto "200px" :auto] {:grid-gap 10} (tdiv-red) (tdiv-yellow) (tdiv-blue))
@@ -398,25 +397,24 @@
 ;;; def-cmp
 ;;;
 
-(test-ui
- def-ui
- (do (def-ui TestComponent-1 []
-       "hello world")
-     ($ TestComponent-1))
+(def-ui-test [def-ui]
+  (do (def-ui TestComponent-1 []
+        "hello world")
+      ($ TestComponent-1))
 
- (do (def-ui TestComponent-2 [{:keys [uid greeting]}]
-       {:from-context [uid]}
-       (str greeting " " uid "!"))
-     ($ TestComponent-2 {:greeting "hello"}))
+  (do (def-ui TestComponent-2 [{:keys [uid greeting]}]
+        {:from-context [uid]}
+        (str greeting " " uid "!"))
+      ($ TestComponent-2 {:greeting "hello"}))
 
- (do (def-ui TestComponent-3 [uid greeting]
-       {:from-context [uid]}
-       (str greeting " " uid "!"))
-     (stack
-      ($ TestComponent-3 {:greeting "hello"})
-      (data (macroexpand-1 '(def-ui TestComponent-3 [uid greeting]
-                              {:from-context [uid]}
-                              (str greeting " " uid "!")))))))
+  (do (def-ui TestComponent-3 [uid greeting]
+        {:from-context [uid]}
+        (str greeting " " uid "!"))
+      (stack
+       ($ TestComponent-3 {:greeting "hello"})
+       (data (macroexpand-1 '(def-ui TestComponent-3 [uid greeting]
+                               {:from-context [uid]}
+                               (str greeting " " uid "!")))))))
 
 ;;;
 ;;; common components
@@ -545,17 +543,15 @@
        (when cause
          ($ ErrorInfo {:error cause})))))
 
-(test-ui
- ErrorInfo
- ($ ErrorInfo {:error "Just Text"})
- ($ ErrorInfo {:error (ex-info "Clojure Exception with Data"
-                               {:with "data"
-                                :and :info})})
- ($ ErrorInfo {:error (ex-info "Clojure Exception with Cause"
-                               {}
-                               (ex-info "Root Cause" {}))})
- ($ ErrorInfo {:error (js/Error. "JavaScript Error")})
- )
+(def-ui-test [ErrorInfo]
+  ($ ErrorInfo {:error "Just Text"})
+  ($ ErrorInfo {:error (ex-info "Clojure Exception with Data"
+                                {:with "data"
+                                 :and :info})})
+  ($ ErrorInfo {:error (ex-info "Clojure Exception with Cause"
+                                {}
+                                (ex-info "Root Cause" {}))})
+  ($ ErrorInfo {:error (js/Error. "JavaScript Error")}))
 
 (defnc ErrorDialog []
   (let [error (use-error)]
@@ -658,18 +654,17 @@
           :className classes}
          (models/command-label command)))))
 
-(test-ui
- CommandButton
- ($ CommandButton {:command {:label "default" :f (fn [_] [])}})
- ($ CommandButton {:command {:label "inconspicuous" :f (fn [_] [])
-                             :inconspicuous? true}})
- ($ CommandButton {:command {:label "with icon" :f (fn [_] [])
-                             :icon "thumb_up"}})
- ($ CommandButton {:command {:label "only icon" :f (fn [_] [])
-                             :icon "thumb_up"}
-                   :as-icon? true})
- ($ CommandButton {:command {:label "color: secondary" :f (fn [_] [])}
-                   :color "secondary"}))
+(def-ui-test [CommandButton]
+  ($ CommandButton {:command {:label "default" :f (fn [_] [])}})
+  ($ CommandButton {:command {:label "inconspicuous" :f (fn [_] [])
+                              :inconspicuous? true}})
+  ($ CommandButton {:command {:label "with icon" :f (fn [_] [])
+                              :icon "thumb_up"}})
+  ($ CommandButton {:command {:label "only icon" :f (fn [_] [])
+                              :icon "thumb_up"}
+                    :as-icon? true})
+  ($ CommandButton {:command {:label "color: secondary" :f (fn [_] [])}
+                    :color "secondary"}))
 
 
 (defnc CommandCardArea [{:keys [command children context then]}]
@@ -790,11 +785,10 @@
            (when title ($ CardOverline {:text title}))
            ($ Stack children)))))
 
-(test-ui
- SimpleCard
- ($ SimpleCard
-    {:title "example title"}
-    "Example content."))
+(def-ui-test [SimpleCard]
+  ($ SimpleCard
+     {:title "example title"}
+     "Example content."))
 
 (defnc CardRow [{:keys [children]}]
   (d/div
@@ -915,12 +909,11 @@
              }
             (styles theme)))))
 
-(test-ui
- stack
- (stack (tdiv-red) (tdiv-blue) (tdiv-green))
- (stack-0 (tdiv-red) (tdiv-blue) (tdiv-green))
- (stack-1 (tdiv-red) (tdiv-blue) (tdiv-green))
- (stack-2 (tdiv-red) (tdiv-blue) (tdiv-green)))
+(def-ui-test [stack]
+  (stack (tdiv-red) (tdiv-blue) (tdiv-green))
+  (stack-0 (tdiv-red) (tdiv-blue) (tdiv-green))
+  (stack-1 (tdiv-red) (tdiv-blue) (tdiv-green))
+  (stack-2 (tdiv-red) (tdiv-blue) (tdiv-green)))
 
 (defnc AppFrame-inner [{:keys [children styles spa]}]
   (let [class (use-styles-class (app-styles styles))]

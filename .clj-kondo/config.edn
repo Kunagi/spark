@@ -2,7 +2,7 @@
            spark.react/defnc      clojure.core/defn
            helix.core/defnc       clojure.core/defn
 
-           spark.core/defn-test   clojure.core/fn
-           spark.ui/def-ui        clojure.core/defn
+           spark.core/def-test    clojure.core/fn
+           spark.ui/def-ui-test   clojure.core/fn
            spark.models/def-model clojure.core/def
            }}

@@ -51,7 +51,7 @@
        ~@body)))
 
 
-(defmacro test-ui [sym & examples]
+(defmacro def-ui-test [[sym & requires] & examples]
   (when (= :dev (:shadow.build/mode &env))
     (let [symbol-name (-> sym name )
           calling-namespace-name (name (ns-name *ns*))
