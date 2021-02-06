@@ -1,7 +1,10 @@
 (ns spark.utils
   (:require
    [clojure.spec.alpha :as s]
-   [cljs.pprint :refer [pprint]]))
+   [cljs.pprint :refer [pprint]]
+
+   [malli.core :as malli]
+   [malli.error :as malli-error]))
 
 
 ;;; maps
@@ -142,3 +145,31 @@
 
 (defn log-deprecated [info]
   (js/console.error "DEPRECATED" (js/Error info)))
+
+
+;;; malli
+
+
+(defn malli-explain->user-message [explain schema]
+  (str "Value does not match schema: "
+       (try
+         (malli-error/humanize explain)
+         (catch :default ex
+           (throw (ex-info "Malli schema error humanization failed."
+                           {:schema schema
+                            :explain explain}
+                           ex))))))
+
+(defn malli-explain [schema value]
+  (try
+    (malli/explain schema value)
+    (catch :default ex
+      (throw (ex-info "Invalid malli schema"
+                      {:malli/schema schema}
+                      ex)))))
+
+(defn assert-malli [schema value]
+  (when-let [explain (malli-explain schema value)]
+    (throw (ex-info (malli-explain->user-message explain schema)
+                    {:malli/explain explain})))
+  value)
