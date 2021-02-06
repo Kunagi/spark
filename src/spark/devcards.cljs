@@ -85,8 +85,10 @@
 
 (def use-selected-devcard-id (ui/atom-hook SELECTED_DEVCARD_ID))
 
+(def use-devcards (ui/atom-hook spark/TESTS))
+
 (defnc Selector []
-  (let [devcards (->> spark/TESTS deref vals (group-by :namespace))
+  (let [devcards (->> (use-devcards) vals (group-by :namespace))
         groups (-> devcards keys sort)
         selected-devcard-id (use-selected-devcard-id)]
     (ui/div
@@ -117,7 +119,7 @@
 
 (defnc DevcardsPageContent []
   (let [selected-devcard-id (use-selected-devcard-id)
-        selected-devcard (-> spark/TESTS deref (get selected-devcard-id))]
+        selected-devcard (-> (use-devcards) (get selected-devcard-id))]
     (ui/grid ["170px" :auto] {:grid-gap 8}
 
              ($ Selector)
