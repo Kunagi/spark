@@ -11,13 +11,19 @@
 
 
 (defn create-doc> [Col values]
-  (let [id (or (-> values :id)
-               ((models/col-id-generator Col) {:values values}))
+  (let [doc-schema? (spark/doc-schema? Col)
+        id (or (-> values :id)
+               ((if doc-schema?
+                  (spark/doc-schema-id-generator Col)
+                  (models/col-id-generator Col))
+                {:values values}))
         values (assoc values
                       :id id
                       :ts-created [:db/timestamp]
                       :ts-updated [:db/timestamp])
-        path [(models/col-path Col) id]]
+        path [(if doc-schema?
+                (spark/doc-schema-col-path Col)
+                (models/col-path Col)) id]]
     (firestore/create-doc> path values)))
 
 

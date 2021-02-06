@@ -529,7 +529,7 @@
           {:style {:font-size "120%"
                    :font-weight 900
                    :color (-> theme .-palette .-primary .-main)}}
-          message)
+          (str message))
        (when (seq dat)
          ($ :div
             {:style {:max-height "200px"

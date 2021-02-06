@@ -1,8 +1,7 @@
 (ns spark.runtime
   (:require
-   [malli.core :as m]
-   [malli.error :as me]
    [spark.logging :refer [log]]
+   [spark.utils :as u]
    [spark.models :as models]))
 
 
@@ -19,9 +18,9 @@
 
 
 (defn validate-command [command]
-  (when-let [explain (m/explain $Command command)]
+  (when-let [explain (u/malli-explain $Command command)]
     (throw (ex-info (str  "Invalid command: "
-                          (me/humanize explain))
+                          (u/malli-explain->user-message explain $Command))
                     {:command command
                      :explain explain}))))
 
@@ -38,9 +37,11 @@
 
 (defn validate-command-context [command context]
   (when-let [args (-> command :context-args)]
-    (when-let [explain (m/explain (context-args->malli args) context)]
-      (throw (ex-info (str  "Invalid context: "
-                            (me/humanize explain))
+    (log ::validate-command-context
+         :args args)
+    (when-let [explain (u/malli-explain (context-args->malli args) context)]
+      (throw (ex-info (str  "Invalid command context: "
+                            (u/malli-explain->user-message explain (context-args->malli args)))
                       {:command command
                        :context context
                        :explain explain}))))
@@ -52,9 +53,9 @@
           (throw (ex-info (str  "Missing `" k "` in context.")
                           {:command command
                            :context-key k})))
-        (when-let [explain (m/explain schema v)]
+        (when-let [explain (u/malli-explain schema v)]
           (throw (ex-info (str  "Invalid `" k "` in context: "
-                                (me/humanize explain))
+                                (u/malli-explain->user-message explain schema))
                           {:command command
                            :context-key k
                            :context-value v
@@ -62,9 +63,9 @@
 
 
 (defn validate-effects [command effects]
-  (when-let [explain (m/explain $Effects effects)]
+  (when-let [explain (u/malli-explain $Effects effects)]
     (throw (ex-info (str  "Invalid command effects: "
-                          (me/humanize explain))
+                          (u/malli-explain->user-message explain $Effects))
                     {:command command
                      :effects effects
                      :explain explain}))))
