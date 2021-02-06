@@ -40,7 +40,7 @@
         [child-id child-values] (if child-id
                                   [child-id child-values]
                                   (let [id (str (random-uuid))]
-                                    [id (assoc child-id :id id)]))
+                                    [id (assoc child-values :id id)]))
         path (-> inner-path (conj child-id) inner-path-as-string)
         values {path child-values}]
     (update-doc> doc values)))
