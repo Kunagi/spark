@@ -72,14 +72,14 @@
 (defn subdoc-schema? [thing]
   (schema-type-of? :subdoc-schema thing))
 
-;; (defn subdoc-schema-id-generator [Doc]
-;;   (or (-> Doc schema-opts :spark/id-generator)
-;;       (fn [_context] (-> (random-uuid) str))))
+(defn subdoc-schema-id-generator [Doc]
+  (or (-> Doc schema-opts :spark/id-generator)
+      (fn [_context] (-> (random-uuid) str))))
 
-;; (defn new-subdoc-id [Subdoc context]
-;;   (-> Subdoc
-;;       subdoc-schema-id-generator
-;;       (apply context)))
+(defn new-subdoc-id [Subdoc context]
+  (-> Subdoc
+      subdoc-schema-id-generator
+      (apply context)))
 
 ;;;
 ;;;
