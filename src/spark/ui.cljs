@@ -151,7 +151,11 @@
 (defn use-doc
   "React hook for a document."
   ([Col doc-id]
-   (use-doc (when doc-id [(models/col-path Col) doc-id])))
+   (use-doc (when doc-id
+              [(if (spark/doc-schema? Col)
+                 (spark/doc-schema-col-path Col)
+                 (models/col-path Col))
+               doc-id])))
   ([path]
    (let [DATA (firestore-hooks/doc-sub path)
          [doc set-doc] (use-state @DATA)
@@ -1036,3 +1040,5 @@
                 :path picture-ref
                 :height "200px"}))))))
 
+
+;;; forms

@@ -10,7 +10,8 @@
 (s/def ::submit fn?)
 (s/def ::field (s/or :id (s/keys :req-un [::id])
                      :attr (s/keys :req [:attr/key])
-                     :field vector?))
+                     :field vector?
+                     :nil nil?))
 (s/def ::fields (s/coll-of ::field
                            :min-count 1))
 (s/def ::form (s/keys :req-un [::fields ::submit]))
@@ -63,9 +64,11 @@
   (log ::initialize
        :form form)
   (let [form (assoc form :fields (map-indexed  (partial initialize-field form)
-                                          (-> form :fields)))]
-    (log ::initialized
-         :form form)
+                                               (->> form
+                                                    :fields
+                                                    (remove nil?))))]
+    ;; (log ::initialized
+    ;;      :form form)
     (-> form
         (assoc :values
                (reduce (fn [values field]
@@ -126,12 +129,14 @@
 
 
 (defn adopt-value [value form field-id]
-  (let [value (if (string? value) (str/trim value) value)]
+  (let [field-type (field-type form field-id)
+        value (if (string? value) (str/trim value) value)]
     (if (or (nil? value)
             (= "" value))
       nil
-      (case (field-type form field-id)
+      (case field-type
         "number" (js/parseInt value)
+        "checkboxes" (merge (values form) value)
         value))))
 
 
