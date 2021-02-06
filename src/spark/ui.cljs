@@ -106,10 +106,6 @@
 ;;;
 
 
-(def SPARK_CONTEXT (create-context {:spark/spa :MISSING!
-                                    :spark/page :MISSING!}))
-
-(defn use-spark-context [] (use-context SPARK_CONTEXT))
 
 
 (def DATA_RESOLVER (atom nil))
@@ -128,6 +124,7 @@
     (assoc page :data data)))
 
 
+;;; TODO deprecated. replacement: use-spark-context
 (defn use-context-data []
   (let [page (use-page)
         params (use-params)
@@ -136,6 +133,15 @@
                     (-> page :data))
         data (assoc data :uid uid)]
     data))
+
+
+(def SPARK_CONTEXT (create-context {:spark/spa :MISSING!
+                                    :spark/page :MISSING!}))
+
+(defn use-spark-context []
+  (merge
+   (use-context-data)
+   (use-context SPARK_CONTEXT)))
 
 
 ;;;
@@ -214,8 +220,7 @@
   ([ColSubset]
    (use-col-subset ColSubset {}))
   ([ColSubset args]
-   (let [context (merge (use-context-data)
-                        args)]
+   (let [context (merge (use-spark-context) args)]
      (if (models/col-subset-is-union? ColSubset)
        (use-cols-union (models/col-subset-union-paths ColSubset context))
        (use-col (models/col-subset-path ColSubset context))))))
@@ -606,7 +611,7 @@
 
 (defn- new-command-on-click [command context then]
   (runtime/validate-command command)
-  (let [ui-context (use-context-data)
+  (let [ui-context (use-spark-context)
         form (-> command :form)]
     (if-not form
       #(-> (runtime/execute-command> command (merge ui-context context))
@@ -701,7 +706,7 @@
   (when command
     (log ::Button.DEPRECATED.with-command
          {:command command}))
-  (let [context (merge (use-context-data)
+  (let [context (merge (use-spark-context)
                        context)
         command (u/trampoline-if command)
         command (when command (-> command upgrade-legacy-command complete-command ))
@@ -748,7 +753,7 @@
 
 (defnc IconButton [{:keys [icon onClick color size command theme className
                            then context]}]
-  (let [context (merge (use-context-data)
+  (let [context (merge (use-spark-context)
                        context)
         command (u/trampoline-if command)
         command (when command (-> command upgrade-legacy-command complete-command ))
