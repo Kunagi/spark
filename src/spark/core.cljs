@@ -1,5 +1,7 @@
 (ns spark.core
-  (:require-macros [spark.core :refer [def-test]]))
+  (:require-macros [spark.core :refer [def-test]])
+  (:require
+   [spark.firestore :as firestore]))
 
 ;;;
 ;;; test registry
@@ -14,32 +16,68 @@
 ;;;
 ;;;
 
-(defn opts [map-schema]
+(defn schema-opts [map-schema]
   (-> map-schema second))
 
-(def-test [opts expect]
+(def-test [schema-opts expect]
   (expect {:opt "value"}
-          (opts [:map {:opt "value"}])))
+          (schema-opts [:map {:opt "value"}])))
 
 
-(defn type-of? [type thing]
+(defn schema-type-of? [type thing]
   (boolean
    (and (vector? thing)
-        (when-let [opts (opts thing)]
+        (when-let [opts (schema-opts thing)]
           (and (map? opts)
-               (opts (keyword (name type) "id")))))))
+               (get opts (keyword (name type) "id")))))))
 
-(def-test [type-of? expect]
+(def-test [schema-type-of? expect]
   (expect true
-          (type-of? :doc [:map {:doc/id "some.Doc"}]))
-  (type-of? :doc [:map {:something :else}]))
+          (schema-type-of? :doc-schema [:map {:doc-schema/id "some.Doc"}]))
+  (schema-type-of? :doc-schema [:map {:something :else}]))
+
 
 ;;;
-;;; doc
+;;; Doc
 ;;;
 
-(defn doc? [thing]
-  (type-of? :doc thing))
+(defn doc-schema? [thing]
+  (schema-type-of? :doc-schema thing))
 
-(defn doc-col-path [doc]
-  (-> doc opts :firestore/collection))
+(defn doc-schema-col-path [Doc]
+  (-> Doc schema-opts :firestore/collection))
+
+(defn doc-schema-id-generator [Doc]
+  (or (-> Doc schema-opts :spark/id-generator)
+      (fn [_context] (-> (random-uuid) str))))
+
+(defn new-doc-id [Doc context]
+  (-> Doc
+      doc-schema-id-generator
+      (apply context)))
+
+(defn new-doc [Doc values]
+  (let [id (or (-> values :id) (new-doc-id Doc {:values values}))]
+    (assoc values
+           :firestore/id id
+           :firestore/path (str (doc-schema-col-path Doc) "/" id)
+           :id id
+           :ts-created [:db/timestamp]
+           :ts-updated [:db/timestamp])))
+
+;;;
+;;; Subdoc
+;;;
+
+(defn subdoc-schema? [thing]
+  (schema-type-of? :subdoc-schema thing))
+
+(defn new-subdoc-id []
+  (-> (random-uuid) str))
+;;;
+;;;
+;;;
+
+(defn save-doc> [doc]
+  (firestore/save-doc> doc))
+

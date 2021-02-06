@@ -168,12 +168,15 @@
   "React hook for a collection."
   [path]
   (log ::use-col
-       :path path
-       :doc? (spark/opts path))
+       :path path)
   (let [path (cond
-               (spark/doc? path) (spark/doc-col-path path)
                (map? path)
                (models/col-path path)
+
+               (and (vector? path) (spark/doc-schema? (first path)))
+               (into
+                [(spark/doc-schema-col-path (first path))] (rest path))
+
                :else path)
         DATA (firestore-hooks/col-sub path)
         [docs set-docs] (use-state @DATA)

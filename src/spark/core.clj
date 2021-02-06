@@ -28,13 +28,25 @@
                :examples ~examples)))))
 
 
-(defmacro def-doc [sym [opts & fields]]
+(defn- complete-opts [opts sym schema-name]
   (let [symbol-name (-> sym name)
         calling-namespace-name (name (ns-name *ns*))
-        id (str calling-namespace-name "/" symbol-name)
+        id (str calling-namespace-name "/" symbol-name)]
+    (assoc opts
+           (keyword schema-name "id") id
+           (keyword schema-name "namespace") calling-namespace-name)))
 
-        opts (assoc opts
-                    :doc/id id)]
+
+(defmacro def-doc [sym [opts & fields]]
+  (let [opts (complete-opts opts sym "doc-schema")]
+    `(def ~sym
+       [:map
+        ~opts
+        ~@fields])))
+
+
+(defmacro def-subdoc [sym [opts & fields]]
+  (let [opts (complete-opts opts sym "subdoc-schema")]
     `(def ~sym
        [:map
         ~opts
