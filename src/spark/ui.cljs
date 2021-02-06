@@ -565,7 +565,9 @@
   (let [error (use-error)]
     ($ mui/Dialog
        {:open (-> error boolean)
-        :onClose #(reset! ERROR nil)}
+        :onClose #(reset! ERROR nil)
+        :maxWidth "xl"
+        :fullWidth true}
        ($ mui/DialogTitle
           "Error")
        ($ mui/DialogContent
