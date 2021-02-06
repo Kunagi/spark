@@ -9,7 +9,8 @@
 (s/def ::id keyword?)
 (s/def ::submit fn?)
 (s/def ::field (s/or :id (s/keys :req-un [::id])
-                     :attr (s/keys :req [:attr/key])))
+                     :attr (s/keys :req [:attr/key])
+                     :field vector?))
 (s/def ::fields (s/coll-of ::field
                            :min-count 1))
 (s/def ::form (s/keys :req-un [::fields ::submit]))
@@ -20,8 +21,11 @@
       (-> field :attr/key)))
 
 
-(defn- initialize-field [form idx field ]
-  (let [id (-> field field-id)
+(defn- initialize-field [form idx field]
+  (let [field (if (vector? field) ; created by def-field
+                (second field)
+                field)
+        id (-> field field-id)
         values (-> form :values)
         fields-values (-> form :fields-values)
         field (if (models/attr? field)
@@ -33,14 +37,18 @@
                   (get field :default-value))
         field (if value
                 (assoc field :value value)
-                field)]
+                field)
+        field-name (or (-> field :name)
+                       (when-let [id (-> field :id)]
+                         (if (keyword? id)
+                           (name id)
+                           (str id))))]
     (assoc field
            :auto-focus? (= 0 idx)
-           :name (or (-> field :name)
-                     (-> field :id name))
+           :name field-name
            :label (or (-> field :label)
                       (-> field :name)
-                      (-> field :id name))
+                      field-name)
            :multiline? (or (-> field :multiline?)
                            (-> field :rows boolean))
            :auto-complete (get field :auto-complete "off"))))
@@ -56,6 +64,8 @@
        :form form)
   (let [form (assoc form :fields (map-indexed  (partial initialize-field form)
                                           (-> form :fields)))]
+    (log ::initialized
+         :form form)
     (-> form
         (assoc :values
                (reduce (fn [values field]
@@ -72,6 +82,9 @@
 
 
 (defn load-values [form values-map]
+  ;; (log ::load-values
+  ;;      :form form
+  ;;      :values values-map)
   (s/assert ::fields (-> form :fields))
   (update form :fields
           #(mapv (fn [field]

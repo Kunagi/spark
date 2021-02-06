@@ -44,7 +44,6 @@
 ;;         (ui/data (use-dialog-forms)))))
 
 
-
 (defmulti create-input (fn [field]
                          (if-let [type (-> field :type)]
                            (if (keyword? type)

@@ -12,6 +12,7 @@
 (defn reg-test [test]
   (swap! TESTS assoc (-> test :id) test))
 
+
 ;;;
 ;;;
 ;;;
@@ -36,6 +37,13 @@
           (schema-type-of? :doc-schema [:map {:doc-schema/id "some.Doc"}]))
   (schema-type-of? :doc-schema [:map {:something :else}]))
 
+
+;;;
+;;; Field
+;;;
+
+(defn field-schema? [thing]
+  (schema-type-of? :field thing))
 
 ;;;
 ;;; Doc

@@ -56,10 +56,14 @@ function clean {
 
     rm -rf target
     rm -rf .cpcache
+    rm -rf .shadow-cljs
     rm -rf node_modules
     rm -rf firebase/public/*
     rm -rf firebase/functions/*.js
     rm -rf firebase/functions/node_modules
+
+    rm -rf $SPARK_DIR/.cpcache
+    rm -rf $SPARK_DIR/.shadow-cljs
 }
 
 if [ $1 = "clean" ]
