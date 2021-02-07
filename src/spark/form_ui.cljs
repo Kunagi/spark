@@ -133,6 +133,8 @@
 
 
 (defmethod create-input "checkboxes" [field]
+  (log ::create-input
+       :field field)
   ($ mui/FormControl
      {:component "fieldset"}
      ($ mui/FormGroup
@@ -146,6 +148,7 @@
                          (-> option :value str))
               :control ($ mui/Checkbox
                           {:name (-> option :value str)
+                           :checked (-> field :value (contains? (-> option :value)))
                            :onChange #(let [checked? (-> % .-target .-checked)]
                                         ((-> field :on-change)
                                          [(-> option :value)

@@ -68,10 +68,13 @@
   (s/assert ::form form)
   (log ::initialize
        :form form)
-  (let [form (assoc form :fields (map-indexed  (partial initialize-field form)
-                                               (->> form
-                                                    :fields
-                                                    (remove nil?))))]
+  (let [fields (into []
+                     (map-indexed
+                      (partial initialize-field form)
+                      (->> form
+                           :fields
+                           (remove nil?))))
+        form (assoc form :fields fields)]
     ;; (log ::initialized
     ;;      :form form)
     (-> form
@@ -85,8 +88,7 @@
                                (if value
                                  (assoc values field-id value)
                                  values)))))
-                       (or (-> form :values) {}) (-> form :fields)))
-        )))
+                       (or (-> form :values) {}) (-> form :fields))))))
 
 
 (defn load-values [form values-map]
@@ -105,6 +107,11 @@
   (some #(when (= field-id (-> % :id)) %)
         (-> form :fields)))
 
+(defn field-index-by-id [form field-id]
+  (->> form
+       :fields
+       (map-indexed vector)
+       (some #(when (= field-id (-> % second :id)) (first %)))))
 
 (defn field-type [form field-id]
   (-> form
@@ -155,10 +162,14 @@
   ;;      :values (-> form :values)
   ;;      :field field-id
   ;;      :value new-value)
-  (-> form
-      (assoc-in [:values field-id]
-                (adopt-value new-value form field-id))
-      (validate-field field-id)))
+  (let [new-value (adopt-value new-value form field-id)
+        field-index (field-index-by-id form field-id)]
+    (log ::index
+         :index field-index)
+    (-> form
+        (assoc-in [:values field-id] new-value)
+        (assoc-in [:fields field-index :value] new-value)
+        (validate-field field-id))))
 
 
 (defn contains-errors? [form]
