@@ -223,7 +223,7 @@ function release {
 
     date -Iminutes > src/spa/version-time.txt
 
-    mkdir -d target
+    mkdir -p target
     clojure -A:build-release --config-merge "{:release-version \"v"${VERSION}"\"}"
 
     bump-version
