@@ -131,6 +131,7 @@
             :label "Nein"
             :control ($ mui/Radio)}))))
 
+
 (defmethod create-input "checkboxes" [field]
   ($ mui/FormControl
      {:component "fieldset"}
@@ -146,8 +147,9 @@
               :control ($ mui/Checkbox
                           {:name (-> option :value str)
                            :onChange #(let [checked? (-> % .-target .-checked)]
-                                        ((-> field :on-change) {(-> option :value)
-                                                                checked?}))})})))))
+                                        ((-> field :on-change)
+                                         [(-> option :value)
+                                          checked?]))})})))))
 
 
 (defnc FormDialog [{:keys [form]}]

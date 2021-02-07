@@ -50,6 +50,11 @@
            :label (or (-> field :label)
                       (-> field :name)
                       field-name)
+           :type (let [type (-> field :type)]
+                   (cond
+                     (nil? type) :text
+                     (string? type) (keyword type)
+                     :else type))
            :multiline? (or (-> field :multiline?)
                            (-> field :rows boolean))
            :auto-complete (get field :auto-complete "off"))))
@@ -135,9 +140,14 @@
             (= "" value))
       nil
       (case field-type
-        "number" (js/parseInt value)
-        "checkboxes" (merge (values form) value)
+        :number (js/parseInt value)
+        :checkboxes (let [[option-value checked?] value
+                          field-value (into #{} (field-value form field-id))]
+                      (if checked?
+                        (conj field-value option-value)
+                        (disj field-value option-value)))
         value))))
+
 
 
 (defn on-field-value-change [form field-id new-value]
