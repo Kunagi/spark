@@ -688,6 +688,13 @@
        {:onClick onClick}
        children)))
 
+(defnc CommandCard [{:keys [command children context then]}]
+  ($ mui/Card
+     ($ CommandCardArea
+        {:command command
+         :context context
+         :then then}
+        children)))
 
 (defn- complete-command [command]
   (case (-> command :type)
