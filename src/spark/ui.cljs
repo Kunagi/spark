@@ -854,17 +854,17 @@
 
         ;; TODO query parameters form request
 
-        update-context (-> spa :update-page-context)
-        context (u/safe-apply update-context [context])
-        update-context (-> page :update-context)
-        context (u/safe-apply update-context [context])
-
         docs (reduce (fn [docs [k Doc]]
                        (let [id (get context k)
                              doc (use-doc Doc id)]
                          (assoc docs k doc)))
                      {} (-> page :use-docs))
         context (merge context docs)
+
+        update-context (-> spa :update-page-context)
+        context (u/safe-apply update-context [context])
+        update-context (-> page :update-context)
+        context (u/safe-apply update-context [context])
         ]
 
     ($ ValuesLoadGuard
