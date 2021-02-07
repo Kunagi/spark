@@ -32,10 +32,18 @@
         field (if (models/attr? field)
                 (models/attr->form-field field)
                 field)
+        field-type (let [type (-> field :type)]
+                     (cond
+                       (nil? type) :text
+                       (string? type) (keyword type)
+                       :else type))
         value (or (get values id)
                   (get field :value)
                   (get fields-values id)
                   (get field :default-value))
+        value (case field-type
+                :checkboxes (into #{} value)
+                value)
         field (if value
                 (assoc field :value value)
                 field)
@@ -50,11 +58,7 @@
            :label (or (-> field :label)
                       (-> field :name)
                       field-name)
-           :type (let [type (-> field :type)]
-                   (cond
-                     (nil? type) :text
-                     (string? type) (keyword type)
-                     :else type))
+           :type field-type
            :multiline? (or (-> field :multiline?)
                            (-> field :rows boolean))
            :auto-complete (get field :auto-complete "off"))))
