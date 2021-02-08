@@ -43,7 +43,8 @@
 ;;;
 
 (defn field-schema? [thing]
-  (schema-type-of? :field thing))
+  (schema-type-of? :field-schema thing))
+
 
 ;;;
 ;;; Doc

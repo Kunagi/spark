@@ -2,6 +2,7 @@
   (:require
    [clojure.spec.alpha :as s]
    [spark.logging :refer [log]]
+   [spark.core :as spark]
    [spark.models :as models]
 
    [clojure.string :as str]))
@@ -18,8 +19,10 @@
 
 
 (defn field-id [field]
-  (or (-> field :id)
-      (-> field :attr/key)))
+  (if (spark/field-schema? field)
+    (-> field spark/schema-opts :id)
+    (or (-> field :id)
+        (-> field :attr/key))))
 
 
 (defn- initialize-field [form idx field]

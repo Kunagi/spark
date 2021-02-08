@@ -13,6 +13,7 @@
    ["material-ui-chip-input" :default ChipInput]
 
    [spark.utils :as u]
+   [spark.core :as spark]
    [spark.logging :refer [log]]
    ;; [spark.mui :as ui]
    [spark.form :as form]
@@ -328,9 +329,11 @@
 
 
 (defnc DocFieldCardArea [{:keys [doc doc-path field value-filter]}]
-  (let [value-filter (or value-filter str)
-        id (or (get field :id)
-               (get field :attr/key))
+  (let [field (if (spark/field-schema? field)
+                (spark/schema-opts field)
+                field)
+        value-filter (or value-filter str)
+        id (form/field-id field)
         label (get field :label)
         value (get doc id)
         submit #(let [changes {id (get % id)}]
@@ -354,8 +357,7 @@
 (defnc DocFieldsCardAreas [{:keys [doc fields]}]
   (<> (for [field fields]
         ($ DocFieldCardArea
-           {:key (or (-> field :id)
-                     (-> field :model/id))
+           {:key (form/field-id field)
             :doc doc
             :field field}))))
 
