@@ -195,9 +195,15 @@
 
 
 (defn conform-js-data [^js data schema]
-  (if (or (nil? data) (string? data) (number? data)
-          (js/Array.isArray data))
+  (cond
+
+    (or (nil? data) (string? data) (number? data))
     data
+
+    ^boolean (js/Array.isArray data)
+    (mapv #(conform-js-data % nil) data)
+
+    :else
     (case (first schema)
       :map-of
       (reduce (fn [m js-key]
