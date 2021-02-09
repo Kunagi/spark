@@ -53,13 +53,13 @@
   (when email (-> email (.substring (-> email (.indexOf "@") inc)))))
 
 
-(defn update-user-doc [Col ^js auth-user update-user]
+(defn update-user-doc [doc-schema ^js auth-user update-user]
   (log ::update-user-doc
-       :col Col)
+       :doc-schema doc-schema )
   (let [uid (-> auth-user .-uid)
         email (-> auth-user .-email)]
     (repository/transact-doc-update>
-     Col uid
+     doc-schema uid
      (fn [db-user]
        (let [user (merge db-user
                          {:uid uid

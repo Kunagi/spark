@@ -63,9 +63,9 @@
     (update-doc> doc values)))
 
 
-(defn transact-doc-update> [Col doc-id update-f]
+(defn transact-doc-update> [doc-schema doc-id update-f]
   (firestore/load-and-save>
-   [(models/col-path Col) doc-id]
+   [(spark/doc-schema-col-path doc-schema) doc-id]
    (fn [doc]
      (let [doc (update-f doc)]
        (if (= :db/delete doc)

@@ -57,9 +57,15 @@
         ~@fields])))
 
 
+
 (defmacro def-subdoc [sym [opts & fields]]
   (let [opts (complete-opts opts sym "subdoc-schema")]
     `(def ~sym
        [:map
         ~opts
         ~@fields])))
+
+
+(defmacro def-cmd  [sym opts]
+  (let [opts (complete-opts opts sym "cmd-schema")]
+    `(def ~sym ~opts)))

@@ -90,6 +90,14 @@
       subdoc-schema-id-generator
       (apply context)))
 
+
+;;;
+;;; Cmd
+;;;
+
+(defn cmd-schema? [thing]
+  (schema-type-of? :cmd-schema thing))
+
 ;;;
 ;;;
 ;;;
