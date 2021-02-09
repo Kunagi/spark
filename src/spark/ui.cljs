@@ -106,42 +106,17 @@
 ;;;
 
 
-
-
-(def DATA_RESOLVER (atom nil))
-
 (def PAGE (create-context {:page nil :data nil}))
 
 (defn use-page []
-  (let [data-resolver @DATA_RESOLVER
-        _ (when-not data-resolver
-            (throw (ex-info "DATA_RESOLVER not initialized"
-                            {})))
-        page (use-context PAGE)
-        data (reduce (fn [m [k identifier]]
-                       (assoc m k (data-resolver identifier)))
-                     {} (-> page :data))]
-    (assoc page :data data)))
-
-
-;;; TODO deprecated. replacement: use-spark-context
-(defn use-context-data []
-  (let [page (use-page)
-        params (use-params)
-        uid (use-uid)
-        data (merge params
-                    (-> page :data))
-        data (assoc data :uid uid)]
-    data))
+  (use-context PAGE))
 
 
 (def SPARK_CONTEXT (create-context {:spark/spa :MISSING!
                                     :spark/page :MISSING!}))
 
 (defn use-spark-context []
-  (merge
-   (use-context-data)
-   (use-context SPARK_CONTEXT)))
+  (use-context SPARK_CONTEXT))
 
 
 ;;;
