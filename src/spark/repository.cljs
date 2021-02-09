@@ -17,7 +17,7 @@
                       :id id
                       :ts-created [:db/timestamp]
                       :ts-updated [:db/timestamp])
-        path [(spark/doc-schema-col-path Doc)]]
+        path [(spark/doc-schema-col-path Doc) id]]
     (firestore/create-doc> path values)))
 
 

@@ -8,8 +8,8 @@
 
 
 (defmethod runtime/reify-effect> :db/create
-  [[_ path values]]
-  (repository/create-doc> path values))
+  [[_ Doc values]]
+  (repository/create-doc> Doc values))
 
 
 (defmethod runtime/reify-effect> :db/update
