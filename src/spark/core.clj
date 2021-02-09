@@ -38,14 +38,11 @@
            (keyword schema-name "namespace") calling-namespace-name)))
 
 
-(defmacro def-field [sym [opts & fields]]
+(defmacro def-field [sym [type opts & fields]]
   (let [opts (complete-opts opts sym "field-schema")
-        opts (assoc opts :id (-> sym name str/lower-case keyword))
-        type (get opts :type :text)
-        malli-type (case type
-                     :string)]
+        opts (assoc opts :id (-> sym name str/lower-case keyword))]
     `(def ~sym
-       [~malli-type
+       [~type
         ~opts
         ~@fields])))
 
