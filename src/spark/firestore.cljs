@@ -61,8 +61,7 @@
   (reduce (fn [data [k v]]
             (if-let [converted-v (convert-FieldValue-or-nil v)]
               (assoc data k converted-v)
-              data
-              #_(if (map? v)
+              (if (map? v)
                 (assoc data k (inject-FieldValues v))
                 data)))
           data data))

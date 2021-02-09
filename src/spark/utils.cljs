@@ -191,14 +191,15 @@
         (nth field 2)
         field-schema))))
 
-;;;
-
 
 (defn conform-js-data [^js data schema]
   (cond
 
     (or (nil? data) (string? data) (number? data))
-    data
+    (js->clj data)
+
+    (instance? js/firebase.firestore.Timestamp data)
+    (-> data .toDate)
 
     ^boolean (js/Array.isArray data)
     (mapv #(conform-js-data % nil) data)
@@ -216,3 +217,10 @@
                       v (gobj/get data js-key)]
                   (assoc m k (conform-js-data v (malli-map-field-schema-by-id schema k)))))
               {} (js/Object.keys data)))))
+
+;;; time
+
+(defn ts-millis [^js ts]
+  (js/console.log "!!!" (type ts))
+  0
+  #_(when ts (-> ts .getTime)))
