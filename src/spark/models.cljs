@@ -156,13 +156,13 @@
                  wheres)]
     (mapv (fn [wheres] [{:id (col-path col) :wheres wheres}] ) wheres)))
 
-(defn DocEntity [model]
-  (validate-model-schema
-   model [:map
-          ])
-  (-> model
-      ;; (assoc :id (-> model :model/symbol str/lower-case keyword))
-      ))
+;; (defn DocEntity [model]
+;;   (validate-model-schema
+;;    model [:map
+;;           ])
+;;   (-> model
+;;       ;; (assoc :id (-> model :model/symbol str/lower-case keyword))
+;;       ))
 
 
 ;;; commands
