@@ -173,6 +173,10 @@
 
      doc)))
 
+(defn use-singleton-doc
+  [Doc]
+  (use-doc (spark/doc-schema-singleton-doc-path Doc)))
+
 
 (defn use-col
   "React hook for a collection."

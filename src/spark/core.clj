@@ -34,6 +34,7 @@
         id (str calling-namespace-name "/" symbol-name)]
     (assoc opts
            (keyword schema-name "id") id
+           (keyword schema-name "symbol") symbol-name
            (keyword schema-name "namespace") calling-namespace-name)))
 
 

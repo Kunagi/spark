@@ -1,6 +1,8 @@
 (ns spark.core
-  (:require-macros [spark.core :refer [def-test]])
+  (:require-macros [spark.core :refer [def-test]]
+                   [clojure.string :as str])
   (:require
+   [clojure.string :as str]
    [spark.firestore :as firestore]))
 
 ;;;
@@ -53,19 +55,35 @@
 (defn doc-schema? [thing]
   (schema-type-of? :doc-schema thing))
 
+(defn assert-doc-schema [Doc]
+  ;; FIXME dev only
+  (when-not (doc-schema? Doc)
+    (throw (ex-info "doc schema expected"
+                    {:value Doc}))))
+
 (defn doc-schema-col-path [Doc]
+  (assert-doc-schema Doc)
   (-> Doc schema-opts :firestore/collection))
 
+(defn doc-schema-singleton-doc-path [Doc]
+  (assert-doc-schema Doc)
+  ["singletons" (let [opts (schema-opts Doc)]
+                  (-> opts :firestore/doc-id)
+                  (-> opts :doc-schema/symbol str/lower-case))])
+
 (defn doc-schema-id-generator [Doc]
+  (assert-doc-schema Doc)
   (or (-> Doc schema-opts :spark/id-generator)
       (fn [_context] (-> (random-uuid) str))))
 
 (defn new-doc-id [Doc context]
+  (assert-doc-schema Doc)
   (-> Doc
       doc-schema-id-generator
       (apply context)))
 
 (defn new-doc [Doc values]
+  (assert-doc-schema Doc)
   (let [id (or (-> values :id) (new-doc-id Doc {:values values}))]
     (assoc values
            :firestore/id id
