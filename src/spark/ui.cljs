@@ -28,7 +28,7 @@
    [spark.utils :as u]
    [spark.react :as spark-react]
    [spark.core :as spark]
-   [spark.models :as models]
+    
    [spark.firebase-storage :as storage]
    [spark.runtime :as runtime]
    [spark.form-ui :as form-ui]
@@ -125,11 +125,10 @@
 
 (defn use-doc
   "React hook for a document."
-  ([Col doc-id]
+  ([Doc doc-id]
+   (spark/assert-doc-schema Doc)
    (use-doc (when doc-id
-              [(if (spark/doc-schema? Col)
-                 (spark/doc-schema-col-path Col)
-                 (models/col-path Col))
+              [(spark/doc-schema-col-path Doc)
                doc-id])))
   ([path]
    (let [DATA (firestore-hooks/doc-sub path)
@@ -159,8 +158,6 @@
   (log ::use-col
        :path path)
   (let [path (cond
-               (map? path)
-               (models/col-path path)
 
                (and (vector? path) (spark/doc-schema? (first path)))
                (into
@@ -197,16 +194,6 @@
                            ret docs)))
                {})
        vals))
-
-
-(defn use-col-subset
-  ([ColSubset]
-   (use-col-subset ColSubset {}))
-  ([ColSubset args]
-   (let [context (merge (use-spark-context) args)]
-     (if (models/col-subset-is-union? ColSubset)
-       (use-cols-union (models/col-subset-union-paths ColSubset context))
-       (use-col (models/col-subset-path ColSubset context))))))
 
 
 ;;;

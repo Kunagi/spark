@@ -47,6 +47,15 @@
 (defn field-schema? [thing]
   (schema-type-of? :field-schema thing))
 
+(defn assert-field-schema [Field]
+  ;; FIXME dev only
+  (when-not (field-schema? Field)
+    (throw (ex-info "field schema expected"
+                    {:value Field}))))
+
+(defn field-schema-as-form-field [Field]
+  (assert-field-schema Field)
+  (schema-opts Field))
 
 ;;;
 ;;; Doc

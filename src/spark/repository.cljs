@@ -4,26 +4,20 @@
    [spark.logging :refer [log]]
    [spark.runtime :as runtime]
    [spark.utils :as u]
-   [spark.models :as models]
    [spark.core :as spark]
    [spark.firestore :as firestore]))
 
 
-
-(defn create-doc> [Col values]
-  (let [doc-schema? (spark/doc-schema? Col)
-        id (or (-> values :id)
-               ((if doc-schema?
-                  (spark/doc-schema-id-generator Col)
-                  (models/col-id-generator Col))
-                {:values values}))
+(defn create-doc> [Doc values]
+  (spark/assert-doc-schema Doc)
+  (let [id (or (-> values :id)
+               (let [id-generator (spark/doc-schema-id-generator Doc)]
+                 (id-generator {:values values})))
         values (assoc values
                       :id id
                       :ts-created [:db/timestamp]
                       :ts-updated [:db/timestamp])
-        path [(if doc-schema?
-                (spark/doc-schema-col-path Col)
-                (models/col-path Col)) id]]
+        path [(spark/doc-schema-col-path Doc)]]
     (firestore/create-doc> path values)))
 
 

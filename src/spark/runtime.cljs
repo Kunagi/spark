@@ -2,7 +2,7 @@
   (:require
    [spark.logging :refer [log]]
    [spark.utils :as u]
-   [spark.models :as models]))
+    ))
 
 
 (def $Command

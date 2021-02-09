@@ -3,7 +3,7 @@
    [clojure.spec.alpha :as s]
    [spark.logging :refer [log]]
    [spark.core :as spark]
-   [spark.models :as models]
+    
 
    [clojure.string :as str]))
 
@@ -26,15 +26,12 @@
 
 
 (defn- initialize-field [form idx field]
-  (let [field (if (vector? field) ; created by def-field
-                (second field)
+  (let [field (if (spark/field-schema? field)
+                (spark/field-schema-as-form-field field)
                 field)
         id (-> field field-id)
         values (-> form :values)
         fields-values (-> form :fields-values)
-        field (if (models/attr? field)
-                (models/attr->form-field field)
-                field)
         field-type (let [type (-> field :type)]
                      (cond
                        (nil? type) :text
