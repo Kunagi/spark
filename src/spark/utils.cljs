@@ -3,6 +3,8 @@
    [clojure.spec.alpha :as s]
    [cljs.pprint :refer [pprint]]
 
+   [goog.object :as gobj]
+
    [malli.core :as malli]
    [malli.error :as malli-error]))
 
@@ -173,3 +175,38 @@
     (throw (ex-info (malli-explain->user-message explain schema)
                     {:malli/explain explain})))
   value)
+
+
+(defn malli-map-field-by-id [schema field-key]
+  (when schema
+    (->> schema
+         (filter #(and (vector? %) (= field-key (first %))))
+         first)))
+
+
+(defn malli-map-field-schema-by-id [schema field-key]
+  (when-let [field (malli-map-field-by-id schema field-key)]
+    (let [field-schema (second field)]
+      (if (map? field-schema)
+        (nth field 2)
+        field-schema))))
+
+;;;
+
+
+(defn conform-js-data [^js data schema]
+  (if (or (nil? data) (string? data) (number? data)
+          (js/Array.isArray data))
+    data
+    (case (first schema)
+      :map-of
+      (reduce (fn [m js-key]
+                (let [k js-key
+                      v (gobj/get data js-key)]
+                  (assoc m k (conform-js-data v (malli-map-field-schema-by-id schema k)))))
+              {} (js/Object.keys data))
+      (reduce (fn [m js-key]
+                (let [k (keyword js-key)
+                      v (gobj/get data js-key)]
+                  (assoc m k (conform-js-data v (malli-map-field-schema-by-id schema k)))))
+              {} (js/Object.keys data)))))

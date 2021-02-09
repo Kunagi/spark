@@ -50,9 +50,10 @@
 (defmacro def-doc  [sym [opts & fields]]
   (let [opts (complete-opts opts sym "doc-schema")]
     `(def ~sym
-       [:map
-        ~opts
-        ~@fields])))
+       (init-doc-schema
+        [:map
+         ~opts
+         ~@fields]))))
 
 
 

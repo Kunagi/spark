@@ -10,7 +10,10 @@
 
 
 (when ^boolean js/goog.DEBUG
-  (-> js/firebase .firestore (.useEmulator "localhost" 8080)))
+  (defonce initialized
+    (do
+      (-> js/firebase .firestore (.useEmulator "localhost" 8080))
+      true)))
 
 
 (reset! firestore/FIRESTORE (-> js/firebase .firestore))

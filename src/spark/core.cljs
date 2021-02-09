@@ -14,6 +14,10 @@
 (defn reg-test [test]
   (swap! TESTS assoc (-> test :id) test))
 
+(defonce DEFS (atom {}))
+
+(defn reg-def [type id thing]
+  (swap! DEFS assoc-in [type id] thing))
 
 ;;;
 ;;;
@@ -60,6 +64,13 @@
 ;;;
 ;;; Doc
 ;;;
+
+(defn init-doc-schema [Doc]
+  (let [col-id (-> Doc schema-opts :firestore/collection)]
+    (when-not (= "singletons" col-id)
+      (reg-def :doc-schema (get Doc :doc-schema/id) Doc))
+    (firestore/reg-doc-schema col-id Doc))
+  Doc)
 
 (defn doc-schema? [thing]
   (schema-type-of? :doc-schema thing))

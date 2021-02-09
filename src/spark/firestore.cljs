@@ -4,8 +4,11 @@
 
    [cljs-bean.core :as cljs-bean]
    [spark.logging :refer [log]]
-   [spark.utils :as u]))
+   [spark.utils :as u]
+   [clojure.string :as str]))
 
+
+;; https://firebase.google.com/docs/reference/js
 
 (defn doc? [doc]
   (and
@@ -66,11 +69,26 @@
 
 ;;; wrap docs to have access to id and path
 
+(defonce DOC_SCHEMAS (atom {}))
+
+(defn reg-doc-schema [col-id doc-schema]
+  (swap! DOC_SCHEMAS assoc col-id doc-schema))
+
+(defn conform-doc-data [^js data schema]
+  (u/conform-js-data data schema))
+
+(defn doc-schema [col-id]
+  (get @DOC_SCHEMAS col-id))
+
 (defn wrap-doc [^js query-doc-snapshot]
-  (let [data (-> query-doc-snapshot .data)]
-    (-> (cljs-bean/->clj data)
+  (let [data (-> query-doc-snapshot .data)
+        path (-> query-doc-snapshot .-ref .-path)
+        col-id (.substring path 0 (.indexOf path "/"))
+        doc-schema (doc-schema col-id)]
+    (-> data
+        (conform-doc-data doc-schema)
         (assoc :firestore/id (-> query-doc-snapshot .-id)
-               :firestore/path (-> query-doc-snapshot .-ref .-path)
+               :firestore/path path
                :firestore/exists? (boolean data)))))
 
 (defn wrap-docs [^js query-snapshot]
