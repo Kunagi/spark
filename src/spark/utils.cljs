@@ -217,10 +217,3 @@
                       v (gobj/get data js-key)]
                   (assoc m k (conform-js-data v (malli-map-field-schema-by-id schema k)))))
               {} (js/Object.keys data)))))
-
-;;; time
-
-(defn ts-millis [^js ts]
-  (js/console.log "!!!" (type ts))
-  0
-  #_(when ts (-> ts .getTime)))
