@@ -863,7 +863,7 @@
 
 
 (defnc PageSwitch [{:keys [spa devtools-component children]}]
-  (let [pages (models/spa-pages spa )
+  (let [pages (spark/spa-pages spa)
         pages (concat @ADDITIONAL_PAGES pages)
         ]
     ($ router/Switch

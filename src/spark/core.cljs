@@ -110,7 +110,7 @@
 
 
 ;;;
-;;; Cmd
+;;; cmd
 ;;;
 
 (defn cmd? [thing]
@@ -127,6 +127,38 @@
   (assert-cmd cmd)
   (or (-> cmd :label)
       (-> cmd :cmd/symbol)))
+
+;;;
+;;; page
+;;;
+
+(defn page? [thing]
+  (and (map? thing)
+       (get thing(keyword "page" "id"))))
+
+(defn assert-page [page]
+  ;; FIXME dev only
+  (when-not (page? page)
+    (throw (ex-info "page expected"
+                    {:value page}))))
+
+;;;
+;;; spa
+;;;
+
+(defn spa? [thing]
+  (and (map? thing)
+       (get thing(keyword "spa" "id"))))
+
+(defn assert-spa [spa]
+  ;; FIXME dev only
+  (when-not (spa? spa)
+    (throw (ex-info "spa expected"
+                    {:value spa}))))
+
+(defn spa-pages [spa]
+  (assert-spa spa)
+  (-> spa :pages))
 
 ;;;
 ;;;

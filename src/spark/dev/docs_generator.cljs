@@ -30,7 +30,7 @@
                first)))
 
 (defn cols-sections []
-  (->> (models/models-by-constructor models/Col)
+  (->> [] ;; FIXME (models/models-by-constructor models/Col)
        (sort-by :model/symbol)
        (map col-section)
        (str/join "\n")))

@@ -65,14 +65,14 @@
 ;;; attributes
 
 
-(defn Attr [model]
-  (validate-model-schema
-   model [:map
-          [:label string?]])
-  (-> model
-      (assoc :attr/key (-> model :model/symbol str/lower-case keyword))
-      ;; (assoc :id (-> model :model/symbol str/lower-case keyword))
-      ))
+;; (defn Attr [model]
+;;   (validate-model-schema
+;;    model [:map
+;;           [:label string?]])
+;;   (-> model
+;;       (assoc :attr/key (-> model :model/symbol str/lower-case keyword))
+;;       ;; (assoc :id (-> model :model/symbol str/lower-case keyword))
+;;       ))
 
 (defn attr? [attr]
   (-> attr :attr/key boolean))
@@ -85,26 +85,26 @@
 ;;; documents
 
 
-(defn Doc [model]
-  (validate-model-schema
-   model [:map
-          ])
-  (-> model
-      (assoc :name (-> model :model/symbol))
-      (assoc :id (-> model :model/symbol str/lower-case keyword))
-      (assoc :$ [:map
-                 [:id string?]])))
+;; (defn Doc [model]
+;;   (validate-model-schema
+;;    model [:map
+;;           ])
+;;   (-> model
+;;       (assoc :name (-> model :model/symbol))
+;;       (assoc :id (-> model :model/symbol str/lower-case keyword))
+;;       (assoc :$ [:map
+;;                  [:id string?]])))
 
 
-(defn Col [model]
-  (validate-model-schema
-   model [:map
-          [:doc $Doc]
-          ])
-  (-> model
-      (assoc :id (-> model :model/symbol str/lower-case keyword))
-      (u/assoc-if-missing :path (-> model :model/symbol str/lower-case))
-      ))
+;; (defn Col [model]
+;;   (validate-model-schema
+;;    model [:map
+;;           [:doc $Doc]
+;;           ])
+;;   (-> model
+;;       (assoc :id (-> model :model/symbol str/lower-case keyword))
+;;       (u/assoc-if-missing :path (-> model :model/symbol str/lower-case))
+;;       ))
 
 (defn col-doc-name [col]
   (-> col :doc :name))
@@ -118,12 +118,12 @@
       (fn [_context] (-> (random-uuid) str))))
 
 
-(defn ColSubset [model]
-  (validate-model-schema
-   model [:map
-          [:col $Col]
-          [:wheres any?]])
-  (-> model))
+;; (defn ColSubset [model]
+;;   (validate-model-schema
+;;    model [:map
+;;           [:col $Col]
+;;           [:wheres any?]])
+;;   (-> model))
 
 
 (defn col-subset-path [col-subset args]
@@ -135,14 +135,14 @@
     [{:id (col-path col) :wheres wheres}]))
 
 
-(defn ColSubset--union [model]
-  (validate-model-schema
-   model [:map
-          [:col $Col]
-          [:wheres any?]])
-  (ColSubset
-   (-> model
-       (assoc :union? true))))
+;; (defn ColSubset--union [model]
+;;   (validate-model-schema
+;;    model [:map
+;;           [:col $Col]
+;;           [:wheres any?]])
+;;   (ColSubset
+;;    (-> model
+;;        (assoc :union? true))))
 
 
 (defn col-subset-is-union? [col-subset]
@@ -271,24 +271,24 @@
 ;;                    [[:db/update-child doc inner-path child-id changes]]))))))
 
 
-(defn Page [model]
-  (validate-model-schema
-   model [:map
-          [:path string?]
-          [:content any?]
-          [:data {:required false} map?]
-          ])
-  (-> model
-      ))
+;; (defn Page [model]
+;;   (validate-model-schema
+;;    model [:map
+;;           [:path string?]
+;;           [:content any?]
+;;           [:data {:required false} map?]
+;;           ])
+;;   (-> model
+;;       ))
 
 
-(defn Spa [model]
-  (validate-model-schema
-   model [:map
-          [:pages [:vector map?]]])
-  (-> model
-      ))
+;; (defn Spa [model]
+;;   (validate-model-schema
+;;    model [:map
+;;           [:pages [:vector map?]]])
+;;   (-> model
+;;       ))
 
 
-(defn spa-pages [spa]
-  (-> spa :pages))
+;; (defn spa-pages [spa]
+;;   (-> spa :pages))

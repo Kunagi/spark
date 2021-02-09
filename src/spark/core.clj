@@ -70,3 +70,13 @@
 (defmacro def-cmd  [sym opts]
   (let [opts (complete-opts opts sym "cmd")]
     `(def ~sym ~opts)))
+
+
+(defmacro def-page  [sym opts]
+  (let [opts (complete-opts opts sym "page")]
+    `(def ~sym ~opts)))
+
+
+(defmacro def-spa  [sym opts]
+  (let [opts (complete-opts opts sym "spa")]
+    `(def ~sym ~opts)))
