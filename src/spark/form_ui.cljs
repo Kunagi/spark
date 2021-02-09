@@ -280,34 +280,30 @@
 
 (defnc FieldCardArea [{:keys [entity update-f field]}]
   (u/log-deprecated "use CommandCardArea")
-  (s/assert map? entity)
-  (s/assert ::form/field field)
-  (let [id (or (-> field :id)
-               (-> field :attr/key))
+  (u/assert-malli [:map] entity)
+  (let [id (form/field-id field)
         label (get field :label)
         value (get entity id)
         submit #(let [changes {id (get % id)}]
                   (if update-f
                     (update-f changes)
-                    (fs/update-fields> entity %)))
-        type (get field :type)]
+                    (fs/update-fields> entity %)))]
     ($ FormCardArea
-       {:form {:fields [(assoc field :value value)]
+       {:form {:fields [field]
+               :values {id value}
                :submit submit}}
        ($ mui/CardContent
           ($ Field
              {:label label}
-             (case type
-               "chips" ($ StringVectorChips {:values value})
-               (str value)))))))
+             (str value))))))
 
 (defnc FieldsCardAreas [{:keys [entity update-f fields]}]
+  (u/assert-malli [:map] entity)
   (s/assert map? entity)
   (s/assert ::form/fields fields)
   (<> (for [field fields]
         ($ FieldCardArea
-           {:key (or (-> field :id)
-                     (-> field :attr/key))
+           {:key (form/field-id field)
             :entity entity
             :update-f update-f
             :field field}))))
