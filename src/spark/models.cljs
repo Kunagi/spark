@@ -168,106 +168,107 @@
 ;;; commands
 
 
-(defn Command [model]
-  (validate-model-schema
-   model [:map
-          [:label {:optional true} string?]
-          [:context-args {:optional true} vector?]])
-  (-> model
-      ))
+;; (defn Command [model]
+;;   (validate-model-schema
+;;    model [:map
+;;           [:label {:optional true} string?]
+;;           [:context-args {:optional true} vector?]])
+;;   (-> model
+;;       ))
 
-(defn command-label [command]
-  (or (-> command :label)
-      (-> command :model/symbol)))
-
-
-(defn Command--create-doc [command]
-  (validate-model-schema
-   command [:map
-            [:col $Col]
-            [:update-values {:optional true} any?]
-            #_[:values-from-context {:optional true} [:vector keyword?]]])
-  (Command
-   (assoc command
-          :f (fn [context]
-               (let [Col (get command :col)
-                     values (get context :values)
-                     values (u/safe-apply
-                             (get command :update-values)
-                             [values context])]
-                 [[:db/create Col values]])))))
+;; (defn command-label [command]
+;;   (or (-> command :label)
+;;       (-> command :model/symbol)))
 
 
-(defn Command--update-doc [command]
-  (validate-model-schema
-   command [:map
-            [:doc $Doc]])
-  (let [doc-def (get command :doc)
-        doc-param (-> doc-def :id)
-        static-changes (get command :changes)
-        changes-param (get command :changes-param :values)]
-    (Command
-     (assoc command
-            :context-args [[doc-param [:map
-                                       [:id string?]]]]
-            :f (fn [context]
-                 (let [doc (get context doc-param)
-                       changes (merge (get context changes-param)
-                                      (u/fn->value static-changes context))]
-                   [[:db/update doc changes]]))))))
+
+;; (defn Command--create-doc [command]
+;;   (validate-model-schema
+;;    command [:map
+;;             [:col $Col]
+;;             [:update-values {:optional true} any?]
+;;             #_[:values-from-context {:optional true} [:vector keyword?]]])
+;;   (Command
+;;    (assoc command
+;;           :f (fn [context]
+;;                (let [Col (get command :col)
+;;                      values (get context :values)
+;;                      values (u/safe-apply
+;;                              (get command :update-values)
+;;                              [values context])]
+;;                  [[:db/create Col values]])))))
 
 
-(defn Command--update-doc--add-child [command]
-  (validate-model-schema
-   command [:map
-            [:doc-param keyword?]
-            [:inner-path $PropertyPath]])
-  (let [doc-param (get command :doc-param)
-        inner-path (get command :inner-path)
-        changes-param (get command :changes-param :values)
-        template (get command :template)
-        id-generator (get command :id-generator #(-> (random-uuid) str))]
-    (Command
-     (assoc command
-            :context-args [[doc-param [:map
-                                       [:id string?]]]]
-            :f (fn [context]
-                 (let [doc (get context doc-param)
-                       child-id (id-generator context)
-                       entity (merge template
-                                     {:id child-id}
-                                     (get context changes-param))]
-                   [[:db/add-child doc inner-path entity]]))))))
+;; (defn Command--update-doc [command]
+;;   (validate-model-schema
+;;    command [:map
+;;             [:doc $Doc]])
+;;   (let [doc-def (get command :doc)
+;;         doc-param (-> doc-def :id)
+;;         static-changes (get command :changes)
+;;         changes-param (get command :changes-param :values)]
+;;     (Command
+;;      (assoc command
+;;             :context-args [[doc-param [:map
+;;                                        [:id string?]]]]
+;;             :f (fn [context]
+;;                  (let [doc (get context doc-param)
+;;                        changes (merge (get context changes-param)
+;;                                       (u/fn->value static-changes context))]
+;;                    [[:db/update doc changes]]))))))
 
 
-(defn Command--update-doc--update-child [command]
-  (validate-model-schema
-   command [:map
-            [:doc-param keyword?]
-            [:child-param keyword?]
-            [:inner-path $PropertyPath]])
-  (let [doc-param (get command :doc-param)
-        inner-path (get command :inner-path)
-        child-param (get command :child-param :values)
-        changes-param (get command :changes-param :values)
-        static-changes (get command :static-changes)
-        conform-changes (get command :conform-changes)]
-    (Command
-     (assoc command
-            :context-args [[doc-param [:map
-                                       [:id string?]]
-                            child-param [:map
-                                         [:id string?]]]]
-            :f (fn [context]
-                 (let [doc (get context doc-param)
-                       child (get context child-param)
-                       child-id (-> child :id)
-                       changes (merge (get context changes-param)
-                                      (u/fn->value static-changes context))
-                       changes (if conform-changes
-                                 (conform-changes changes)
-                                 changes)]
-                   [[:db/update-child doc inner-path child-id changes]]))))))
+;; (defn Command--update-doc--add-child [command]
+;;   (validate-model-schema
+;;    command [:map
+;;             [:doc-param keyword?]
+;;             [:inner-path $PropertyPath]])
+;;   (let [doc-param (get command :doc-param)
+;;         inner-path (get command :inner-path)
+;;         changes-param (get command :changes-param :values)
+;;         template (get command :template)
+;;         id-generator (get command :id-generator #(-> (random-uuid) str))]
+;;     (Command
+;;      (assoc command
+;;             :context-args [[doc-param [:map
+;;                                        [:id string?]]]]
+;;             :f (fn [context]
+;;                  (let [doc (get context doc-param)
+;;                        child-id (id-generator context)
+;;                        entity (merge template
+;;                                      {:id child-id}
+;;                                      (get context changes-param))]
+;;                    [[:db/add-child doc inner-path entity]]))))))
+
+
+;; (defn Command--update-doc--update-child [command]
+;;   (validate-model-schema
+;;    command [:map
+;;             [:doc-param keyword?]
+;;             [:child-param keyword?]
+;;             [:inner-path $PropertyPath]])
+;;   (let [doc-param (get command :doc-param)
+;;         inner-path (get command :inner-path)
+;;         child-param (get command :child-param :values)
+;;         changes-param (get command :changes-param :values)
+;;         static-changes (get command :static-changes)
+;;         conform-changes (get command :conform-changes)]
+;;     (Command
+;;      (assoc command
+;;             :context-args [[doc-param [:map
+;;                                        [:id string?]]
+;;                             child-param [:map
+;;                                          [:id string?]]]]
+;;             :f (fn [context]
+;;                  (let [doc (get context doc-param)
+;;                        child (get context child-param)
+;;                        child-id (-> child :id)
+;;                        changes (merge (get context changes-param)
+;;                                       (u/fn->value static-changes context))
+;;                        changes (if conform-changes
+;;                                  (conform-changes changes)
+;;                                  changes)]
+;;                    [[:db/update-child doc inner-path child-id changes]]))))))
 
 
 (defn Page [model]

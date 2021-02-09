@@ -645,7 +645,7 @@
           :startIcon icon
           :size size
           :className classes}
-         (models/command-label command)))))
+         (spark/cmd-label command)))))
 
 (def-ui-test [CommandButton]
   ($ CommandButton {:command {:label "default" :f (fn [_] [])}})

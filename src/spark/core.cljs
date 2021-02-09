@@ -113,8 +113,20 @@
 ;;; Cmd
 ;;;
 
-(defn cmd-schema? [thing]
-  (schema-type-of? :cmd-schema thing))
+(defn cmd? [thing]
+  (and (map? thing)
+       (get thing(keyword "cmd" "id"))))
+
+(defn assert-cmd [cmd]
+  ;; FIXME dev only
+  (when-not (cmd? cmd)
+    (throw (ex-info "cmd expected"
+                    {:value cmd}))))
+
+(defn cmd-label [cmd]
+  (assert-cmd cmd)
+  (or (-> cmd :label)
+      (-> cmd :cmd/symbol)))
 
 ;;;
 ;;;

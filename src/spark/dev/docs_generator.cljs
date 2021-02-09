@@ -1,6 +1,8 @@
 (ns spark.dev.docs-generator
   (:require
    [clojure.string :as str]
+
+   [spark.core :as spark]
    [spark.dev.adoc :as adoc]
    [spark.models :as models]
    [spark.browser :as browser]))
@@ -46,7 +48,7 @@
                     ["Label" (-> cmd :label)]])))
 
 (defn commands-sections []
-  (->> (models/models-by-constructor models/Command)
+  (->> [] ;; FIXME (models/models-by-constructor models/Command)
        (sort-by :model/symbol)
        (map command-section)
        (str/join "\n")))

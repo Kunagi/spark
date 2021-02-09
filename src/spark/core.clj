@@ -68,5 +68,5 @@
 
 
 (defmacro def-cmd  [sym opts]
-  (let [opts (complete-opts opts sym "cmd-schema")]
+  (let [opts (complete-opts opts sym "cmd")]
     `(def ~sym ~opts)))
