@@ -556,6 +556,21 @@
         (catch :default error (show-error error))))))
 
 
+;;; links
+
+(defnc LinkCardActionArea [{:keys [to children]}]
+  ($ mui/CardActionArea
+     {:to to
+      :component Link}
+     children))
+
+(defnc SimpleLinkCard [{:keys [to children]}]
+  ($ mui/Card
+     ($ LinkCardActionArea {:to to}
+        ($ mui/CardContent
+           children))))
+
+
 ;;; commands
 
 

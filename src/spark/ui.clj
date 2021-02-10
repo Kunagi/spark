@@ -1,8 +1,10 @@
 (ns spark.ui
   (:require
    [clojure.pprint :refer [pprint]]
+   [clojure.string :as str]
+
    [spark.react :as r]
-   [clojure.string :as str]))
+   [spark.core :as spark]))
 
 
 (defmacro defnc [& body ] `(r/defnc ~@body))
@@ -11,6 +13,7 @@
 (defmacro use-state [& body] `(r/use-state ~@body))
 (defmacro use-effect [& body] `(r/use-effect ~@body))
 
+(defmacro def-page [sym opts] `(spark/def-page ~sym ~opts))
 
 (defmacro def-ui [type params & body]
   (let [[docstring params body] (if (string? params)
