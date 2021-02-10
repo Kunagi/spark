@@ -195,7 +195,7 @@
 (defn conform-js-data [^js data schema]
   (cond
 
-    (or (nil? data) (string? data) (number? data))
+    (or (nil? data) (string? data) (number? data) (boolean? data))
     (js->clj data)
 
     (instance? (if (exists? js/firebase)
