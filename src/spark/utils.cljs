@@ -198,7 +198,10 @@
     (or (nil? data) (string? data) (number? data))
     (js->clj data)
 
-    (instance? js/firebase.firestore.Timestamp data)
+    (instance? (if (exists? js/firebase)
+                 (-> js/firebase.firestore.Timestamp)
+                 (-> (js/require "firebase-admin") .-firestore .-Timestamp))
+               data)
     (-> data .toDate)
 
     ^boolean (js/Array.isArray data)
