@@ -47,7 +47,10 @@
 
 
 (defn update-doc-child> [doc inner-path child-id child-values]
-  (let [values (reduce (fn [values [k v]]
+  (let [child-values (assoc child-values
+                            :id child-id
+                            :ts-updated [:db/timestamp])
+        values (reduce (fn [values [k v]]
                          (assoc values
                                 (-> inner-path
                                     (into [child-id k])
