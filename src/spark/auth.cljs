@@ -70,9 +70,9 @@
          user)))))
 
 
-(defn initialize [{:keys [user-Col update-user set-user sign-in]}]
+(defn initialize [{:keys [user-doc-schema update-user set-user sign-in]}]
   (log ::initialize
-       :user-Col user-Col)
+       :doc-schema user-doc-schema)
   (reset! SIGN_IN-F sign-in)
   (let [auth (-> firebase .auth)]
     (-> auth (.useDeviceLanguage))
@@ -89,8 +89,8 @@
                    (redirect-to-home)))
                (reset! USER user)
                (when user
-                 (when user-Col
-                   (update-user-doc user-Col user update-user)))
+                 (when user-doc-schema
+                   (update-user-doc user-doc-schema user update-user)))
                (when set-user
                  (set-user user)))
              (when-not auth-completed?
