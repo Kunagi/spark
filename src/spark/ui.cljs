@@ -1,5 +1,5 @@
 (ns spark.ui
-  (:require-macros [spark.ui :refer [def-ui def-ui-test div grid
+  (:require-macros [spark.ui :refer [<> def-ui def-ui-test div grid
                                      stack stack-0 stack-1 stack-2
                                      stack-3 stack-4 stack-5]]
                    [spark.react :refer [use-state use-effect defnc $ provider
@@ -39,6 +39,7 @@
 
 
 (def atom-hook spark-react/atom-hook)
+(def memo spark-react/memo)
 
 
 (def StringVectorChips form-ui/StringVectorChips)
@@ -459,6 +460,47 @@
          :style {:margin-right (-> theme (.spacing (or spacing 1)))}}
         child)))))
 
+;;; dialogs
+
+(defonce DIALOGS (atom {}))
+
+(def use-dialogs (atom-hook DIALOGS))
+
+(defn show-dialog [dialog]
+  (let [id (or (-> dialog :id)
+               (str "dialog_" random-uuid))
+        dialog (assoc dialog :id id)]
+    (swap! DIALOGS assoc id (assoc dialog
+                                   :id id
+                                   :open? true))
+    id))
+
+(defn hide-dialog [id]
+  (swap! DIALOGS assoc-in [id :open?] false)
+  (js/setTimeout #(swap! DIALOGS dissoc id)
+                 1000)
+  )
+
+
+(defnc Dialog [{:keys [dialog]}]
+  {:wrap [memo]}
+  ($ mui/Dialog
+     {
+      :open (-> dialog :open?)
+      :onClose #(hide-dialog (-> dialog :id))}
+     (when-let [title (-> dialog :title)]
+       ($ mui/DialogTitle title))
+     ($ mui/DialogContent
+        (-> dialog :content))))
+
+(defnc DialogsContainer []
+  (let [dialogs (-> (use-dialogs) vals)]
+    (<>
+     (for [dialog dialogs]
+       ($ Dialog {:key (-> dialog :id) :dialog dialog})))))
+
+
+
 
 ;;; errors
 
@@ -858,6 +900,7 @@
          {:context PAGE :value page}
          ($ :div
             children
+            ($ DialogsContainer)
             ($ ErrorDialog)
             ($ FormDialogsContainer)
             (when (and  ^boolean js/goog.DEBUG devtools-component)
@@ -1028,5 +1071,28 @@
                 :path picture-ref
                 :height "200px"}))))))
 
+;;; dialogs
 
-;;; forms
+
+(defnc SelectionList [{:keys [items on-select]}]
+  ($ mui/List
+     (for [[idx item] (map-indexed vector items)]
+       ($ mui/ListItem
+          {:key (or (-> item :id) idx)
+           :button true
+           :onClick #(on-select item)}
+          ($ mui/ListItemText
+             {:primary (-> item :label)})))))
+
+
+(defn show-selection-list-dialog [dialog]
+  (let [dialog-id (str "selection-list_" (random-uuid))
+        SelectionList ($ SelectionList
+                         {:items (-> dialog :items)
+                          :on-select (fn [item]
+                                       (hide-dialog dialog-id)
+                                       ((-> dialog :on-select) item))})
+        dialog (assoc dialog
+                      :id dialog-id
+                      :content SelectionList)]
+    (show-dialog dialog)))

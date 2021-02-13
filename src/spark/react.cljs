@@ -1,8 +1,10 @@
 (ns spark.react
   (:require-macros [spark.react])
   (:require
+   [helix.core :as helix]
    [helix.hooks :as helix-hooks]))
 
+(def memo helix/memo)
 
 (defn atom-hook
   ([ATOM]
