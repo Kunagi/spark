@@ -481,17 +481,28 @@
                  1000)
   )
 
+(defonce DIALOG_ID (create-context nil))
+
+(defn use-dialog-id []
+  (use-context DIALOG_ID))
+
+(defn use-hide-dialog []
+  (let [dialog-id (use-dialog-id)]
+    #(hide-dialog dialog-id)))
 
 (defnc Dialog [{:keys [dialog]}]
   {:wrap [memo]}
-  ($ mui/Dialog
-     {
-      :open (-> dialog :open?)
-      :onClose #(hide-dialog (-> dialog :id))}
-     (when-let [title (-> dialog :title)]
-       ($ mui/DialogTitle title))
-     ($ mui/DialogContent
-        (-> dialog :content))))
+  (provider
+   {:context DIALOG_ID
+    :value (-> dialog :id)}
+   ($ mui/Dialog
+      {
+       :open (-> dialog :open?)
+       :onClose #(hide-dialog (-> dialog :id))}
+      (when-let [title (-> dialog :title)]
+        ($ mui/DialogTitle title))
+      ($ mui/DialogContent
+         (-> dialog :content)))))
 
 (defnc DialogsContainer []
   (let [dialogs (-> (use-dialogs) vals)]
