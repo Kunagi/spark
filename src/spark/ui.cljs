@@ -652,23 +652,26 @@
     form))
 
 
+(defn execute-command> [command context then]
+  (-> (runtime/execute-command> command context)
+      (.then (or then identity))
+      (.catch show-error)))
+
+
 (defn- new-command-on-click [command context then]
   (runtime/validate-command command)
   (let [ui-context (use-spark-context)
         form (-> command :form)]
     (if-not form
-      #(-> (runtime/execute-command> command (merge ui-context context))
-           (.then (or then identity))
-           (.catch show-error))
+      #(execute-command> command (merge ui-context context) then)
       #(let [context (merge ui-context context)
              _ (runtime/validate-command-context command context)
              form (complete-form form context)
              submit (fn [values]
-                      (-> (runtime/execute-command>
-                           command
-                           (assoc context :values values))
-                          (.then (or then identity))
-                          (.catch show-error)))
+                      (execute-command>
+                       command
+                       (assoc context :values values)
+                       then))
              form (assoc form :submit submit)]
          (show-form-dialog form)))))
 
@@ -746,7 +749,7 @@
     command))
 
 (defnc Button [{:keys [text icon
-                       onClick to href target
+                       onClick on-click to href target
                        variant color size
                        command
                        context
@@ -765,12 +768,11 @@
                (if (string? icon)
                  (d/div {:class "i material-icons"} icon)
                  icon))
-        onClick (wrap-in-error-handler
-                 (or onClick
+        on-click (or on-click onClick)
+        on-click (wrap-in-error-handler
+                 (or on-click
                      (-> command :onClick)
-                     #(-> (runtime/execute-command> command context)
-                          (.then (or then identity))
-                          (.catch show-error))))
+                     #(execute-command> command context then)))
         color (or color
                   (when (-> command :inconspicuous?) "default")
                   "primary")
@@ -787,7 +789,7 @@
           :className classes}
          text)
       ($ mui/Button
-         {:onClick onClick
+         {:onClick on-click
           :href href
           :target target
           :variant (or variant "contained")
@@ -810,9 +812,7 @@
         onClick (wrap-in-error-handler
                  (or onClick
                      (-> command :onClick)
-                     #(-> (runtime/execute-command> command context)
-                          (.then (or then identity))
-                          (.catch show-error))))
+                     #(execute-command> command context then)))
         icon (when-let [icon (or icon
                                  (-> command :icon)
                                  "play_arrow")]
