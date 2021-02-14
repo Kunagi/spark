@@ -762,7 +762,7 @@
   (let [context (merge (use-spark-context)
                        context)
         command (u/trampoline-if command)
-        command (when command (-> command upgrade-legacy-command complete-command ))
+        command (when command (-> command upgrade-legacy-command complete-command))
         text (or text (-> command :label) ":text missing")
         icon (when-let [icon (or icon (-> command :icon))]
                (if (string? icon)
@@ -770,9 +770,10 @@
                  icon))
         on-click (or on-click onClick)
         on-click (wrap-in-error-handler
-                 (or on-click
-                     (-> command :onClick)
-                     #(execute-command> command context then)))
+                  (or on-click
+                      (-> command :onClick)
+                      (when command
+                        #(execute-command> command context then))))
         color (or color
                   (when (-> command :inconspicuous?) "default")
                   "primary")

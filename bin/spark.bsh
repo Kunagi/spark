@@ -103,7 +103,7 @@ function shadow-watch {
 
     mkdir -p target
     date -Iminutes > src/spa/version-time.txt
-    gnome-terminal -t "Shadow-CLJS watch" -- clojure -A:shadow-cljs watch spa gcf test
+    gnome-terminal -t "Shadow-CLJS watch" -- clojure -A:shadow-cljs watch spa gcf
 }
 
 if [ $1 = "shadow-watch" ]
