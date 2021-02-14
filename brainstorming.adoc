@@ -1,0 +1,9 @@
+= Brainstorming
+
+== Clean Architecture
+
+=== Dependency Injection to Domain Functions
+
+Provide a generic `service` function to the domain layer, which is data driven.
+
+Declare interfaces as `def`'s and reference them in the `service` call.
