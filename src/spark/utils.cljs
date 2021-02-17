@@ -205,7 +205,9 @@
     (-> data .toDate)
 
     ^boolean (js/Array.isArray data)
-    (mapv #(conform-js-data % nil) data)
+    (if (= :set (first schema))
+      (into #{} (map #(conform-js-data % nil) data))
+      (mapv #(conform-js-data % nil) data))
 
     :else
     (case (first schema)

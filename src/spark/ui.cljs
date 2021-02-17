@@ -988,7 +988,7 @@
   )
 
 (defnc AppFrame [{:keys [spa children theme styles]}]
-  (log ::render-AppFrame)
+  ;; (log ::render-AppFrame)
   (let [uid (use-uid)
         spark-context {:spark/spa spa
                        :spark/page :MISSING!
