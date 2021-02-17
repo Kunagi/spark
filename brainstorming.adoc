@@ -1,9 +1,29 @@
 = Brainstorming
 
-== Clean Architecture
-
-=== Dependency Injection to Domain Functions
+== Dependency Injection to Domain Functions
 
 Provide a generic `service` function to the domain layer, which is data driven.
 
 Declare interfaces as `def`'s and reference them in the `service` call.
+
+== Misc
+
+=== Stratified Design
+
+==== Layers
+
+===== Domain Entities
+
+Accessors. Predicates. Comparators. Virtual Property Accessors.
+
+Custom Modifiers (like `assoc`) create update infomation for current transaction.
+
+===== Business Rules
+
+===== Commands / Use-Cases
+
+=== Command Query Responsibility Segregation
+
+Use entities Layer as the read model.
+
+Create getters by macros to register metadata with validators, coercers, docs, etc.
