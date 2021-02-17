@@ -86,8 +86,7 @@
             (assoc styles k (conform-style-value v)))
           {} styles))
 
-
-(defmacro div [& style-and-children]
+(defn- html-element [element style-and-children]
   (let [[style children] (if (-> style-and-children first map?)
                            [(first style-and-children) (rest style-and-children)]
                            [nil style-and-children])
@@ -102,7 +101,13 @@
                         [(assoc props :className class) (dissoc style :class)]
                         [props style])
         props (assoc props :style (conform-style style))]
-    `($ :div ~props ~@children)))
+    `($ ~element ~props ~@children)))
+
+(defmacro div [& style-and-children]
+  (html-element :div style-and-children))
+
+(defmacro span [& style-and-children]
+  (html-element :span style-and-children))
 
 
 (defmacro grid [grid-template-columns & style-and-children]

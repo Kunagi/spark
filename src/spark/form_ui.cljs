@@ -341,10 +341,12 @@
 
 
 (defnc FieldCardArea [{:keys [entity update-f field]}]
-  (u/log-deprecated "use CommandCardArea")
+  #_(u/log-deprecated "use CommandCardArea")
   (u/assert-malli [:map] entity)
   (let [id (form/field-id field)
-        label (get field :label)
+        label (or (when (spark/field-schema? field)
+                    (-> field spark/schema-opts :label))
+                  (get field :label))
         value (get entity id)
         submit #(let [changes {id (get % id)}]
                   (if update-f
