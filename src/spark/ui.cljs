@@ -137,7 +137,7 @@
          watch-ref (random-uuid)]
 
      (use-effect
-      :always
+      :once
       (set-doc @DATA)
       (add-watch DATA
                  watch-ref
@@ -173,7 +173,7 @@
         watch-ref (random-uuid)]
 
     (use-effect
-     :always
+     :once
      (set-docs @DATA)
      (add-watch DATA
                 watch-ref
@@ -276,16 +276,23 @@
     [files reload-f]))
 
 
-(defn use-storage-url [path]
-  (let [[url set-url] (use-state nil)]
+(defn use-storage-url
+  ([path]
+   (use-storage-url path nil))
+  ([path fallback-url]
+   (let [[url set-url] (use-state nil)
+         update-url (fn [url]
+                      (set-url (or url
+                                   fallback-url)))]
 
-    (use-effect
-     :always
-     (-> (storage/url> path)
-         (.then set-url))
-     nil)
+     (use-effect
+      :always
+      (-> (storage/url> path)
+          (.then update-url)
+          (.catch #(update-url nil)))
+      nil)
 
-    url))
+     url)))
 
 
 
@@ -1033,7 +1040,6 @@
        {:src url
         :height height
         :style style})))
-
 
 (defnc StorageImageActionArea
   [{:keys [id storage-path upload-text
