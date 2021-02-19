@@ -482,7 +482,8 @@
 
 
 (defnc Flexbox [{:keys [children spacing]}]
-  (let [theme (mui-styles/useTheme)]
+  (let [children (->> children (remove nil?))
+        theme (mui-styles/useTheme)]
     (d/div
      {:style {:display :flex
               ;; FIXME :gap (-> theme (.spacing (or spacing 1)))
