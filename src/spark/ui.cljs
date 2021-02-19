@@ -28,6 +28,7 @@
    [spark.utils :as u]
    [spark.react :as spark-react]
    [spark.core :as spark]
+   [spark.firestore :as firestore]
     
    [spark.firebase-storage :as storage]
    [spark.runtime :as runtime]
@@ -132,21 +133,36 @@
               [(spark/doc-schema-col-path Doc)
                doc-id])))
   ([path]
-   (let [DATA (firestore-hooks/doc-sub path)
-         [doc set-doc] (use-state @DATA)
-         watch-ref (random-uuid)]
+   (log ::use-doc
+        :path path)
+   (let [
+         [doc set-doc] (use-state nil #_(when DATA @DATA))
+         ;; [doc set-doc] (use-state (when-let [DATA (firestore-hooks/doc-sub path)]
+         ;;                            @DATA))
+         [watching set-watching] (use-state false)]
 
      (use-effect
-      :once
-      (set-doc @DATA)
-      (add-watch DATA
-                 watch-ref
-                 (fn [_ _ _ nv]
-                   (set-doc nv)))
-
-      #(remove-watch DATA watch-ref))
+      :always
+      (when (and path (not watching))
+        ;; (log ::use-doc--subscribing
+        ;;      :path path)
+        (set-watching true)
+        (let [ref (firestore/ref path)]
+          (-> ref
+              (.onSnapshot (fn [doc-snapshot]
+                             (log ::doc-snapshot-received
+                                  :collection path
+                                  :snapshot doc-snapshot)
+                             (set-doc (firestore/wrap-doc doc-snapshot)))
+                           (fn [^js error]
+                             (log ::doc-atom-error
+                                  :path path
+                                  :exception error))))
+          nil ;; FIXME unsubscribe
+          )))
 
      doc)))
+
 
 (defn use-singleton-doc
   [Doc]
@@ -168,19 +184,28 @@
                 [(spark/doc-schema-col-path (first path))] (rest path))
 
                :else path)
-        DATA (firestore-hooks/col-sub path)
-        [docs set-docs] (use-state @DATA)
-        watch-ref (random-uuid)]
+        [docs set-docs] (use-state nil)
+        [watching set-watching] (use-state false)]
 
     (use-effect
-     :once
-     (set-docs @DATA)
-     (add-watch DATA
-                watch-ref
-                (fn [_ _ _ nv]
-                  (set-docs nv)))
+     :always
+     (when (and path (not watching))
+       (set-watching true)
+       (-> (firestore/ref path)
+           (.onSnapshot (fn [^js query-col-snapshot]
+                          (log ::query-snapshot-received
+                               :collection path
+                               :count (-> query-col-snapshot .-docs count)
+                               :snapshot query-col-snapshot)
+                          (->> ^js query-col-snapshot
+                               .-docs
+                               (map firestore/wrap-doc)
+                               set-docs))
+                        (fn [^js error]
+                          (js/console.error "Loading collection failed" path error))))
 
-     #(remove-watch DATA watch-ref))
+       nil ;; FIXME unsubscribe
+       ))
 
     docs))
 
@@ -444,7 +469,7 @@
                    :padding (when padding (-> theme (.spacing padding)))
                    :justify-content "space-around"}}
           ($ mui/CircularProgress)
-          #_(when ^boolean goog.DEBUG
+          (when ^boolean goog.DEBUG
             (data values))))))
 
 
@@ -659,10 +684,13 @@
     form))
 
 
-(defn execute-command> [command context then]
-  (-> (runtime/execute-command> command context)
-      (.then (or then identity))
-      (.catch show-error)))
+(defn execute-command>
+  ([command context]
+   (execute-command> command context nil))
+  ([command context then]
+   (-> (runtime/execute-command> command context)
+       (.then (or then identity))
+       (.catch show-error))))
 
 
 (defn- new-command-on-click [command context then]
