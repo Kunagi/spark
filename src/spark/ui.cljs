@@ -482,15 +482,15 @@
 
 
 (defnc Flexbox [{:keys [children spacing]}]
-  (let [children (->> children (remove nil?))
+  (let [children (if (seqable? children)
+                   (->> children (remove nil?))
+                   [children])
         theme (mui-styles/useTheme)]
     (d/div
      {:style {:display :flex
               ;; FIXME :gap (-> theme (.spacing (or spacing 1)))
               }}
-     (for [[idx child] (map-indexed vector (if (seqable? children)
-                                             children
-                                             [children]))]
+     (for [[idx child] (map-indexed vector children)]
        (d/div
         {:key idx
          :style {:margin-right (-> theme (.spacing (or spacing 1)))}}
