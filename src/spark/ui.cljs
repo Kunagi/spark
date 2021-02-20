@@ -135,31 +135,29 @@
   ([path]
    (log ::use-doc
         :path path)
-   (let [
-         [doc set-doc] (use-state nil #_(when DATA @DATA))
-         ;; [doc set-doc] (use-state (when-let [DATA (firestore-hooks/doc-sub path)]
-         ;;                            @DATA))
-         [watching set-watching] (use-state false)]
+   (let [[doc set-doc] (use-state nil #_(when DATA @DATA))
+         effect-signal (str path)
+         ]
 
      (use-effect
-      :always
-      (when (and path (not watching))
-        ;; (log ::use-doc--subscribing
-        ;;      :path path)
-        (set-watching true)
-        (let [ref (firestore/ref path)]
-          (-> ref
-              (.onSnapshot (fn [doc-snapshot]
-                             (log ::doc-snapshot-received
-                                  :collection path
-                                  :snapshot doc-snapshot)
-                             (set-doc (firestore/wrap-doc doc-snapshot)))
-                           (fn [^js error]
-                             (log ::doc-atom-error
-                                  :path path
-                                  :exception error))))
-          nil ;; FIXME unsubscribe
-          )))
+      [effect-signal]
+      (when path
+        (log ::use-doc--subscribe
+             :path path)
+        ;; (set-watching true)
+        (let [ref (firestore/ref path)
+              on-snapshot (fn [doc-snapshot]
+                            (log ::doc-snapshot-received
+                                 :collection path
+                                 :snapshot doc-snapshot)
+                            (set-doc (firestore/wrap-doc doc-snapshot)))
+              on-error (fn [^js error]
+                         (log ::doc-atom-error
+                              :path path
+                              :exception error))
+              unsubscribe (.onSnapshot ref on-snapshot on-error)]
+
+          unsubscribe)))
 
      doc)))
 
@@ -185,27 +183,28 @@
 
                :else path)
         [docs set-docs] (use-state nil)
-        [watching set-watching] (use-state false)]
+        effect-signal (str path)]
 
     (use-effect
-     :always
-     (when (and path (not watching))
-       (set-watching true)
-       (-> (firestore/ref path)
-           (.onSnapshot (fn [^js query-col-snapshot]
-                          (log ::query-snapshot-received
-                               :collection path
-                               :count (-> query-col-snapshot .-docs count)
-                               :snapshot query-col-snapshot)
-                          (->> ^js query-col-snapshot
-                               .-docs
-                               (map firestore/wrap-doc)
-                               set-docs))
-                        (fn [^js error]
-                          (js/console.error "Loading collection failed" path error))))
+     [effect-signal]
+     (when path
+       (log ::use-col--subscribe
+            :path path)
+       (let [col-ref (firestore/ref path)
+             on-snap (fn [^js query-col-snapshot]
+                       (log ::query-snapshot-received
+                            :collection path
+                            :count (-> query-col-snapshot .-docs count)
+                            :snapshot query-col-snapshot)
+                       (->> ^js query-col-snapshot
+                            .-docs
+                            (map firestore/wrap-doc)
+                            set-docs))
+             on-error (fn [^js error]
+                        (js/console.error "Loading collection failed" path error))
+             unsubscribe (.onSnapshot col-ref on-snap on-error)]
 
-       nil ;; FIXME unsubscribe
-       ))
+         unsubscribe)))
 
     docs))
 
