@@ -77,7 +77,9 @@
          :inputProps (if-let [props (-> field :input-props)]
                        (clj->js props)
                        (clj->js {}))
+         :InputLabelProps #js {:shrink true}
          :margin "dense"
+         :variant "filled"
          :fullWidth true})))
 
 
@@ -127,6 +129,7 @@
                           (-> % .-target .-value))
               :autoFocus (-> field :auto-focus?)
               :margin "dense"
+              :variant "filled"
               :fullWidth true
               }
              (when (or (nil? value) (not required?))
