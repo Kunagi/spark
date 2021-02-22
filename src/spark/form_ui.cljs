@@ -77,9 +77,9 @@
          :inputProps (if-let [props (-> field :input-props)]
                        (clj->js props)
                        (clj->js {}))
-         :InputLabelProps #js {:shrink true}
+         ;; :InputLabelProps #js {:shrink false}
          :margin "dense"
-         :variant "filled"
+         ;; :variant "filled"
          :fullWidth true})))
 
 
