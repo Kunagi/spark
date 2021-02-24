@@ -34,3 +34,4 @@
 (defmacro use-context [& body] `(helix-hooks/use-context ~@body))
 (defmacro use-state [& body] `(helix-hooks/use-state ~@body))
 (defmacro use-effect [& body] `(helix-hooks/use-effect ~@body))
+(defmacro use-memo [& body] `(helix-hooks/use-memo ~@body))

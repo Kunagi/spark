@@ -2,7 +2,10 @@
   (:require
 
    ["@material-ui/core" :as mui]
-
+   ["@material-ui/lab" :as mui-lab]
+   ["@material-ui/icons"  :as mui-icons]
+   ["lodash/throttle" :as throttle]
+   ["autosuggest-highlight/parse" :as parse]
    [spark.logging :refer [log]]
     
    [spark.ui :as ui :refer [defnc $ def-ui-test]]
@@ -21,7 +24,9 @@
        :api-key api-key)
   (let [script (js/document.createElement "script")]
     (set! (.-src script) (str "https://maps.googleapis.com/maps/api/js?key="
-                              api-key))
+                              api-key
+                              "&language=de"
+                              "&libraries=places"))
     ;; (set! (.-defer script) true)
     (-> js/document .-head (.appendChild script))))
 
@@ -101,14 +106,151 @@
             (reject results))))))))
 
 
+;; #############################
+;; ###### Standorteingabe ######
+;; #############################
+
+
+(def autocompleteService (clj->js {:current nil}))
+
+;; Places-API Experimentation
+
+(comment
+ (set! (.. autocompleteService -current) 
+       (new (-> js/window .-google .-maps
+                .-places .-AutocompleteService)))
+ (.-current autocompleteService)
+ ^js/window.google.maps.places.AutocompleteService
+ (->  
+  autocompleteService
+  .-current
+  (.getPlacePredictions (clj->js {:input "Kö"}) #(js/console.log "google said " %))))
+
+;;
+;; Mocking to replace the actual google call
+;;
+ 
+(defn rand-str [len]
+  (.toLowerCase
+   (apply str (take len (repeatedly #(char (+ (rand 26) 65)))))))
+
+
+(defn options-mock-effect 
+  ""
+  [set-options input-value value fetch]
+  (let [c (count input-value)
+        new-options (conj (map #(str input-value %)
+                          (take (Math/ceil (/ 6 (if (>= c 1) c 1)))
+                                (repeatedly
+                                 #(rand-str (if (< c 6)
+                                              (Math/ceil (- 6 c))
+                                              1))))) "")]
+    (set-options
+     (into [ ] new-options))))
+
+(comment
+  (options-mock2 #(js/console.log "options st to " (str %)) "1234567890" nil nil))
+
+;;
+;; Helpers for PositionInput
+;; 
+
+(defn options-from-google-effect
+  "Effect that makes a call to the google places Autocomplete-API"
+  [set-options input-value ort fetch] 
+  (fn []
+    (let [active? (atom true)]
+      (if (and (not (.-current autocompleteService))
+               js/window.google.maps.places)
+        (set! (.. autocompleteService -current)  ;TODO: factor out the side-effect??
+              (new (-> js/window .-google .-maps
+                       .-places .-AutocompleteService))))
+
+      (cond
+        (not (.-current autocompleteService)) nil
+        (empty? input-value) (do (set-options (if ort [ort] []))
+                                 nil)
+        :else
+        (fetch (clj->js {:input input-value
+                         :componentRestrictions {:country ["de" "at"]}
+                         :language "de"})
+               (fn [results] ; this is the callback we hand to the API-call
+                 ;; (js/console.log "google said " (js->clj results :keywordize-keys true))
+                 (if @active?
+                   (set-options
+                    (into
+                     (if ort [ort] [])
+                     results))))))
+      #(reset! active? false))))
+
+
+(defn render-google-option
+  "Renders the Dropdown Options containing the google places"
+  [option]
+  (let [option
+        (js->clj option :keywordize-keys true)                                    
+        matches (get-in option 
+                        [:structured_formatting
+                         :main_text_matched_substrings])
+        main-text (get-in option [:structured_formatting
+                                  :main_text])
+        parts (js->clj
+               (parse main-text
+                      (clj->js
+                       (map
+                        (fn [{:keys [offset length]}]
+                          [offset (+ length offset)])
+                        matches))) :keywordize-keys true)]
+    ($ mui/Grid
+       {:container true
+        :alignItems "center"}
+       ($ mui/Grid
+          {:item true
+           :xs true}
+          ($ mui-icons/LocationOn {:className "icon"}))
+       ($ mui/Grid
+          {:item true
+           :xs true}                                      
+          (map-indexed (fn [i {:keys [text highlight]}]
+                         ($ :span
+                            {:key i
+                             :style {:fontWeight (if highlight 700 400)}} text)) parts)
+          ($ mui/Typography
+             {:variant "body2" :color "textSecondary"}
+             (get-in option 
+                     [:structured_formatting
+                      :secondary_text]))))))
+ 
+
+
 (defnc PositionInput [{:keys [set-position]}]
-  (let [[ort set-ort] (ui/use-state (js/window.localStorage.getItem "standort"))]
+  (let [fetch (ui/use-memo
+               [] (throttle 
+                   (fn [request callback]
+                     ^js (. (.-current autocompleteService)
+                            getPlacePredictions request callback)
+                              ;; (->  autocompleteService ; Don't know where to put Metadata in threading macro
+                              ;;      .-current
+                              ;;      (.getPlacePredictions
+                              ;;       request callback))
+                     ) 200))
+        [input-value set-input-value] (ui/use-state "")
+        [options set-options] (ui/use-state [])
+        [ort set-ort] (ui/use-state
+                       (js/window.localStorage.getItem "standort"))]
+    
+    
+    (ui/use-effect
+     [ort input-value fetch] ; runs when any of these change
+     (options-from-google-effect set-options input-value ort fetch))
+    
     ($ :div
        ($ :form
-          {:onSubmit (fn [^js event]
+          {:style {:width "300px"}
+           :onSubmit (fn [^js event]
                        (-> event .preventDefault)
                        (js/window.localStorage.setItem "standort" ort)
-                       (when ort
+                       (when ort 
                          (-> (geocode-address> ort)
                              (.then #(set-position (-> %
                                                        first
@@ -116,13 +258,40 @@
                                                        .-location
                                                        js->clj)))))
                        false)}
-          ($ mui/TextField
-             {:label "Bitte Standort eingeben"
-              :defaultValue ort
-              :onChange #(-> % .-target .-value set-ort)
-              :type "text"
-              :autoComplete "address-level2"
-              :autoFocus true})))))
+          
+          ($ mui-lab/Autocomplete
+             {:getOptionLabel #(if (string? %) % (.-description %))
+              :options (clj->js options) ; warum manuell?
+              :autoComplete true
+              :includeInputInList true
+              :getOptionSelected #(= (get %1 "place_id")
+                                     (get %2 "place_id"))
+              :value ort
+              :onChange (fn [event new-value]
+                          (set-options (if new-value (into [new-value] options)
+                                           options))
+                          (set-ort (.-description new-value)))
+              :onInputChange (fn [event new-input-value]
+                               (set-input-value new-input-value))
+              :renderInput (fn [params]
+                             ($ mui/TextField
+                                {:label "Bitte Standort eingeben"
+                                 ;; :onChange #(-> % .-target .-value set-ort)
+                                 :variant "outlined"
+                                 :type "text"
+                                 :autoFocus true
+                                 :& params}))
+              ;; :renderOption #(str (js->clj %))
+              :renderOption render-google-option})))))
+
+ 
+(def-ui-test [PositionInput] ;TODO: Write Proper test?
+   ($ PositionInput {:set-position js/alert}))
+
+
+;; #########
+;; ## Map ##
+;; #########
 
 (def-ui-test [PositionInput]
   ($ PositionInput {:set-position js/alert}))

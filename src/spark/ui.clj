@@ -12,6 +12,7 @@
 (defmacro <> [& children] `(r/<> ~@children))
 (defmacro use-state [& body] `(r/use-state ~@body))
 (defmacro use-effect [& body] `(r/use-effect ~@body))
+(defmacro use-memo [& body] `(r/use-memo ~@body))
 
 (defmacro def-page [sym opts] `(spark/def-page ~sym ~opts))
 
