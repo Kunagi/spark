@@ -204,11 +204,11 @@
         :alignItems "center"}
        ($ mui/Grid
           {:item true
-           :xs true}
+           :xs 2}
           ($ mui-icons/LocationOn {:className "icon"}))
        ($ mui/Grid
           {:item true
-           :xs true}                                      
+           :xs 10}                                      
           (map-indexed (fn [i {:keys [text highlight]}]
                          ($ :span
                             {:key i
