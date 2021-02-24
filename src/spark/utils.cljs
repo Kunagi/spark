@@ -193,6 +193,7 @@
 
 
 (defn conform-js-data [^js data schema]
+  (js/console.log "CONFORMING" data schema)
   (cond
 
     (or (nil? data) (string? data) (number? data) (boolean? data))
@@ -206,17 +207,19 @@
 
     ^boolean (js/Array.isArray data)
     (if (= :set (first schema))
-      (into #{} (map #(conform-js-data % nil) data))
+      (into #{} (map #(conform-js-data % (second schema)) data))
       (mapv #(conform-js-data % nil) data))
 
     :else
     (case (first schema)
+
       :map-of
       (reduce (fn [m js-key]
                 (let [k js-key
                       v (gobj/get data js-key)]
-                  (assoc m k (conform-js-data v (malli-map-field-schema-by-id schema k)))))
+                  (assoc m k (conform-js-data v (nth schema 2)))))
               {} (js/Object.keys data))
+
       (reduce (fn [m js-key]
                 (let [k (keyword js-key)
                       v (gobj/get data js-key)]
