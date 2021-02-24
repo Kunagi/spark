@@ -193,7 +193,6 @@
 
 
 (defn conform-js-data [^js data schema]
-  (js/console.log "CONFORMING" data schema)
   (cond
 
     (or (nil? data) (string? data) (number? data) (boolean? data))
@@ -210,7 +209,7 @@
       (into #{} (map #(conform-js-data % (second schema)) data))
       (mapv #(conform-js-data % nil) data))
 
-    :else
+    (vector? schema)
     (case (first schema)
 
       :map-of
@@ -224,4 +223,7 @@
                 (let [k (keyword js-key)
                       v (gobj/get data js-key)]
                   (assoc m k (conform-js-data v (malli-map-field-schema-by-id schema k)))))
-              {} (js/Object.keys data)))))
+              {} (js/Object.keys data)))
+
+    :else
+    data))

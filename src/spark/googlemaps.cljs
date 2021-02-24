@@ -4,7 +4,7 @@
    ["@material-ui/core" :as mui]
    ["@material-ui/lab" :as mui-lab]
    ["@material-ui/icons"  :as mui-icons]
-   ["lodash/throttle" :as throttle]
+   ["lodash.throttle" :as throttle]
    ["autosuggest-highlight/parse" :as parse]
    [spark.logging :refer [log]]
     
