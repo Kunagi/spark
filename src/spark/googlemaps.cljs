@@ -124,10 +124,11 @@
  (->  
   autocompleteService
   .-current
-  (.getPlacePredictions (clj->js {:input "Kö"}) #(js/console.log "google said " %))))
+  (.getPlacePredictions (clj->js {:input "Kö"})
+                        #(js/console.log "google Places said " %))))
 
 ;;
-;; Mocking to replace the actual google call
+;; Mocking to replace the actual google call if needed
 ;;
  
 (defn rand-str [len]
@@ -147,9 +148,6 @@
                                               1))))) "")]
     (set-options
      (into [ ] new-options))))
-
-(comment
-  (options-mock2 #(js/console.log "options st to " (str %)) "1234567890" nil nil))
 
 ;;
 ;; Helpers for PositionInput
@@ -219,8 +217,7 @@
              {:variant "body2" :color "textSecondary"}
              (get-in option 
                      [:structured_formatting
-                      :secondary_text]))))))
- 
+                      :secondary_text])))))) 
 
 
 (defnc PositionInput [{:keys [set-position]}]
@@ -257,8 +254,7 @@
                                                        .-geometry
                                                        .-location
                                                        js->clj)))))
-                       false)}
-          
+                       false)}          
           ($ mui-lab/Autocomplete
              {:getOptionLabel #(if (string? %) % (.-description %))
               :options (clj->js options) ; warum manuell?
