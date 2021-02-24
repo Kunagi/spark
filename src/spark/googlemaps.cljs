@@ -266,7 +266,8 @@
               :onChange (fn [event new-value]
                           (set-options (if new-value (into [new-value] options)
                                            options))
-                          (set-ort (.-description new-value)))
+                          (if (.-description new-value)
+                           (set-ort (.-description new-value))))
               :onInputChange (fn [event new-input-value]
                                (set-input-value new-input-value))
               :renderInput (fn [params]
