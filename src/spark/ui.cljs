@@ -480,7 +480,7 @@
      children)))
 
 
-(defnc Flexbox [{:keys [children spacing]}]
+(defnc Flexbox [{:keys [children spacing style]}]
   (let [children (if (seqable? children)
                    (->> children (remove nil?))
                    [children])
@@ -492,7 +492,8 @@
      (for [[idx child] (map-indexed vector children)]
        (d/div
         {:key idx
-         :style {:margin-right (-> theme (.spacing (or spacing 1)))}}
+         :style (merge  {:margin-right (-> theme (.spacing (or spacing 1)))}
+                        style)}
         child)))))
 
 ;;; dialogs
