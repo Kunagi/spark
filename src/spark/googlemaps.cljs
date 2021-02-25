@@ -107,7 +107,7 @@
 
 
 ;; #############################
-;; ###### Standorteingabe ######
+;; ###### Standorteingabe ###### 
 ;; #############################
 
 
@@ -133,7 +133,7 @@
  
 (defn rand-str [len]
   (.toLowerCase
-   (apply str (take len (repeatedly #(char (+ (rand 26) 65)))))))
+   (apply str (take len (repeatedly #(char (+ (rand 26) 65))))))) 
 
 
 (defn options-mock-effect 
@@ -170,7 +170,7 @@
                                  nil)
         :else
         (fetch (clj->js {:input input-value
-                         :componentRestrictions {:country ["de" "at"]}
+                         :componentRestrictions {:country ["de"]}
                          :language "de"})
                (fn [results] ; this is the callback we hand to the API-call
                  ;; (js/console.log "google said " (js->clj results :keywordize-keys true))
