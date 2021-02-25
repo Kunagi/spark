@@ -227,9 +227,9 @@ function release {
 
     bump-version
 
-    if [ -f bin/deploy.bsh ]
+    if [ -f "./bin/deploy.bsh" ]
     then
-        bin/deploy.bsh
+        ./bin/deploy.bsh
     else
         cd firebase
         firebase deploy
