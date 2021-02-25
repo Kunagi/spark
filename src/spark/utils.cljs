@@ -231,4 +231,4 @@
               {} (js/Object.keys data)))
 
     :else
-    data))
+    (js->clj data :keywordize-keys true)))
