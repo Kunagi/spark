@@ -138,9 +138,8 @@ function firebase-emulators {
     collect-spa-resources
     cd firebase
     touch functions/index.js
-    gnome-terminal -t "Firebase Emulators" -- firebase emulators:start --import=./dev-data --export-on-exit
+    gnome-terminal -t "Firebase Emulators" -- firebase emulators:start --import=./dev-data --export-on-exit=./dev-data
     cd ..
-
 }
 
 if [ $1 = "firebase-emulators" ]
@@ -228,9 +227,14 @@ function release {
 
     bump-version
 
-    cd firebase
-    firebase deploy
-    cd ..
+    if [ -f bin/deploy.bsh ]
+    then
+        bin/deploy.bsh
+    else
+        cd firebase
+        firebase deploy
+        cd ..
+    fi
 }
 
 if [ $1 = "release" ]
