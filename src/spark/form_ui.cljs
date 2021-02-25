@@ -11,7 +11,6 @@
 
    ["@material-ui/core" :as mui]
    ["@material-ui/lab" :as mui-lab]
-   ["material-ui-chip-input" :default ChipInput]
 
    [spark.utils :as u]
    [spark.core :as spark]

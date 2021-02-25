@@ -21,8 +21,6 @@
    ["@material-ui/core" :as mui]
    ["@material-ui/core/styles" :as mui-styles]
 
-   ["material-ui-chip-input" :default ChipInput]
-
 
    [spark.logging :refer [log]]
    [spark.utils :as u]
