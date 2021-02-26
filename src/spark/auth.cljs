@@ -124,6 +124,21 @@
     (-> firebase .auth (.signInWithRedirect ^js provider))))
 
 
+(defn sign-in-with-facebook []
+  ;; https://firebase.google.com/docs/auth/web/facebook-login
+  ;; https://developers.facebook.com
+  ;; https://developers.facebook.com/docs/permissions/reference
+  (let [FacebookAuthProvider js/firebase.auth.FacebookAuthProvider
+        provider (FacebookAuthProvider.)]
+    (-> ^js provider (.addScope "email"))
+    (-> firebase .auth
+        (.signInWithRedirect ^js provider)
+        (.then (fn [result]
+                 (js/console.log "AUTH SUCCESS" result))
+               (fn [result]
+                 (js/console.log "AUTH FAILURE" result))))))
+
+
 (defn sign-in []
   (@SIGN_IN-F))
 
