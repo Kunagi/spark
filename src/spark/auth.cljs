@@ -31,7 +31,17 @@
   (redirect "/"))
 
 
-(defn process-sign-in-with-email-link []
+(defn process-sign-in-with-redirect [error-handler]
+  (let [auth (-> firebase .auth)]
+    (-> ^js auth
+        .getRedirectResult
+        (.catch (fn [^js error]
+                  (log ::sign-in-with-redirect-failed
+                       :error error)
+                  (when error-handler (error-handler error)))))))
+
+
+(defn process-sign-in-with-email-link [error-handler]
   (let [auth (-> firebase .auth)
         href js/window.location.href]
     (when (-> auth (.isSignInWithEmailLink href))
@@ -46,7 +56,9 @@
                       (redirect js/window.location.pathname))
                    #(do
                       (js/console.error %)
-                      (redirect-to-home))))))))
+                      (if error-handler
+                        (error-handler %)
+                        (redirect-to-home)))))))))
 
 
 (defn- email-domain [email]
@@ -70,12 +82,13 @@
          user)))))
 
 
-(defn initialize [{:keys [user-doc-schema update-user set-user sign-in]}]
+(defn initialize [{:keys [user-doc-schema update-user set-user sign-in error-handler]}]
   (log ::initialize
        :doc-schema user-doc-schema)
   (reset! SIGN_IN-F sign-in)
   (let [auth (-> firebase .auth)]
     (-> auth (.useDeviceLanguage))
+
     (-> auth
         (.onAuthStateChanged
          (fn [^js user]
@@ -95,7 +108,10 @@
                  (set-user user)))
              (when-not auth-completed?
                (reset! AUTH_COMPLETED true))))))
-    (process-sign-in-with-email-link)))
+
+    (process-sign-in-with-redirect error-handler)
+
+    (process-sign-in-with-email-link error-handler)))
 
 
 
