@@ -1,7 +1,10 @@
 (ns spark.ui
-  (:require-macros [spark.ui :refer [<> def-ui def-ui-test div grid
+  (:require-macros [spark.ui :refer [<> def-ui def-ui-test div
+                                     grid center
                                      stack stack-0 stack-1 stack-2
-                                     stack-3 stack-4 stack-5]]
+                                     stack-3 stack-4 stack-5
+                                     flex flex-0 flex-1 flex-2
+                                     flex-3 flex-4 flex-5]]
                    [spark.react :refer [use-state use-effect defnc $ provider
                                         use-context create-context]]
                    [clojure.string :as str])
@@ -993,6 +996,8 @@
   (fn [theme]
     (conform-styles
      (merge {
+             :.center {:display :grid :place-items "center"}
+
              :.stack {:display :grid :grid-gap (-> theme (.spacing 1))}
              :.stack-0 {:display :grid}
              :.stack-1 {:display :grid :grid-gap (-> theme (.spacing 1))}
@@ -1000,6 +1005,26 @@
              :.stack-3 {:display :grid :grid-gap (-> theme (.spacing 3))}
              :.stack-4 {:display :grid :grid-gap (-> theme (.spacing 4))}
              :.stack-5 {:display :grid :grid-gap (-> theme (.spacing 5))}
+
+             ".flex" {:display :flex :flex-wrap "wrap"
+                      :margin (str "-" (-> theme (.spacing 1) (/ 2)) "px")}
+             ".flex > *" {:margin (str (-> theme (.spacing 1) (/ 2)) "px")}
+             ".flex-0" {:display :flex :flex-wrap "wrap"}
+             ".flex-1" {:display :flex :flex-wrap "wrap"
+                        :margin (str "-" (-> theme (.spacing 1) (/ 2)) "px")}
+             ".flex-1 > *" {:margin (str (-> theme (.spacing 1) (/ 2)) "px")}
+             ".flex-2" {:display :flex :flex-wrap "wrap"
+                        :margin (str "-" (-> theme (.spacing 2) (/ 2)) "px")}
+             ".flex-2 > *" {:margin (str (-> theme (.spacing 2) (/ 2)) "px")}
+             ".flex-3" {:display :flex :flex-wrap "wrap"
+                        :margin (str "-" (-> theme (.spacing 3) (/ 2)) "px")}
+             ".flex-3 > *" {:margin (str (-> theme (.spacing 3) (/ 2)) "px")}
+             ".flex-4" {:display :flex :flex-wrap "wrap"
+                        :margin (str "-" (-> theme (.spacing 4) (/ 2)) "px")}
+             ".flex-4 > *" {:margin (str (-> theme (.spacing 4) (/ 2)) "px")}
+             ".flex-5" {:display :flex :flex-wrap "wrap"
+                        :margin (str "-" (-> theme (.spacing 5) (/ 2)) "px")}
+             ".flex-5 > *" {:margin (str (-> theme (.spacing 5) (/ 2)) "px")}
              }
             (styles theme)))))
 
@@ -1008,6 +1033,19 @@
   (stack-0 (tdiv-red) (tdiv-blue) (tdiv-green))
   (stack-1 (tdiv-red) (tdiv-blue) (tdiv-green))
   (stack-2 (tdiv-red) (tdiv-blue) (tdiv-green)))
+
+(def-ui-test [flex]
+  (flex (tdiv-red) (tdiv-blue) (tdiv-green))
+  (flex-0 (tdiv-red) (tdiv-blue) (tdiv-green))
+  (flex-1 (tdiv-red) (tdiv-blue) (tdiv-green))
+  (flex-2 (tdiv-red) (tdiv-blue) (tdiv-green)))
+
+(def-ui-test [center]
+  (center {:width 200 :height 200}
+          ":-)")
+  (div {:width 200}
+       (center ":-)")))
+
 
 (defnc AppFrame-inner [{:keys [children styles spa]}]
   (let [class (use-styles-class (app-styles styles))]

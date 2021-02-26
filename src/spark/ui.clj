@@ -87,22 +87,32 @@
             (assoc styles k (conform-style-value v)))
           {} styles))
 
-(defn- html-element [element style-and-children]
-  (let [[style children] (if (-> style-and-children first map?)
-                           [(first style-and-children) (rest style-and-children)]
-                           [nil style-and-children])
-        props {}
-        [props style] (if-let [k (-> style :key)]
-                        [(assoc props :key k) (dissoc style :key)]
-                        [props style])
-        [props style] (if-let [id (-> style :id)]
-                        [(assoc props :id id) (dissoc style :id)]
-                        [props style])
-        [props style] (if-let [class (-> style :class)]
-                        [(assoc props :className class) (dissoc style :class)]
-                        [props style])
-        props (assoc props :style (conform-style style))]
-    `($ ~element ~props ~@children)))
+(defn- html-element
+  ([element style-and-children]
+   (html-element element style-and-children nil nil))
+  ([element style-and-children extra-class extra-style]
+   (let [[style children] (if (-> style-and-children first map?)
+                            [(first style-and-children) (rest style-and-children)]
+                            [nil style-and-children])
+
+         style (if extra-style
+                 (merge style extra-style)
+                 style)
+
+         props {}
+         [props style] (if-let [k (-> style :key)]
+                         [(assoc props :key k) (dissoc style :key)]
+                         [props style])
+         [props style] (if-let [id (-> style :id)]
+                         [(assoc props :id id) (dissoc style :id)]
+                         [props style])
+         [props style] (if-let [class (if extra-class
+                                        (str extra-class " " (-> style :class))
+                                        (-> style :class))]
+                         [(assoc props :className class) (dissoc style :class)]
+                         [props style])
+         props (assoc props :style (conform-style style))]
+     `($ ~element ~props ~@children))))
 
 (defmacro div [& style-and-children]
   (html-element :div style-and-children))
@@ -110,6 +120,8 @@
 (defmacro span [& style-and-children]
   (html-element :span style-and-children))
 
+(defmacro center [& style-and-children]
+  (html-element :span style-and-children "center" nil))
 
 (defmacro grid [grid-template-columns & style-and-children]
   (let [[style children] (if (-> style-and-children first map?)
@@ -134,3 +146,11 @@
 (defmacro stack-3 [& children] (div-class "stack-3" children))
 (defmacro stack-4 [& children] (div-class "stack-4" children))
 (defmacro stack-5 [& children] (div-class "stack-5" children))
+
+(defmacro flex [& children] (div-class "flex" children))
+(defmacro flex-0 [& children] (div-class "flex-0" children))
+(defmacro flex-1 [& children] (div-class "flex-1" children))
+(defmacro flex-2 [& children] (div-class "flex-2" children))
+(defmacro flex-3 [& children] (div-class "flex-3" children))
+(defmacro flex-4 [& children] (div-class "flex-4" children))
+(defmacro flex-5 [& children] (div-class "flex-5" children))
