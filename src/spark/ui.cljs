@@ -1,6 +1,9 @@
 (ns spark.ui
-  (:require-macros [spark.ui :refer [<> def-ui def-ui-test div
-                                     grid center
+  (:require-macros [spark.ui :refer [<> def-ui def-ui-test
+                                     map$
+                                     div center
+                                     grid grid-0 grid-1 grid-2
+                                     grid-3 grid-4 grid-5
                                      stack stack-0 stack-1 stack-2
                                      stack-3 stack-4 stack-5
                                      flex flex-0 flex-1 flex-2
@@ -389,14 +392,16 @@
 (defn tdiv-yellow [] (tdiv "#f9a825"))
 
 (def-ui-test [grid]
- (grid [:auto :auto] (tdiv-red) (tdiv-blue))
- (grid [:auto :auto] {:grid-gap 10} (tdiv-red) (tdiv-blue))
- (grid [:auto "200px" :auto] {:grid-gap 10} (tdiv-red) (tdiv-yellow) (tdiv-blue))
- (div
-  {:width "200px"}
-  (grid ["repeat(auto-fit, minmax(64px, 1fr))"] {:grid-gap 10}
-        (tdiv-red) (tdiv-yellow) (tdiv-blue) (tdiv-green)
-        (tdiv-red) (tdiv-yellow) (tdiv-blue) (tdiv-green))))
+  (grid [:auto :auto] (tdiv-red) (tdiv-blue))
+  (grid-0 [:auto :auto] (tdiv-red) (tdiv-blue))
+  (grid-3 [:auto :auto] (tdiv-red) (tdiv-blue))
+  (grid [:auto :auto] {:grid-gap 10} (tdiv-red) (tdiv-blue))
+  (grid [:auto "200px" :auto] (tdiv-red) (tdiv-yellow) (tdiv-blue))
+  (div
+   {:width "200px"}
+   (grid ["repeat(auto-fit, minmax(64px, 1fr))"]
+         (tdiv-red) (tdiv-yellow) (tdiv-blue) (tdiv-green)
+         (tdiv-red) (tdiv-yellow) (tdiv-blue) (tdiv-green))))
 
 (defn icon [icon-name]
   (d/div
@@ -998,6 +1003,13 @@
      (merge {
              :.center {:display :grid :place-items "center"}
 
+             :.grid-0 {:display :grid}
+             :.grid-1 {:display :grid :grid-gap (-> theme (.spacing 1))}
+             :.grid-2 {:display :grid :grid-gap (-> theme (.spacing 2))}
+             :.grid-3 {:display :grid :grid-gap (-> theme (.spacing 3))}
+             :.grid-4 {:display :grid :grid-gap (-> theme (.spacing 4))}
+             :.grid-5 {:display :grid :grid-gap (-> theme (.spacing 5))}
+
              :.stack {:display :grid :grid-gap (-> theme (.spacing 1))}
              :.stack-0 {:display :grid}
              :.stack-1 {:display :grid :grid-gap (-> theme (.spacing 1))}
@@ -1046,6 +1058,14 @@
   (div {:width 200}
        (center ":-)")))
 
+(def-ui-test [map$]
+  (map$ Button :text (range 6))
+  (->> (range 6)
+       (map$ Button :text)
+       flex)
+  (->> (range 6)
+       (map$ Button :text)
+       (grid ["1fr" "2fr" "1fr"])))
 
 (defnc AppFrame-inner [{:keys [children styles spa]}]
   (let [class (use-styles-class (app-styles styles))]

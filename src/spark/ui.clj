@@ -123,17 +123,24 @@
 (defmacro center [& style-and-children]
   (html-element :span style-and-children "center" nil))
 
+(defn- grid-div [grid-template-columns gap style-and-children]
+  (html-element :div style-and-children
+                (str "grid-" gap) {:grid-template-columns grid-template-columns}))
+
 (defmacro grid [grid-template-columns & style-and-children]
-  (let [[style children] (if (-> style-and-children first map?)
-                           [(first style-and-children) (rest style-and-children)]
-                           [nil style-and-children])
-        style (-> style
-                  (merge {:display "grid"
-                          :grid-template-columns grid-template-columns})
-                  conform-style)]
-    `($ :div
-        {:style ~style}
-        ~@children)))
+  (grid-div grid-template-columns 1 style-and-children))
+(defmacro grid-0 [grid-template-columns & style-and-children]
+  (grid-div grid-template-columns 0 style-and-children))
+(defmacro grid-1 [grid-template-columns & style-and-children]
+  (grid-div grid-template-columns 1 style-and-children))
+(defmacro grid-2 [grid-template-columns & style-and-children]
+  (grid-div grid-template-columns 2 style-and-children))
+(defmacro grid-3 [grid-template-columns & style-and-children]
+  (grid-div grid-template-columns 3 style-and-children))
+(defmacro grid-4 [grid-template-columns & style-and-children]
+  (grid-div grid-template-columns 4 style-and-children))
+(defmacro grid-5 [grid-template-columns & style-and-children]
+  (grid-div grid-template-columns 5 style-and-children))
 
 
 (defn- div-class [class children]
@@ -154,3 +161,10 @@
 (defmacro flex-3 [& children] (div-class "flex-3" children))
 (defmacro flex-4 [& children] (div-class "flex-4" children))
 (defmacro flex-5 [& children] (div-class "flex-5" children))
+
+
+(defmacro map$ [component item-key items]
+  `(for [item# ~items]
+      ($ ~component
+         {:key item#
+          ~item-key item#})))
