@@ -381,6 +381,8 @@
             :padding "1rem"
             :border-radius "4px"
             :margin "1px"
+            :display :grid
+            :place-items "center"
             }}
    (div
     {:max-width "300px"
