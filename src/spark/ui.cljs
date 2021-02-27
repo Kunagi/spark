@@ -379,6 +379,18 @@
                :margin "1px"}}
       (colored-data-block "#333" "#6f6" data)))))
 
+(defnc ExpandableData [{:keys [label datas]}]
+  (let [[expanded set-expanded] (use-state false)]
+    ($ :div
+       {:onClick #(set-expanded true)}
+       (if expanded
+         (apply data datas)
+         (data label)))))
+
+(defn expandable-data [label & datas]
+  ($ ExpandableData
+     {:label label
+      :datas datas}))
 
 (defn tdiv [color]
   ($ :div
@@ -922,6 +934,35 @@
 (defonce ADDITIONAL_PAGES (atom nil))
 
 
+(defn- dev-section [title content]
+  (div
+   {:padding "8px"}
+   (div
+    {:font-weight 900
+     :color "#6d6d6d"
+     :letter-spacing 1}
+    title)
+   (div content)))
+
+(defn- page-dev-sidebar [page context]
+  (div
+   {:background-color "#424242"
+    :color "#eee"}
+   (dev-section
+    "PAGE CONTEXT"
+    (div
+     (for [[k v] (->> context (sort-by first))]
+       (div
+        {:key k}
+        (expandable-data k v)))))))
+
+(defnc DevPageWrapper [{:keys [page context children]}]
+  (div
+   {:display :grid
+    :grid-template-columns "1fr 1fr"}
+   (div
+    children)
+   (page-dev-sidebar page context)))
 
 (defnc PageWrapper [{:keys [spa page devtools-component children]}]
   {:helix/features {:check-invalid-hooks-usage false}}
@@ -944,8 +985,7 @@
         update-context (-> spa :update-page-context)
         context (u/safe-apply update-context [context])
         update-context (-> page :update-context)
-        context (u/safe-apply update-context [context])
-        ]
+        context (u/safe-apply update-context [context])]
 
     ($ ValuesLoadGuard
        {:values (concat (mapv #(get context %) (-> page :wait-for))
@@ -955,13 +995,18 @@
         {:context SPARK_CONTEXT :value context}
         (provider ;; TODO deprecated, kill it
          {:context PAGE :value page}
-         ($ :div
-            children
-            ($ DialogsContainer)
-            ($ ErrorDialog)
-            ($ FormDialogsContainer)
-            (when (and  ^boolean js/goog.DEBUG devtools-component)
-              ($ devtools-component))))))))
+         (div
+          (if ^boolean js/goog.DEBUG
+            ($ DevPageWrapper
+               {:page page
+                :context context}
+               children)
+            children)
+          ($ DialogsContainer)
+          ($ ErrorDialog)
+          ($ FormDialogsContainer)
+          (when (and  ^boolean js/goog.DEBUG devtools-component)
+            ($ devtools-component))))))))
 
 
 (defnc PageSwitch [{:keys [spa devtools-component children]}]
