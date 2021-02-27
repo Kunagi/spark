@@ -22,15 +22,15 @@
     :overflow "auto"}
    (try
      (let [result ((-> example :f) expect)]
-       (ui/colored-data-block "#333" "#6f6" result))
+       (ui/colored-data-block nil "#333" "#6f6" result))
      (catch :default error
        (let [ex-data (ex-data error)]
          (if (-> ex-data :expected)
            (ui/stack
             "result:"
-            (ui/colored-data-block "#c00" "#fff" (-> ex-data :provided))
+            (ui/colored-data-block nil "#c00" "#fff" (-> ex-data :provided))
             "doesn't meet expectations:"
-            (ui/colored-data-block "#333" "#6f6" (-> ex-data :expected)))
+            (ui/colored-data-block nil "#333" "#6f6" (-> ex-data :expected)))
            ($ ui/ErrorInfo {:error error})))))))
 
 

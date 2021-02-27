@@ -350,7 +350,7 @@
 ;;; common ui functions
 ;;;
 
-(defn colored-data-block [background-color color data]
+(defn colored-data-block [label background-color color data]
   (d/div
    {:style {:white-space "pre-wrap"
             :font-family :monospace
@@ -362,35 +362,59 @@
             :border-radius "4px"
             :margin "1px"
             }}
+   (when label
+     (div
+      {:font-weight 900
+       :text-align "center"}
+      (with-out-str (print label))))
    (with-out-str (pprint data))))
+
+(defn colored-data-line [label background-color color data]
+  (d/div
+   {:style {
+            :white-space "nowrap"
+            :height "50px"
+            :font-family :monospace
+            :width "100%"
+            :background-color background-color
+            :color color
+            :padding "1rem"
+            :border-radius "4px"
+            :margin "1px"
+            }}
+   (div
+    {:max-width "300px"
+     :overflow "hidden"
+     :text-overflow "ellipsis"}
+    (when label
+      (d/span
+       {:style
+        {:font-weight 900
+         :text-align "center"}}
+       (with-out-str (print label))
+       " "))
+    (with-out-str (print data)))))
 
 (defn data [& datas]
   (d/div
    (for [[i data] (map-indexed vector datas)]
      (d/div
-      {:key i
-       :style {:white-space "pre-wrap"
-               :font-family :monospace
-               :overflow "auto"
-               :width "100%"
-               :color "#6f6"
-               :padding "1rem"
-               :border-radius "4px"
-               :margin "1px"}}
-      (colored-data-block "#333" "#6f6" data)))))
+      {:key i}
+      (colored-data-block nil "#333" "#6f6" data)))))
 
-(defnc ExpandableData [{:keys [label datas]}]
+(defnc ExpandableData [{:keys [label value]}]
   (let [[expanded set-expanded] (use-state false)]
-    ($ :div
-       {:onClick #(set-expanded true)}
-       (if expanded
-         (apply data datas)
-         (data label)))))
+    (if expanded
+      (colored-data-block label "#333" "#6f6" value)
+      ($ :div
+         {:onClick #(set-expanded true)
+          :style {:cursor "pointer"}}
+         (colored-data-line label "#333" "#6f6" value)))))
 
-(defn expandable-data [label & datas]
+(defn expandable-data [label value]
   ($ ExpandableData
      {:label label
-      :datas datas}))
+      :value value}))
 
 (defn tdiv [color]
   ($ :div
