@@ -786,7 +786,7 @@
           :startIcon icon
           :size size
           :className classes}
-         (spark/cmd-label command)))))
+        (spark/cmd-label command)))))
 
 (def-ui-test [CommandButton]
   ($ CommandButton {:command {:label "default" :f (fn [_] [])}})
@@ -803,9 +803,11 @@
 
 (defnc CommandCardArea [{:keys [command children context then]}]
   (let [command (u/trampoline-if command)
-        onClick (wrap-in-error-handler (new-command-on-click command context then))]
+        onClick (when command
+                  (wrap-in-error-handler (new-command-on-click command context then)))]
     ($ mui/CardActionArea
-       {:onClick onClick}
+       {:onClick onClick
+        :disabled (nil? onClick)}
        children)))
 
 (defnc CommandCard [{:keys [command children context then]}]
