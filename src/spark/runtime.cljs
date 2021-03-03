@@ -95,10 +95,14 @@
      (validate-command command)
      (validate-command-context command context)
      (let [f (get command :f)
-           effects (f context)]
-       (validate-effects command effects)
-       (-> (reify-effects> effects)
-           (.then resolve))))))
+           result (f context)]
+       (if (instance? js/Promise result)
+         (-> result
+             (.then resolve))
+         (let [effects result]
+           (validate-effects command effects)
+           (-> (reify-effects> effects)
+               (.then resolve))))))))
 
 
 (defn report-error [error]
