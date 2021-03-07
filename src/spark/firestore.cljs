@@ -221,12 +221,30 @@
       (.update (unwrap-doc fields))))
 
 
+(defn flatten-map
+  ([m]
+   (flatten-map nil nil m))
+  ([doc prefix m]
+   (reduce (fn [doc [k v]]
+             (let [k (if (keyword? k) (name k) (str k))
+                   k (if prefix
+                       (str prefix "." k)
+                       k)]
+               (if (map? v)
+                 (flatten-map doc k v)
+                 (assoc doc k v))))
+           doc m)))
+
+(comment
+  (flatten-map {:id "1"
+                :name "witek"
+                :skills {"java" {:id "java"
+                                 :name "Java"}
+                         "clojure" {:id "clojure"
+                                    :name "Clojure"}}}))
+
 (defn update-child-fields> [doc child-path child-id child-changes]
-  (let [changes (reduce (fn [m [k v]]
-                          (assoc m
-                                 (str child-path "." child-id "." (name k))
-                                 v))
-                        {} child-changes)]
+  (let [changes (flatten-map doc (str child-path "." child-id) child-changes)]
     (update-fields> doc changes)))
 
 
