@@ -7,13 +7,32 @@
    [spark.firestore :as firestore]))
 
 
+(defn doc> [path]
+  (firestore/doc> path))
+
+(defn col> [path]
+  (firestore/col> path))
+
 (defn query> [path]
   (log ::query>
        :path path)
   (if (-> path count even?)
-    (firestore/doc> path)
-    (firestore/col> path)))
+    (doc> path)
+    (col> path)))
 
+(defn query-union> [paths]
+  (-> (js/Promise.all (map query> paths))
+      (.then (fn [results]
+               (log ::query-union>--all
+                    :results results)
+               (->> results
+                    (reduce (fn [ret docs]
+                              (reduce (fn [ret doc]
+                                        (assoc ret (-> doc  :id) doc))
+                                      ret docs))
+                            {})
+                    vals
+                    (js/Promise.resolve))))))
 
 (defn create-doc> [Doc values]
   (spark/assert-doc-schema Doc)

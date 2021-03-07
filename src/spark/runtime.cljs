@@ -91,8 +91,10 @@
   (log ::execute-query>
        :query query
        :context context)
-  (let [path (-> query :path (u/fn->value context))]
-    (repository/query> path)))
+  (if-let [path (-> query :path (u/fn->value context))]
+    (repository/query> path)
+    (repository/query-union> (-> query :paths (u/fn->value context))))
+  )
 
 
 (defn execute-command>
