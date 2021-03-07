@@ -1,41 +1,35 @@
-(ns spark.devcards
+(ns spark.dev.devcards-page
   (:require
    [spark.core :as spark]
    [spark.ui :as ui :refer [defnc $]]
-   [spark.runtime :as runtime])
-  )
-
-(defn- expect [expected provided]
-  (if (instance? js/Promise provided)
-    (-> provided
-        (.then #(expect expected %)))
-    (if (= expected provided)
-      provided
-      (throw (ex-info "result does'n meet expectations"
-                      {:expected expected
-                       :provided provided})))))
-
-(defn query> [query context]
-  (runtime/execute-query> query context))
+   [spark.runtime :as runtime]
+   [spark.dev.expectations :as expectations]))
 
 
 (defn- use-fn-result [example]
   (let [[ret set-ret] (ui/use-state nil)
-        [error set-error] (ui/use-state nil)]
+        [error set-error] (ui/use-state nil)
+        update-ret (fn [new-ret]
+                     (when-not error (set-ret new-ret)))
+        update-error (fn [new-error]
+                       (when-not error (set-error new-error)))]
 
     (ui/use-effect
-     :auto-deps
+     [example]
+     (set-ret nil)
+     (set-error nil)
      (try
-       (let [value ((-> example :f) {:expect expect
+       (let [value ((-> example :f) {
+                                     :devcard-catch update-error
                                      :execute-query> runtime/execute-query>})]
          (if (instance? js/Promise value)
            (-> value
-               (.then set-ret
-                      set-error))
-           (set-ret value)))
+               (.then update-ret
+                      update-error))
+           (update-ret value)))
        (catch :default ex
          (js/console.error ex)
-         (set-error ex)))
+         (update-error ex)))
      nil)
 
     [ret error]))
@@ -55,10 +49,14 @@
         (let [ex-data (ex-data error)]
           (if (-> ex-data :expected)
             (ui/stack
+             ;; (when-let [predicate-result (-> ex-data :predicate-result)]
+             ;;   (ui/stack
+             ;;    "predicate-result:"
+             ;;    (ui/colored-data-block nil "#c00" "#fff" predicate-result)))
              "result:"
              (ui/colored-data-block nil "#c00" "#fff" (-> ex-data :provided))
              "doesn't meet expectations:"
-             (ui/colored-data-block nil "#333" "#6f6" (-> ex-data :expected)))
+             (ui/colored-data-block nil "#333" "#6f6" (-> ex-data :expect-form)))
             ($ ui/ErrorInfo {:error error}))))
        (ui/colored-data-block nil "#333" "#6f6" result)))))
 

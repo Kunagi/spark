@@ -1,11 +1,12 @@
 (ns spark.core
   (:require
    [clojure.pprint :refer [pprint]]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [spark.dev.expectations :as expectations]))
 
 
-;; (defmacro expect [what provided-value]
-;;   nil)
+(defmacro expect [expectation-form test-form]
+  `(expectations/expect ~expectation-form ~test-form))
 
 
 ;; TODO disable for production
@@ -17,7 +18,8 @@
           devcard {:id (str calling-namespace-name "/" symbol-name)
                    :namespace calling-namespace-name
                    :symbol symbol-name}
-          args (->> refers (into []))
+          args (->> refers
+                    (into ['devcard-catch]))
           examples (mapv (fn [example]
                            {:code (with-out-str (pprint example))
                             :f `(fn [{:keys ~args}]

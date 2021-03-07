@@ -1,6 +1,5 @@
 (ns spark.core
-  (:require-macros [spark.core :refer [def-test]]
-                   [clojure.string :as str])
+  (:require-macros [spark.core :refer [def-test]])
   (:require
    [clojure.string :as str]
    [spark.firestore :as firestore]))
