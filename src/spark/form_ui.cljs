@@ -29,6 +29,7 @@
   (swap! DIALOG_FORMS assoc-in [form-id :open?] false)
   (js/setTimeout #(swap! DIALOG_FORMS dissoc form-id) 1000))
 
+
 (defn show-form-dialog [form]
   (let [form-id (random-uuid)
         form (form/initialize form)
@@ -247,8 +248,11 @@
 (defnc FormDialog [{:keys [form]}]
   (let [[form set-form] (hooks/use-state form)
         form-id (-> form :id)
+        form (assoc form :update (fn [f]
+                                   (set-form (f form))))
         update-form (fn [f & args]
                       (set-form (apply f (into [form] args))))
+        ;; form (assoc form :update update-form)
         close (fn []
                 (update-form assoc :open? false)
                 (close-form-dialog form-id))
@@ -299,13 +303,17 @@
                      {:key field-id}
                      (if-let [action (-> field :action)]
                        ($ :div
-                          {:style {:display "flex"}}
+                          {:style {:display "flex"
+                                   :align-items "center"}}
                           Input
                           ($ :div
+                             {:style {:margin-left "8px"}}
                              ($ mui/Button
                                 {:onClick (fn [_]
                                             (update-form (-> action :f)))
-                                 :variant "contained"}
+                                 :variant "contained"
+                                 :color "secondary"
+                                 :size "small"}
                                 (-> action :label))))
                        Input))))
               (get form :content))

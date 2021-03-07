@@ -156,8 +156,7 @@
        (reduce (fn [form field-id]
                  (assoc-in form [:values field-id]
                            (adopt-value (get-in form [:values field-id])
-                                        form field-id))
-                 ) form)))
+                                        form field-id))) form)))
 
 (defn validate-field [form field-id]
   (let [field (field-by-id form field-id)
