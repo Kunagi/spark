@@ -6,11 +6,14 @@
   )
 
 (defn- expect [expected provided]
-  (if (= expected provided)
-    provided
-    (throw (ex-info "result does'n meet expectations"
-                    {:expected expected
-                     :provided provided}))))
+  (if (instance? js/Promise provided)
+    (-> provided
+        (.then #(expect expected %)))
+    (if (= expected provided)
+      provided
+      (throw (ex-info "result does'n meet expectations"
+                      {:expected expected
+                       :provided provided})))))
 
 (defn query> [query context]
   (runtime/execute-query> query context))
