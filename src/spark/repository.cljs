@@ -2,10 +2,17 @@
   (:require
    [clojure.string :as str]
    [spark.logging :refer [log]]
-   [spark.runtime :as runtime]
    [spark.utils :as u]
    [spark.core :as spark]
    [spark.firestore :as firestore]))
+
+
+(defn query> [path]
+  (log ::query>
+       :path path)
+  (if (-> path count even?)
+    (firestore/doc> path)
+    (firestore/col> path)))
 
 
 (defn create-doc> [Doc values]

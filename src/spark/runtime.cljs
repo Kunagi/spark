@@ -2,8 +2,13 @@
   (:require
    [spark.logging :refer [log]]
    [spark.utils :as u]
+   [spark.repository :as repository]
     ))
 
+
+(def $Query
+  [:map
+   [:path any?]])
 
 (def $Command
   [:map
@@ -73,16 +78,21 @@
 
 (defmulti reify-effect> (fn [effect] (first effect)))
 
-;;; effect implementations
-
-
-;;;
 
 (defn reify-effects> [effects]
   (log ::reify-effects>
        :effects effects)
   (js/Promise.all
    (mapv reify-effect> effects)))
+
+
+(defn execute-query>
+  [query context]
+  (log ::execute-query>
+       :query query
+       :context context)
+  (let [path (-> query :path (u/fn->value context))]
+    (repository/query> path)))
 
 
 (defn execute-command>

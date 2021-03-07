@@ -172,6 +172,8 @@
                 reject)))))
 
 (defn col> [path]
+  ;; (log ::col>
+  ;;      :path path)
   (js/Promise.
    (fn [resolve reject]
      (-> (ref path)

@@ -17,9 +17,10 @@
           devcard {:id (str calling-namespace-name "/" symbol-name)
                    :namespace calling-namespace-name
                    :symbol symbol-name}
+          args (->> refers (into []))
           examples (mapv (fn [example]
                            {:code (with-out-str (pprint example))
-                            :f `(fn [~'expect]
+                            :f `(fn [{:keys ~args}]
                                   ~example)})
                          examples)]
       `(reg-test

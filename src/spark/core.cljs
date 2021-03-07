@@ -30,6 +30,10 @@
   (expect {:opt "value"}
           (schema-opts [:map {:opt "value"}])))
 
+(comment
+  (macroexpand-1 '(def-test [schema-opts expect]
+                    (expect {:opt "value"}
+                            (schema-opts [:map {:opt "value"}])))))
 
 (defn schema-type-of? [type thing]
   (boolean

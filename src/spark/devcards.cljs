@@ -1,17 +1,41 @@
 (ns spark.devcards
   (:require
    [spark.core :as spark]
-   [spark.ui :as ui :refer [defnc $]])
+   [spark.ui :as ui :refer [defnc $]]
+   [spark.runtime :as runtime])
   )
 
-(defn expect [expected provided]
+(defn- expect [expected provided]
   (if (= expected provided)
     provided
     (throw (ex-info "result does'n meet expectations"
                     {:expected expected
                      :provided provided}))))
 
-(defn- colored-data [color data])
+(defn query> [query context]
+  (runtime/execute-query> query context))
+
+
+(defn- use-fn-result [example]
+  (let [[ret set-ret] (ui/use-state nil)
+        [error set-error] (ui/use-state nil)]
+
+    (ui/use-effect
+     :auto-deps
+     (try
+       (let [value ((-> example :f) {:expect expect
+                                     :execute-query> runtime/execute-query>})]
+         (if (instance? js/Promise value)
+           (-> value
+               (.then set-ret
+                      set-error))
+           (set-ret value)))
+       (catch :default ex
+         (js/console.error ex)
+         (set-error ex)))
+     nil)
+
+    [ret error]))
 
 (defnc FnResult [{:keys [example]}]
   (ui/div
@@ -20,18 +44,20 @@
     :max-width "600px"
     :margin "0 auto"
     :overflow "auto"}
-   (try
-     (let [result ((-> example :f) expect)]
-       (ui/colored-data-block nil "#333" "#6f6" result))
-     (catch :default error
-       (let [ex-data (ex-data error)]
-         (if (-> ex-data :expected)
-           (ui/stack
-            "result:"
-            (ui/colored-data-block nil "#c00" "#fff" (-> ex-data :provided))
-            "doesn't meet expectations:"
-            (ui/colored-data-block nil "#333" "#6f6" (-> ex-data :expected)))
-           ($ ui/ErrorInfo {:error error})))))))
+   (let [[result error] (use-fn-result example)]
+     (if error
+       (ui/div
+        {:border "3px dotted red"
+         :padding "8px"}
+        (let [ex-data (ex-data error)]
+          (if (-> ex-data :expected)
+            (ui/stack
+             "result:"
+             (ui/colored-data-block nil "#c00" "#fff" (-> ex-data :provided))
+             "doesn't meet expectations:"
+             (ui/colored-data-block nil "#333" "#6f6" (-> ex-data :expected)))
+            ($ ui/ErrorInfo {:error error}))))
+       (ui/colored-data-block nil "#333" "#6f6" result)))))
 
 
 (defnc UiResult [{:keys [example]}]
@@ -81,7 +107,8 @@
    (for [[idx example] (map-indexed vector (-> devcard :examples))]
      ($ Example {:key idx
                  :devcard devcard
-                 :example example
+                 :example (assoc example
+                                 :idx idx)
                  :label (str "#" (inc idx))}))))
 
 
@@ -140,7 +167,6 @@
    :content DevcardsPageContent
    :update-context (fn [context]
                      (let [params (ui/use-params)]
-                       (js/console.log "UPDATE CONTEXT")
                        (assoc context :developer "witek")))})
 
 
