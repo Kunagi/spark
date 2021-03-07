@@ -134,14 +134,6 @@
         (-> (field-by-id form field-id) :value))))
 
 
-(defn validate-field [form field-id]
-  (let [field (field-by-id form field-id)
-        value (field-value form field-id)
-        error (when (and  (-> field :required?) (nil? value))
-                "Input required.")]
-    (if error
-      (assoc-in form [:errors field-id] error)
-      (update form :errors dissoc field-id))))
 
 
 (defn adopt-value [value form field-id]
@@ -159,14 +151,31 @@
                         (disj field-value option-value)))
         value))))
 
+(defn adopt-values [form]
+  (->> form :fields (map :id)
+       (reduce (fn [form field-id]
+                 (assoc-in form [:values field-id]
+                           (adopt-value (get-in form [:values field-id])
+                                        form field-id))
+                 ) form)))
 
+(defn validate-field [form field-id]
+  (let [field (field-by-id form field-id)
+        value (field-value form field-id)
+        value (adopt-value value form field-id)
+        error (when (and  (-> field :required?) (nil? value))
+                "Input required.")]
+    (if error
+      (assoc-in form [:errors field-id] error)
+      (update form :errors dissoc field-id))))
 
 (defn on-field-value-change [form field-id new-value]
   ;; (log ::on-field-value-change
   ;;      :values (-> form :values)
   ;;      :field field-id
   ;;      :value new-value)
-  (let [new-value (adopt-value new-value form field-id)
+  (let [
+        ;; new-value (adopt-value new-value form field-id)
         field-index (field-index-by-id form field-id)]
     (log ::index
          :index field-index)
@@ -188,5 +197,6 @@
   (s/assert ::form form)
   ;; (log ::on-submit
   ;;      :form form)
-  (reduce validate-field
-          form (->> form :fields (map :id))))
+  (->> form :fields (map :id)
+       (reduce validate-field form)
+       adopt-values))
