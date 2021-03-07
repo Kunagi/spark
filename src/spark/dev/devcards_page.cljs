@@ -1,35 +1,38 @@
 (ns spark.dev.devcards-page
   (:require
+   [spark.logging :refer [log]]
    [spark.core :as spark]
    [spark.ui :as ui :refer [defnc $]]
-   [spark.runtime :as runtime]
-   [spark.dev.expectations :as expectations]))
+   [spark.runtime :as runtime]))
 
 
 (defn- use-fn-result [example]
   (let [[ret set-ret] (ui/use-state nil)
-        [error set-error] (ui/use-state nil)
-        update-ret (fn [new-ret]
-                     (when-not error (set-ret new-ret)))
-        update-error (fn [new-error]
-                       (when-not error (set-error new-error)))]
+        [error set-error] (ui/use-state nil)]
 
     (ui/use-effect
      [example]
+     (log ::DEBUG--effect
+          :example example)
      (set-ret nil)
      (set-error nil)
      (try
-       (let [value ((-> example :f) {
-                                     :devcard-catch update-error
+       (let [ERRORED? (atom false)
+             update-error (fn [new-error]
+                            (when-not @ERRORED?
+                              (set-error new-error)
+                              (reset! ERRORED? true)))
+             update-ret (fn [new-ret]
+                          (when-not @ERRORED? (set-ret new-ret)))
+             value ((-> example :f) {:devcard-catch update-error
                                      :execute-query> runtime/execute-query>})]
          (if (instance? js/Promise value)
            (-> value
-               (.then update-ret
-                      update-error))
+               (.then update-ret))
            (update-ret value)))
        (catch :default ex
          (js/console.error ex)
-         (update-error ex)))
+         (set-error ex)))
      nil)
 
     [ret error]))
