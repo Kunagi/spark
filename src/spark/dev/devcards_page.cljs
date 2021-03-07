@@ -3,7 +3,8 @@
    [spark.logging :refer [log]]
    [spark.core :as spark]
    [spark.ui :as ui :refer [defnc $]]
-   [spark.runtime :as runtime]))
+   [spark.runtime :as runtime]
+   [spark.dev.expectations]))
 
 
 (defn- use-fn-result [example]
