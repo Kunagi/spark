@@ -45,31 +45,35 @@
 
 
 (defnc Example [{:keys [devcard example label]}]
-  (ui/stack
+  (let [Output (ui/div
+                {:display "flex"
+                 :place-content "center"
+                 :place-items "center"}
+                (case (-> devcard :type)
+                  :ui ($ UiResult {:example example})
+                  :fn ($ FnResult {:example example})
+                  (ui/stack
+                   "Unsupported Devcard Type"
+                   (ui/data devcard))))
+
+        Input (ui/div
+               {:white-space "pre-wrap"
+                :font-family "monospace"
+                :overflow "auto"
+                :background-color "#333"
+                :color "#eee"
+                :padding "8px"
+                :border-radius "4px"}
+               (-> example :code))]
+    (ui/stack
      (ui/div "Example " label)
-     (ui/div
+     Output
+     #_(ui/div
       {:display :grid
        :grid-template-columns "1fr 1fr"
        :grid-gap "8px"}
-      (ui/div
-       {:white-space "pre-wrap"
-        :font-family "monospace"
-        :overflow "auto"
-        :background-color "#333"
-        :color "#eee"
-        :padding "8px"
-        :border-radius "4px"}
-       (-> example :code))
-      (ui/div
-       {:display "flex"
-        :place-content "center"
-        :place-items "center"}
-       (case (-> devcard :type)
-         :ui ($ UiResult {:example example})
-         :fn ($ FnResult {:example example})
-         (ui/stack
-          "Unsupported Devcard Type"
-          (ui/data devcard)))))))
+      Input
+      Output))))
 
 
 (defnc Devcard [{:keys [devcard]}]

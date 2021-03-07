@@ -70,6 +70,11 @@
     `(def ~sym ~opts)))
 
 
+(defmacro def-query  [sym opts]
+  (let [opts (complete-opts opts sym "query")]
+    `(def ~sym ~opts)))
+
+
 (defmacro def-page  [sym opts]
   (let [opts (complete-opts opts sym "page")]
     `(def ~sym ~opts)))
