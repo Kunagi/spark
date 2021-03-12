@@ -61,7 +61,7 @@
          :id (-> field :id name)
          :name (-> field :name)
          :autoComplete (-> field :auto-complete)
-         :value (-> field :value)
+         :value (or (-> field :value) "")
          :required (-> field :required?)
          :error (boolean (-> field :error))
          :helperText (-> field :error)
