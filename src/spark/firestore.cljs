@@ -125,6 +125,7 @@
           wheres (if where
                    (conj wheres where)
                    wheres)
+          wheres (remove nil? wheres)
           collection (-> ^js source (.collection id))]
       (reduce (fn [collection [attr op val]]
                 (-> ^js collection (.where attr op val)))
