@@ -70,6 +70,8 @@
 
 (defn init-doc-schema [Doc]
   (let [col-id (-> Doc schema-opts :firestore/collection)]
+    (when-not col-id
+      (js/console.error "Missing :firestore/collection in" Doc))
     (when-not (= "singletons" col-id)
       (reg-def :doc-schema (get Doc :doc-schema/id) Doc))
     (firestore/reg-doc-schema col-id Doc))
