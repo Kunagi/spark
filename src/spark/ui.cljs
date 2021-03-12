@@ -227,14 +227,25 @@
                {})
        vals))
 
+
 (defn use-query
   [query context]
   (log ::execute-query>
        :query query
        :context context)
-  (if-let [path (-> query :path (u/fn->value context))]
-    (use-col path)
-    (use-cols-union (-> query :paths (u/fn->value context)))))
+  (cond
+    (-> query :path)
+    (let [path (-> query :path (u/fn->value context))]
+      (if (-> path count even?)
+        (use-doc path)
+        (use-col path)))
+
+    (-> query :paths)
+    (use-cols-union (-> query :paths (u/fn->value context)))
+
+    :else
+    (throw (ex-info "Invalid query. Missing :path or :paths."
+                    {:query query}))))
 
 ;;;
 ;;; Styles / Theme
