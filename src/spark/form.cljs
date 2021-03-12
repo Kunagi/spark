@@ -144,11 +144,6 @@
       nil
       (case field-type
         :number (js/parseInt value)
-        :checkboxes (let [[option-value checked?] value
-                          field-value (into #{} (field-value form field-id))]
-                      (if checked?
-                        (conj field-value option-value)
-                        (disj field-value option-value)))
         value))))
 
 (defn adopt-values [form]
@@ -169,12 +164,11 @@
       (update form :errors dissoc field-id))))
 
 (defn on-field-value-change [form field-id new-value]
-  ;; (log ::on-field-value-change
-  ;;      :values (-> form :values)
-  ;;      :field field-id
-  ;;      :value new-value)
+  (log ::on-field-value-change
+       :values (-> form :values)
+       :field field-id
+       :value new-value)
   (let [
-        ;; new-value (adopt-value new-value form field-id)
         field-index (field-index-by-id form field-id)]
     (log ::index
          :index field-index)

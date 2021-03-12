@@ -239,10 +239,12 @@
               :control ($ mui/Checkbox
                           {:name (-> option :value str)
                            :checked (-> field :value (contains? (-> option :value)))
-                           :onChange #(let [checked? (-> % .-target .-checked)]
-                                        ((-> field :on-change)
-                                         [(-> option :value)
-                                          checked?]))})})))))
+                           :onChange #(let [checked? (-> % .-target .-checked)
+                                            value (-> field :value)
+                                            value (if checked?
+                                                    (conj value (-> option :value))
+                                                    (disj value (-> option :value)))]
+                                        ((-> field :on-change) value))})})))))
 
 
 (defnc FormDialog [{:keys [form]}]
