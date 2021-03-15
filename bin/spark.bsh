@@ -103,7 +103,7 @@ function shadow-watch {
 
     mkdir -p target
     date -Iminutes > src/spa/version-time.txt
-    gnome-terminal -t "Shadow-CLJS watch" -- clojure -A:shadow-cljs watch spa gcf
+    gnome-terminal -t "Shadow-CLJS watch" -- clojure -M:shadow-cljs watch spa gcf
 }
 
 if [ $1 = "shadow-watch" ]
@@ -223,7 +223,7 @@ function release {
     date -Iminutes > src/spa/version-time.txt
 
     mkdir -p target
-    clojure -A:build-release --config-merge "{:release-version \"v"${VERSION}"\"}"
+    clojure -M:build-release --config-merge "{:release-version \"v"${VERSION}"\"}"
 
     bump-version
 
