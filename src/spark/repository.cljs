@@ -34,16 +34,20 @@
                     vals
                     (js/Promise.resolve))))))
 
-(defn create-doc> [Doc values]
-  (spark/assert-doc-schema Doc)
-  (let [id (or (-> values :id)
-               (let [id-generator (spark/doc-schema-id-generator Doc)]
-                 (id-generator {:values values})))
+(defn create-doc> [path-or-Doc values]
+  (let [doc? (spark/doc-schema? path-or-Doc)
+        id (or (-> values :id)
+               (if doc?
+                 (let [id-generator (spark/doc-schema-id-generator path-or-Doc)]
+                   (id-generator {:values values}))
+                 (str (random-uuid))))
         values (assoc values
                       :id id
                       :ts-created [:db/timestamp]
                       :ts-updated [:db/timestamp])
-        path [(spark/doc-schema-col-path Doc) id]]
+        path (if doc?
+               [(spark/doc-schema-col-path path-or-Doc) id]
+               (conj path-or-Doc id))]
     (firestore/create-doc> path values)))
 
 
