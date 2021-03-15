@@ -100,7 +100,7 @@
 
 (def use-auth-completed (atom-hook auth/AUTH_COMPLETED))
 
-(def use-auth-user (atom-hook auth/USER))
+(def use-auth-user (atom-hook auth/AUTH_USER))
 
 (defn use-uid []
   (when-let [user (use-auth-user)]
