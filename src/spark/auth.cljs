@@ -81,6 +81,13 @@
              user (u/update-if user update-user auth-user)]
          user)))))
 
+(defn same-auth-user? [^js user-a ^js user-b]
+  (cond
+    (and (not user-a) (not user-b)) true
+    user-a false
+    user-b false
+    :else (= (-> user-a .-uid) (-> user-b .-uid))
+    ))
 
 (defn initialize [{:keys [user-doc-schema update-user set-user sign-in error-handler]}]
   (log ::initialize
@@ -97,7 +104,7 @@
            (let [auth-completed? (auth-completed?)]
              (when-not auth-completed?
                (log ::auth-completed :user user))
-             (when-not (= user @AUTH_USER)
+             (when-not (same-auth-user? user @AUTH_USER)
                (when auth-completed?
                  (log ::user-changed :user user)
                  (when-not user
