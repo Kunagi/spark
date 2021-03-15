@@ -3,7 +3,6 @@
 
    ["@material-ui/core" :as mui]
    ["@material-ui/lab" :as mui-lab]
-   ["@material-ui/icons"  :as mui-icons]
    ["lodash.throttle" :as throttle]
    ["autosuggest-highlight/parse" :as parse]
    [spark.logging :refer [log]]
@@ -205,7 +204,7 @@
        ($ mui/Grid
           {:item true
            :xs 2}
-          ($ mui-icons/LocationOn {:className "icon"}))
+          (ui/icon "location_on"))
        ($ mui/Grid
           {:item true
            :xs 10}                                      
