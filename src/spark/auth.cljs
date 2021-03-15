@@ -9,17 +9,17 @@
 
 
 (defonce AUTH_COMPLETED (atom false))
-(defonce USER (atom nil))
+(defonce AUTH_USER (atom nil))
 
 (defn auth-completed? []
   @AUTH_COMPLETED)
 
-(defn user []
-  @USER)
+(defn ^js auth-user []
+  @AUTH_USER)
 
 (defn uid []
-  (when-let [user (user)]
-    (-> user .-uid)))
+  (when-let [auth-user (auth-user)]
+    (-> ^js auth-user .-uid)))
 
 
 (def ^js firebase (-> js/window .-firebase))
@@ -95,12 +95,12 @@
            (let [auth-completed? (auth-completed?)]
              (when-not auth-completed?
                (log ::auth-completed :user user))
-             (when-not (= user @USER)
+             (when-not (= user @AUTH_USER)
                (when auth-completed?
                  (log ::user-changed :user user)
                  (when-not user
                    (redirect-to-home)))
-               (reset! USER user)
+               (reset! AUTH_USER user)
                (when user
                  (when user-doc-schema
                    (update-user-doc user-doc-schema user update-user)))
