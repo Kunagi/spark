@@ -92,6 +92,8 @@
     (-> auth
         (.onAuthStateChanged
          (fn [^js user]
+           (log ::auth-state-chenged
+                :user user)
            (let [auth-completed? (auth-completed?)]
              (when-not auth-completed?
                (log ::auth-completed :user user))
