@@ -65,11 +65,11 @@
   (when email (-> email (.substring (-> email (.indexOf "@") inc)))))
 
 
-(defn update-user-doc [doc-schema ^js auth-user update-user]
+(defn update-user-doc [doc-schema auth-user update-user]
   (log ::update-user-doc
        :doc-schema doc-schema )
-  (let [uid (-> auth-user .-uid)
-        email (-> auth-user .-email)]
+  (let [uid (-> auth-user :uid)
+        email (-> auth-user :email)]
     (repository/transact-doc-update>
      doc-schema uid
      (fn [db-user]
@@ -77,17 +77,19 @@
                          {:uid uid
                           :auth-email email
                           :auth-domain (email-domain email)
-                          :auth-display-name (-> auth-user .-displayName)})
+                          :auth-display-name (-> auth-user :display-name)})
              user (u/update-if user update-user auth-user)]
          user)))))
 
-(defn same-auth-user? [^js user-a ^js user-b]
-  (cond
-    (and (not user-a) (not user-b)) true
-    user-a false
-    user-b false
-    :else (= (-> user-a .-uid) (-> user-b .-uid))
-    ))
+(defn- import-user [^js u]
+  {:display-name (-> u .-displayName)
+   :email (-> u .-email)
+   :email-verified (-> u .-emailVerified)
+   :anonymous (-> u .-isAnonymous)
+   :phone-number (-> u .-phoneNumber)
+   :photo-url (-> u .-photoURL)
+   :tenant-id (-> u .-tenantId)
+   :uid (-> u .-uid)})
 
 (defn initialize [{:keys [user-doc-schema update-user set-user sign-in error-handler]}]
   (log ::initialize
@@ -95,28 +97,28 @@
   (reset! SIGN_IN-F sign-in)
   (let [auth (-> firebase .auth)]
     (-> auth (.useDeviceLanguage))
-
     (-> auth
         (.onAuthStateChanged
-         (fn [^js user]
-           (log ::auth-state-chenged
-                :user user)
-           (let [auth-completed? (auth-completed?)]
-             (when-not auth-completed?
-               (log ::auth-completed :user user))
-             (when-not (same-auth-user? user @AUTH_USER)
-               (when auth-completed?
-                 (log ::user-changed :user user)
-                 (when-not user
-                   (redirect-to-home)))
-               (reset! AUTH_USER user)
-               (when user
-                 (when user-doc-schema
-                   (update-user-doc user-doc-schema user update-user)))
-               (when set-user
-                 (set-user user)))
-             (when-not auth-completed?
-               (reset! AUTH_COMPLETED true))))))
+         (fn [^js google-js-user]
+           (let [user (import-user google-js-user)]
+             (log ::auth-state-chenged
+                  :user user)
+             (let [auth-completed? (auth-completed?)]
+               (when-not auth-completed?
+                 (log ::auth-completed :user user))
+               (when-not (= user @AUTH_USER)
+                 (when auth-completed?
+                   (log ::user-changed :user user)
+                   (when-not user
+                     (redirect-to-home)))
+                 (reset! AUTH_USER user)
+                 (when user
+                   (when user-doc-schema
+                     (update-user-doc user-doc-schema user update-user)))
+                 (when set-user
+                   (set-user user)))
+               (when-not auth-completed?
+                 (reset! AUTH_COMPLETED true)))))))
 
     (process-sign-in-with-redirect error-handler)
 

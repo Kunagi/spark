@@ -104,7 +104,7 @@
 
 (defn use-uid []
   (when-let [user (use-auth-user)]
-    (-> ^js user .-uid)))
+    (-> user :uid)))
 
 
 ;;;
