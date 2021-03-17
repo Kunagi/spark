@@ -20,10 +20,11 @@
        :data data)
   (let [callable (-> (functions) (.httpsCallable gcf-name))]
     (js/Promise.
-     (fn [resolve _reject]
+     (fn [resolve reject]
        (-> (callable (clj->js data))
            (.then (fn [^js result]
                     (-> result
                         .-data
                         (js->clj :keywordize-keys true)
-                        resolve))))))))
+                        resolve)))
+           (.catch reject))))))
