@@ -96,7 +96,7 @@
    (fn [doc]
      (let [doc (update-f doc)]
        (if (= :db/delete doc)
-         doc
+         :db/delete
          (assoc doc
                 :id doc-id
                 :ts-updated [:db/timestamp]))))))
