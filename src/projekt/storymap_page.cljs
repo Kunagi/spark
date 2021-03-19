@@ -163,7 +163,7 @@
         [expanded-sprint-ids set-expended-sprint-ids] (ui/use-state #{})
         expand #(set-expended-sprint-ids (conj expanded-sprint-ids %))]
     (ui/stack
-     (ui/data uid)
+     ;; (ui/data uid)
      ;; (ui/data (-> projekt :developers))
      ($ :table
 
