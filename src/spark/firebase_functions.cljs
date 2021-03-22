@@ -3,6 +3,9 @@
    [spark.logging :refer [log]]))
 
 
+(defonce REGION (atom "europe-west1"))
+
+
 (when ^boolean goog.DEBUG
   (-> js/firebase
       .functions
@@ -11,7 +14,7 @@
 
 (defn functions []
   (-> js/firebase
-      .functions))
+      (.functions @REGION)))
 
 
 (defn call> [gcf-name data]
