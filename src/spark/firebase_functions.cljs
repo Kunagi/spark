@@ -2,19 +2,19 @@
   (:require
    [spark.logging :refer [log]]))
 
+;; https://firebase.google.com/docs/functions/callable#call_the_function
+;;
 
 (defonce REGION (atom "europe-west1"))
 
 
-(when ^boolean goog.DEBUG
-  (-> js/firebase
-      .functions
-      (.useEmulator "localhost", 5001)))
-
-
 (defn functions []
-  (-> js/firebase
-      (.functions @REGION)))
+  (let [functions (-> js/firebase
+                      .app
+                      (.functions @REGION))]
+    (when ^boolean goog.DEBUG
+      (-> functions (.useEmulator "localhost", 5001)))
+    functions))
 
 
 (defn call> [gcf-name data]

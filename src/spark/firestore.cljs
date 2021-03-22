@@ -272,6 +272,12 @@
                     doc (save-doc> doc)
                     :else (js/Promise.resolve :db/no-op)))
                 (let [data (update-f nil)]
-                  (if (seq data)
+                  (cond
+                    (= :db/delete data)
+                    (delete-doc> doc-path)
+
+                    (seq data)
                     (create-doc> doc-path data)
+
+                    :else
                     (js/Promise.resolve nil)))))))
