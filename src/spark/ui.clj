@@ -144,7 +144,12 @@
 
 
 (defn- div-class [class children]
-  `($ :div {:className ~class} ~@children))
+  (let [[style children] (if (-> children first map?)
+                           [(first children) (rest children)]
+                           [{} children])
+        props {:style style
+               :className class}]
+    `($ :div ~props ~@children)))
 
 (defmacro stack [& children] (div-class "stack" children))
 (defmacro stack-0 [& children] (div-class "stack-0" children))
