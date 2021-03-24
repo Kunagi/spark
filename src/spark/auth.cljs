@@ -82,14 +82,15 @@
          user)))))
 
 (defn- import-user [^js u]
-  {:display-name (-> u .-displayName)
-   :email (-> u .-email)
-   :email-verified (-> u .-emailVerified)
-   :anonymous (-> u .-isAnonymous)
-   :phone-number (-> u .-phoneNumber)
-   :photo-url (-> u .-photoURL)
-   :tenant-id (-> u .-tenantId)
-   :uid (-> u .-uid)})
+  (when u
+    {:display-name (-> u .-displayName)
+     :email (-> u .-email)
+     :email-verified (-> u .-emailVerified)
+     :anonymous (-> u .-isAnonymous)
+     :phone-number (-> u .-phoneNumber)
+     :photo-url (-> u .-photoURL)
+     :tenant-id (-> u .-tenantId)
+     :uid (-> u .-uid)}))
 
 (defn initialize [{:keys [user-doc-schema update-user set-user sign-in error-handler]}]
   (log ::initialize
