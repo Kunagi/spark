@@ -47,40 +47,118 @@
     (js/google.maps.Marker. (clj->js marker))))
 
 
-(defnc MapWithPosition
+
+;; #########################################
+;; ######### Lokationen aus Google #########
+;; #########################################
+
+
+
+(comment
+  
+  (def testdiv (js/document.createElement "div"))
+  (.setAttribute testdiv "id" "testdiv")
+  (-> js/document .-body (.appendChild testdiv))
+  (def placesService (new (-> js/window .-google .-maps
+                              .-places
+                              .-PlacesService) testdiv))
+
+  (-> placesService
+      (.nearbySearch (clj->js {:location location-rinteln
+                               :radius 5000
+                                        ; :type "restaurant" ;TODO: Better filter later
+                               })
+                     #(js/console.log
+                       "google sent: "
+                       (str
+                        (->> (js->clj
+                              % :keywordize-keys true)
+                             (mapv (fn [place]
+                                     (select-keys place [:types :name :place_id])))))))))
+
+
+(defn- google-place-to-marker-props
+  ""
+  [{:keys [name geometry]}]
+  (let [location-obj (:location geometry)]
+    {:title name
+     :label name
+     :icon {:url "/img/grey_map_marker.png"
+            :labelOrigin (new js/google.maps.Point 16 -6)}
+     :position {:lat ^js (.lat location-obj) 
+                :lng ^js (.lng location-obj)}}))
+
+
+;; #############################
+;; ###### MapWithPosition ######
+;; ############################# 
+
+
+(defnc MapWithPosition 
   [{:keys [id
            height
            markers
-           position]}]
+           position
+           lokationen
+           google-types]}]
   (assert position)
   (let [map-element-id (or id "map")
         [gmap set-gmap] (ui/use-state nil)
-        [old-markers set-old-markers] (ui/use-state nil)]
+        [all-markers set-all-markers] (ui/use-state nil)]
+    (js/console.log "google-types now is: " google-types)
 
     (ui/use-effect
-     :always
-     (when-not (= markers old-markers)
-       (set-old-markers markers)
-       (log ::Map.init-map
-            :position position)
-       (let [gmap (init-map
-                   map-element-id
-                   {:center position
-                    :zoom 10})]
-         (set-gmap gmap)
-         (doseq [marker markers]
-           (create-marker gmap marker))))
+     [lokationen]
+     (let [gmap (init-map ;TODO: do not  re-init map every time
+                 map-element-id
+                 {:center position
+                  :zoom 10
+                  :streetViewControl false
+                  :styles [
+                           {:featureType "poi"
+                            :stylers [{:visibility "off"}]}
+                           ]})]
+       (set-gmap gmap)))
+
+    (ui/use-effect
+     [all-markers]
+     (log ::Map.init-map
+          :position position)
+     (doseq [marker all-markers]           
+       (create-marker gmap marker))
      nil)
+
+    (ui/use-effect
+     [gmap lokationen]
+     (when gmap
+       (let [placesService
+             (new (-> js/window .-google .-maps
+                      .-places .-PlacesService) gmap)]
+         ^js (.nearbySearch placesService (clj->js {:location position
+                                                :radius 5000})
+                        #(let [google-markers (->> (js->clj % :keywordize-keys true)
+                                                   (keep
+                                                    (fn [place]
+                                                      (if (some google-types
+                                                                (:types place))
+                                                        (google-place-to-marker-props place)))))]
+                           (set-all-markers (concat  google-markers markers)))))))
 
     ($ :div
        {:id map-element-id
         :style {:height (or height "40vh")}})))
 
 (def-ui-test [MapWithPosition]
-  ($ :div {:style {:width "200px"}}
+  ($ :div {:style {:width "400px"}}
      ($ MapWithPosition
         {:id "test-MapWithPosition"
-         :height "200px"
+         :height "400px"
+         :google-types {"restaurant"
+                        "bar"
+                        "cafe"
+                        "meal_takeaway"
+                        "meal_delivery"  ;TODO: mark as delivery?
+                        "night_club"}
          :position {:lat 52.1875305
                     :lng 9.0788149}
          :markers [{:title "Bodega"
@@ -294,8 +372,8 @@
 
 
 (defnc Map
-  [{:keys [id height markers
-           force-position-input?]}]
+  [{:keys [id height markers google-types
+           force-position-input? lokationen]}]
   (let [[position set-position] (ui/use-state (when-not force-position-input?
                                                 :loading))]
 
@@ -333,7 +411,9 @@
          {:id id
           :height height
           :markers markers
-          :position position}))))
+          :position position
+          :lokationen lokationen
+          :google-types google-types}))))
 
 (def-ui-test [Map]
   ($ :div {:style {:width "300px"}}
