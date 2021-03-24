@@ -35,6 +35,7 @@
         map (js/google.maps.Map. e (clj->js map-config))]
     map))
 
+(def marker-atom (atom #{}))
 
 (defn create-marker
   [map props]
@@ -45,7 +46,6 @@
                    (assoc :map map)
                    (assoc :animation js/google.maps.Animation.DROP))]
     (js/google.maps.Marker. (clj->js marker))))
-
 
 
 ;; #########################################
@@ -94,6 +94,18 @@
 ;; ############################# 
 
 
+(defn init-default-map
+  ""
+  [element-id position]
+  (init-map element-id
+                 {:center position
+                  :zoom 10
+                  :streetViewControl false
+                  :styles [
+                           {:featureType "poi"
+                            :stylers [{:visibility "off"}]}
+                           ]}))
+
 (defnc MapWithPosition 
   [{:keys [id
            height
@@ -103,30 +115,14 @@
            google-types]}]
   (assert position)
   (let [map-element-id (or id "map")
+        
         [gmap set-gmap] (ui/use-state nil)
         [all-markers set-all-markers] (ui/use-state nil)]
     (js/console.log "google-types now is: " google-types)
 
     (ui/use-effect
      [lokationen]
-     (let [gmap (init-map ;TODO: do not  re-init map every time
-                 map-element-id
-                 {:center position
-                  :zoom 10
-                  :streetViewControl false
-                  :styles [
-                           {:featureType "poi"
-                            :stylers [{:visibility "off"}]}
-                           ]})]
-       (set-gmap gmap)))
-
-    (ui/use-effect
-     [all-markers]
-     (log ::Map.init-map
-          :position position)
-     (doseq [marker all-markers]           
-       (create-marker gmap marker))
-     nil)
+     (if-not gmap (set-gmap (init-default-map id position))))
 
     (ui/use-effect
      [gmap lokationen]
@@ -134,6 +130,11 @@
        (let [placesService
              (new (-> js/window .-google .-maps
                       .-places .-PlacesService) gmap)]
+         (doseq [marker all-markers]
+                 ^js (.setMap marker nil)
+                 (js/console.log "marker is" marker)
+                 ;;(reset! marker-atom #{})
+                 )
          ^js (.nearbySearch placesService (clj->js {:location position
                                                 :radius 5000})
                         #(let [google-markers (->> (js->clj % :keywordize-keys true)
@@ -142,7 +143,10 @@
                                                       (if (some google-types
                                                                 (:types place))
                                                         (google-place-to-marker-props place)))))]
-                           (set-all-markers (concat  google-markers markers)))))))
+                           (set-all-markers (doall
+                                             (map
+                                              (partial create-marker gmap)
+                                              (concat google-markers markers)))))))))
 
     ($ :div
        {:id map-element-id
