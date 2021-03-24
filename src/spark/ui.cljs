@@ -913,8 +913,8 @@
         command (when command (-> command upgrade-legacy-command complete-command ))
         onClick (wrap-in-error-handler
                  (or onClick
-                     (-> command :onClick)
-                     #(execute-command> command context then)))
+                     (when command (-> command :onClick))
+                     (when command #(execute-command> command context then))))
         icon (when-let [icon (or icon
                                  (-> command :icon)
                                  "play_arrow")]
