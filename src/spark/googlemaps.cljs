@@ -118,7 +118,6 @@
         
         [gmap set-gmap] (ui/use-state nil)
         [all-markers set-all-markers] (ui/use-state nil)]
-    (js/console.log "google-types now is: " google-types)
 
     (ui/use-effect
      [lokationen]
@@ -131,10 +130,7 @@
              (new (-> js/window .-google .-maps
                       .-places .-PlacesService) gmap)]
          (doseq [marker all-markers]
-                 ^js (.setMap marker nil)
-                 (js/console.log "marker is" marker)
-                 ;;(reset! marker-atom #{})
-                 )
+                 ^js (.setMap marker nil))
          ^js (.nearbySearch placesService (clj->js {:location position
                                                 :radius 5000})
                         #(let [google-markers (->> (js->clj % :keywordize-keys true)
