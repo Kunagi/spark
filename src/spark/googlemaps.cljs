@@ -124,12 +124,9 @@
                                                     :radius 5000})
                         callback))))
         map-element-id (or id "map")
-        [gmap set-gmap] (ui/use-state nil)
+        gmap (init-default-map map-element-id position)
+        [places-service set-places-service] (ui/use-state nil)
         [all-markers set-all-markers] (ui/use-state nil)]
-
-    (ui/use-effect
-     [lokationen]
-     (if-not gmap (set-gmap (init-default-map id position))))
 
     (ui/use-effect
      [gmap lokationen]
