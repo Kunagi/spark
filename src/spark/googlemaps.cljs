@@ -106,6 +106,8 @@
                             :stylers [{:visibility "off"}]}
                            ]}))
 
+
+
 (defnc MapWithPosition 
   [{:keys [id
            height
@@ -114,8 +116,14 @@
            lokationen
            google-types]}]
   (assert position)
-  (let [map-element-id (or id "map")
-        
+  (let [fetch-google-markers
+        (ui/use-memo
+         [] (throttle
+             (fn [placesService callback]
+               ^js (.nearbySearch placesService (clj->js {:location position
+                                                    :radius 5000})
+                        callback))))
+        map-element-id (or id "map")
         [gmap set-gmap] (ui/use-state nil)
         [all-markers set-all-markers] (ui/use-state nil)]
 
@@ -130,10 +138,9 @@
              (new (-> js/window .-google .-maps
                       .-places .-PlacesService) gmap)]
          (doseq [marker all-markers]
-                 ^js (.setMap marker nil))
-         ^js (.nearbySearch placesService (clj->js {:location position
-                                                :radius 5000})
-                        #(let [google-markers (->> (js->clj % :keywordize-keys true)
+           ^js (.setMap marker nil))
+         (fetch-google-markers
+          placesService #(let [google-markers (->> (js->clj % :keywordize-keys true)
                                                    (keep
                                                     (fn [place]
                                                       (if (some google-types
