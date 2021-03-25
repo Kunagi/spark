@@ -124,29 +124,36 @@
                                                     :radius 5000})
                         callback))))
         map-element-id (or id "map")
-        gmap (init-default-map map-element-id position)
-        [places-service set-places-service] (ui/use-state nil)
+        [gmap set-gmap] (ui/use-state nil)
+        [placesService set-placesService] (ui/use-state nil)
         [all-markers set-all-markers] (ui/use-state nil)]
+
+    (ui/use-effect
+     [lokationen]
+     (if-not gmap
+       (let [new-gmap (init-default-map id position)]
+         (set-gmap new-gmap)
+         (set-placesService
+          (new (-> js/window .-google .-maps
+                      .-places .-PlacesService) new-gmap)))))
 
     (ui/use-effect
      [gmap lokationen]
      (when gmap
-       (let [placesService
-             (new (-> js/window .-google .-maps
-                      .-places .-PlacesService) gmap)]
-         (doseq [marker all-markers]
-           ^js (.setMap marker nil))
-         (fetch-google-markers
-          placesService #(let [google-markers (->> (js->clj % :keywordize-keys true)
-                                                   (keep
-                                                    (fn [place]
-                                                      (if (some google-types
-                                                                (:types place))
-                                                        (google-place-to-marker-props place)))))]
-                           (set-all-markers (doall
-                                             (map
-                                              (partial create-marker gmap)
-                                              (concat google-markers markers)))))))))
+       (doseq [marker all-markers]
+         ^js (.setMap marker nil))
+       (fetch-google-markers
+        placesService #(let [google-markers
+                             (->> (js->clj % :keywordize-keys true)
+                                  (keep
+                                   (fn [place]
+                                     (if (some google-types
+                                               (:types place))
+                                       (google-place-to-marker-props place)))))]
+                         (set-all-markers (doall
+                                           (map
+                                            (partial create-marker gmap)
+                                            (concat google-markers markers))))))))
 
     ($ :div
        {:id map-element-id
