@@ -1,5 +1,7 @@
 (ns spark.money
+  (:refer-clojure :exclude [pos? zero?])
   (:require
+
    ["dinero.js" :as dinero]))
 
 ;; https://dinerojs.com/
@@ -50,6 +52,24 @@
   (.toObject (money "22.11"))
   (.toObject (money (money "22.11"))))
 
+(defn zero? [m]
+  (if m
+    (-> (money m) .isZero)
+    true))
+
+(defn pos? [m]
+  (if m
+    (let [m (money m)]
+      (if (-> m .isZero)
+        false
+        (-> m .isPositive)))
+    false))
+
+(comment
+  (pos? "23")
+  (pos? "-23")
+  (pos? "0")
+  (pos? nil))
 
 (defn ->str [m]
   (cond
