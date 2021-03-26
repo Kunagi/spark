@@ -67,6 +67,14 @@
   (-> (money "2.12")  ->str))
 
 
+(defn multiply [m factor]
+  (when m
+    (-> (money m)
+        (.multiply factor "HALF_UP"))))
+
+(comment
+  (->str (multiply "2.50" 4)))
+
 (defn sum [vals]
   (reduce (fn [ret val]
             (if val
