@@ -329,7 +329,11 @@
               {:onClick on-submit
                :variant "contained"
                :color "primary"}
-              "Ok"))))))
+              "Ok"))
+        ($ :div
+           {:style {:min-height "4px"}}
+           (when (-> form :waiting?)
+             ($ mui/LinearProgress)))))))
 
 
 (defnc FormDialogsContainer []
