@@ -305,11 +305,11 @@
                      {:key field-id}
                      (if-let [action (-> field :action)]
                        ($ :div
-                          {:style {:display "flex"
-                                   :align-items "center"}}
+                          {:style {:display "flex"}}
                           Input
                           ($ :div
-                             {:style {:margin-left "8px"}}
+                             {:style {:margin-left "8px"
+                                      :padding-top "22px"}}
                              ($ mui/Button
                                 {:onClick (fn [_]
                                             (update-form (-> action :f)))
