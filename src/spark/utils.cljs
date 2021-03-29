@@ -97,6 +97,14 @@
 (defn ->edn [data]
   (with-out-str (pprint data)))
 
+;;; date and time
+
+(defn timestamp [date-string]
+  (js/Date. (js/Date.parse date-string)))
+
+(comment
+  (timestamp "2020-01-01"))
+
 ;;; promises
 
 (defn no-op> []
