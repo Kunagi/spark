@@ -236,8 +236,11 @@
       :map-of
       (reduce (fn [m js-key]
                 (let [k js-key
-                      v (gobj/get data js-key)]
-                  (assoc m k (conform-js-data v (nth schema 2)))))
+                      v (gobj/get data js-key)
+                      v-schema (if (map? (second schema))
+                                 (nth schema 3)
+                                 (nth schema 2))]
+                  (assoc m k (conform-js-data v v-schema))))
               {} (js/Object.keys data))
 
       (reduce (fn [m js-key]
