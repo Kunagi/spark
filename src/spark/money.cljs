@@ -80,7 +80,7 @@
     m
 
     m
-    (let [s (-> m .toUnit str)
+    (let [s (-> ^js m .toUnit str)
           dot-idx (-> s (.indexOf "."))]
       (if (>= dot-idx 0)
         (if (-> s (.substring dot-idx) count (= 2))
