@@ -237,6 +237,9 @@
 (defn conform-js-data [^js data schema]
   (cond
 
+    (= :keyword schema)
+    (keyword data)
+
     (or (nil? data) (string? data) (number? data) (boolean? data))
     (js->clj data)
 
