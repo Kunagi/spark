@@ -51,10 +51,15 @@
     (firestore/create-doc> path values)))
 
 
-(defn update-doc> [doc values]
-  (let [values (assoc values
-                      :ts-updated [:db/timestamp])]
-    (firestore/update-fields> doc values)))
+(defn update-doc> [path-or-doc values]
+  (let [doc? (-> path-or-doc :firestore/path)
+        values (-> values
+                   (assoc :ts-updated [:db/timestamp])
+                   (dissoc :id))
+        path (if doc?
+               (-> path-or-doc :firestore/path)
+               path-or-doc)]
+    (firestore/update-fields> path values)))
 
 
 (defn- inner-path-as-string [path]
