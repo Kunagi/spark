@@ -107,8 +107,34 @@
 
 ;;; promises
 
+(defn resolve> [result]
+  (js/Promise.resolve result))
+
 (defn no-op> []
   (js/Promise.resolve nil))
+
+(defn as>
+  "Converge `thing` to js/Promise."
+  [thing]
+  (cond
+    (nil? thing)
+    (no-op>)
+
+    (instance? js/Promise thing)
+    thing
+
+    :else
+    (resolve> thing)))
+
+(defn all> [& promises-or-lists-of-promises]
+  (js/Promise.all
+   (reduce (fn [promises promise-or-list]
+             (if (instance? js/Promise promise-or-list)
+               (conj promises promise-or-list)
+               (->> promise-or-list
+                    (map as>)
+                    (into promises))))
+           [] promises-or-lists-of-promises)))
 
 (defn transform>
   "Returns `js/Promise` which resolves the application of `transform` on the
