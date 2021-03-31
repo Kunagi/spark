@@ -1,6 +1,8 @@
 (ns spark.notifications
   (:require
-   [spark.logging :refer [log]]))
+   [spark.logging :refer [log]]
+   [spark.utils :as u]
+   ))
 
 
 (defn info []
@@ -20,19 +22,20 @@
        (not (permission-granted?))))
 
 
-(defn request-permission [callback]
+(defn request-permission> []
   (log ::request-permission)
   (if-not (supported?)
-    (log ::notifications-not-supported)
-    (-> js/Notification
-        .requestPermission
-        (.then callback))))
+    (do
+      (log ::notifications-not-supported)
+      (u/no-op>))
+    (-> js/Notification .requestPermission)))
 
 
-(defn auto-request-permission []
+(defn auto-request-permission> []
   (log ::auto-request-permission)
-  (when (supported-but-not-granted?)
-    (request-permission (fn []))))
+  (if (supported-but-not-granted?)
+    (request-permission>)
+    (u/no-op>)))
 
 
 (defn- show-via-service-worker> [title options]
