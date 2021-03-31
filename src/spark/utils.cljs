@@ -9,19 +9,42 @@
    [malli.error :as malli-error]))
 
 
-;; https://github.com/weavejester/medley
+;; http://weavejester.github.io/medley/medley.core.html
 
 
 ;;; maps
 
 (defn deep-merge
-  [& maps]
-  (apply merge-with (fn [& args]
-                      (if (every? map? args)
-                        (apply deep-merge args)
-                        (last args)))
-         maps))
+  "Recursively merges maps together. If all the maps supplied have nested maps
+  under the same keys, these nested maps are merged. Otherwise the value is
+  overwritten, as in `clojure.core/merge`."
+  {:arglists '([& maps])}
+  ([])
+  ([a] a)
+  ([a b]
+   (when (or a b)
+     (letfn [(merge-entry [m e]
+               (let [k  (key e)
+                     v' (val e)]
+                 (if (contains? m k)
+                   (assoc m k (let [v (get m k)]
+                                (if (and (map? v) (map? v'))
+                                  (deep-merge v v')
+                                  v')))
+                   (assoc m k v'))))]
+       (reduce merge-entry (or a {}) (seq b)))))
+  ([a b & more]
+   (reduce deep-merge (or a {}) (cons b more))))
 
+
+(defn dissoc-nil-vals
+  "Dissoc all keys in `m` where the value is `nil?`."
+  [m]
+  (reduce (fn [m [k v]]
+            (if (nil? v)
+              (dissoc m k)
+              m))
+          m m))
 
 (defn assoc-if-not=
   "Assoc if the new value `v` ist not `=` to the current value in `m`."
@@ -198,14 +221,15 @@
 
 
 (defn malli-explain->user-message [explain schema]
-  (str "Value does not match schema: "
-       (try
-         (malli-error/humanize explain)
-         (catch :default ex
-           (throw (ex-info "Malli schema error humanization failed."
-                           {:schema schema
-                            :explain explain}
-                           ex))))))
+  (when explain
+    (str "Value does not match schema: "
+         (try
+           (malli-error/humanize explain)
+           (catch :default ex
+             (throw (ex-info "Malli schema error humanization failed."
+                             {:schema schema
+                              :explain explain}
+                             ex)))))))
 
 (defn malli-explain [schema value]
   (try

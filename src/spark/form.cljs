@@ -1,7 +1,9 @@
 (ns spark.form
   (:require
    [clojure.spec.alpha :as s]
+
    [spark.logging :refer [log]]
+   [spark.utils :as u]
    [spark.core :as spark]
     
 
@@ -149,9 +151,13 @@
 (defn adopt-values [form]
   (->> form :fields (map :id)
        (reduce (fn [form field-id]
-                 (assoc-in form [:values field-id]
-                           (adopt-value (get-in form [:values field-id])
-                                        form field-id))) form)))
+                 (let [value (adopt-value (get-in form [:values field-id])
+                                          form field-id)]
+                   (if (nil? value)
+                     (update form :values dissoc field-id)
+                     (assoc-in form [:values field-id]
+                               value))))
+               form)))
 
 (defn validate-field [form field-id]
   (let [field (field-by-id form field-id)
