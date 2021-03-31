@@ -14,12 +14,12 @@
 (defn auth-completed? []
   @AUTH_COMPLETED)
 
-(defn ^js auth-user []
+(defn auth-user []
   @AUTH_USER)
 
 (defn uid []
   (when-let [auth-user (auth-user)]
-    (-> ^js auth-user .-uid)))
+    (-> ^js auth-user :uid)))
 
 
 (def ^js firebase (-> js/window .-firebase))
