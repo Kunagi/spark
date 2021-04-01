@@ -126,20 +126,25 @@
 ;;; date and time
 
 (defn timestamp [date-string]
-  (js/Date. (js/Date.parse date-string)))
+  (when date-string
+    (if (instance? js/Date date-string)
+      date-string
+      (js/Date. (js/Date.parse date-string)))))
 
 (comment
   (timestamp "2020-01-01"))
 
 (defn date-same-day? [date-a date-b]
-  (and (= (-> date-a .getDay)   (-> date-b .getDay))
-       (= (-> date-a .getMonth) (-> date-b .getMonth))
-       (= (-> date-a .getYear)  (-> date-b .getYear))))
+  (let [date-a (timestamp date-a)
+        date-b (timestamp date-b)]
+    (and (= (-> date-a .getDay)   (-> date-b .getDay))
+         (= (-> date-a .getMonth) (-> date-b .getMonth))
+         (= (-> date-a .getYear)  (-> date-b .getYear)))))
 
 (comment
   (date-same-day? (js/Date.) (js/Date.))
-  (date-same-day? (js/Date. "2020-01-01") (js/Date. "2020-01-01"))
-  (date-same-day? (js/Date. "2020-01-01") (js/Date. "2020-01-02")))
+  (date-same-day? "2020-01-01" "2020-01-01")
+  (date-same-day? "2020-01-01" "2020-01-02"))
 
 ;;; promises
 
