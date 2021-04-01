@@ -131,6 +131,16 @@
 (comment
   (timestamp "2020-01-01"))
 
+(defn date-same-day? [date-a date-b]
+  (and (= (-> date-a .getDay)   (-> date-b .getDay))
+       (= (-> date-a .getMonth) (-> date-b .getMonth))
+       (= (-> date-a .getYear)  (-> date-b .getYear))))
+
+(comment
+  (date-same-day? (js/Date.) (js/Date.))
+  (date-same-day? (js/Date. "2020-01-01") (js/Date. "2020-01-01"))
+  (date-same-day? (js/Date. "2020-01-01") (js/Date. "2020-01-02")))
+
 ;;; promises
 
 (defn resolve> [result]
