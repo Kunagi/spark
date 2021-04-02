@@ -144,6 +144,25 @@
 
 ;;; date and time
 
+(defn millis [thing]
+  (cond
+    (nil? thing) nil
+    (number? thing) thing
+    (instance? js/Date thing) (-> thing .getTime)
+    :else (js/Date.parse thing)))
+
+(comment
+  (js/Date. (millis "2020-01-01"))
+  (js/Date. (millis 1577870520000))
+  (js/Date. (millis (js/Date.))))
+
+
+(defn timespans-overlapping? [a-start a-end b-start b-end]
+  (not
+   (or (<= a-end b-start)               ; a is before b / a ends before b start
+       (<= b-end a-start)               ; b is before a / b ends before a starts
+       )))
+
 (defn timestamp [date-string]
   (when date-string
     (if (instance? js/Date date-string)
