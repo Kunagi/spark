@@ -25,6 +25,25 @@
   (tap> {:name "Witek"})
   (tap> (js/Promise.resolve {:name "Witek"})))
 
+;;; fetch
+
+(defn fetch>
+  ([url]
+   (fetch> url {}))
+  ([url opts]
+   (js/fetch url (-> opts clj->js))))
+
+(defn fetch-json>
+  ([url]
+   (fetch-json> url {})
+   )
+  ([url opts]
+   (-> (fetch> url opts)
+       (.then (fn [^js response]
+                (-> response .json)))
+       (.then (fn [^js json]
+                (js->clj json :keywordize-keys true))))))
+
 ;;; maps
 
 (defn deep-merge
@@ -257,6 +276,9 @@
 
 (defn resolve> [result]
   (js/Promise.resolve result))
+
+(defn reject> [result]
+  (js/Promise.reject result))
 
 (defn no-op> []
   (js/Promise.resolve nil))
