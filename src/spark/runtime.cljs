@@ -87,8 +87,9 @@
    (mapv reify-effect> effects)))
 
 (defn post-process-query-result [query context result]
-  (when-let [f (-> query spark/query-process)]
-     (f result context)))
+  (if-let [f (-> query spark/query-process)]
+    (f result context)
+    result))
 
 (defn execute-query>
   [query context]
