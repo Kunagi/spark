@@ -2,6 +2,7 @@
   (:require
    [spark.logging :refer [log]]
    [spark.utils :as u]
+   [spark.core :as spark]
    [spark.repository :as repository]
     ))
 
@@ -85,16 +86,21 @@
   (js/Promise.all
    (mapv reify-effect> effects)))
 
+(defn post-process-query-result [query context result]
+  (when-let [f (-> query spark/query-process)]
+     (f result context)))
 
 (defn execute-query>
   [query context]
   (log ::execute-query>
        :query query
        :context context)
-  (if-let [path (-> query :path (u/fn->value context))]
-    (repository/query> path)
-    (repository/query-union> (-> query :paths (u/fn->value context))))
-  )
+
+  (-> (if-let [path (-> query :path (u/fn->value context))]
+        (repository/query> path)
+        (repository/query-union> (-> query :paths (u/fn->value context))))
+      (.then (fn [result]
+               (u/resolve> (post-process-query-result query context result))))))
 
 
 (defn execute-command>

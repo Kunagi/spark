@@ -227,32 +227,27 @@
                {})
        vals))
 
-(defn- post-process-query [query context result]
-  (when result
-    (when-let [f (-> query spark/query-process)]
-      (f result context))))
-
 (defn use-query
   [query context]
   (log ::execute-query>
        :query query
        :context context)
 
-  (post-process-query
-   query context
-   (cond
-     (-> query :path)
-     (let [path (-> query :path (u/fn->value context))]
-       (if (-> path count even?)
-         (use-doc path)
-         (use-col path)))
+  (let [result (cond
+                 (-> query :path)
+                 (let [path (-> query :path (u/fn->value context))]
+                   (if (-> path count even?)
+                     (use-doc path)
+                     (use-col path)))
 
-     (-> query :paths)
-     (use-cols-union (-> query :paths (u/fn->value context)))
+                 (-> query :paths)
+                 (use-cols-union (-> query :paths (u/fn->value context)))
 
-     :else
-     (throw (ex-info "Invalid query. Missing :path or :paths."
-                     {:query query})))))
+                 :else
+                 (throw (ex-info "Invalid query. Missing :path or :paths."
+                                 {:query query})))]
+    (when result
+      (runtime/post-process-query-result query context result))))
 
 ;;;
 ;;; Styles / Theme
