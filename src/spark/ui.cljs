@@ -722,7 +722,8 @@
   ($ mui/Card
      ($ LinkCardActionArea {:to to}
         ($ mui/CardContent
-           children))))
+           (stack
+            children)))))
 
 
 ;;; commands

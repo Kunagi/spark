@@ -5,9 +5,10 @@
    [spark.logging :refer [log]]
    [spark.utils :as u]
    [spark.core :as spark]
-    
 
-   [clojure.string :as str]))
+
+   [clojure.string :as str]
+   [clojure.set :as set]))
 
 (s/def ::id keyword?)
 (s/def ::submit fn?)
@@ -65,10 +66,25 @@
                            (-> field :rows boolean))
            :auto-complete (get field :auto-complete "off"))))
 
+(defn- prepare-field-value [value field]
+  (case (-> field :type)
+
+    :checkboxes
+    (->> field :options (map :value) (into #{}) (set/intersection value))
+
+    value))
+
+(comment
+  (prepare-field-value
+   #{:a :b :c}
+   {:type :checkboxes
+    :options [{:value :b}]}))
+
 (defn- spy-form-values [form]
   (log ::spy-form-values
        :values (-> form :values))
   form)
+
 
 (defn initialize [form]
   (s/assert ::form form)
@@ -80,32 +96,35 @@
                       (->> form
                            :fields
                            (remove nil?))))
-        form (assoc form :fields fields)]
+        form (assoc form :fields fields)
+        form (assoc form :values
+                    (reduce (fn [values field]
+                              (let [field-id (-> field field-id)
+                                    value (or (-> values (get field-id))
+                                              (-> field :value)
+                                              (-> field :default-value))
+                                    value (prepare-field-value value field)]
+                                (assoc values field-id value)))
+                            (or (-> form :values) {}) (-> form :fields)))
+        form (update form :fields
+                     (fn [fields]
+                       (mapv (fn [field]
+                               (assoc field :value (get-in form [:values (:id field)])))
+                             fields)))]
     ;; (log ::initialized
     ;;      :form form)
-    (-> form
-        (assoc :values
-               (reduce (fn [values field]
-                         (let [field-id (-> field field-id)]
-                           (if (get values field-id)
-                             values
-                             (let [value (or (-> field :value)
-                                             (-> field :default-value))]
-                               (if value
-                                 (assoc values field-id value)
-                                 values)))))
-                       (or (-> form :values) {}) (-> form :fields))))))
+    form))
 
 
-(defn load-values [form values-map]
-  ;; (log ::load-values
-  ;;      :form form
-  ;;      :values values-map)
-  (s/assert ::fields (-> form :fields))
-  (update form :fields
-          #(mapv (fn [field]
-                   (assoc field :value (get values-map (-> field :id))))
-                 %)))
+;; (defn load-values [form values-map]
+;;   ;; (log ::load-values
+;;   ;;      :form form
+;;   ;;      :values values-map)
+;;   (s/assert ::fields (-> form :fields))
+;;   (update form :fields
+;;           #(mapv (fn [field]
+;;                    (assoc field :value (get values-map (-> field :id))))
+;;                  %)))
 
 
 (defn field-by-id [form field-id]
