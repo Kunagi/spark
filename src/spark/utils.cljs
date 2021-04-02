@@ -1,4 +1,5 @@
 (ns spark.utils
+  (:refer-clojure :exclude [pos? zero? min max tap>])
   (:require
    [clojure.spec.alpha :as s]
    [cljs.pprint :refer [pprint]]
@@ -11,6 +12,18 @@
 
 ;; http://weavejester.github.io/medley/medley.core.html
 
+;;; tap
+
+(defn tap> [value]
+  (if (instance? js/Promise value)
+    (-> value (.then clojure.core/tap>))
+    (clojure.core/tap> value))
+  value)
+
+(comment
+  (tap> "hello world")
+  (tap> {:name "Witek"})
+  (tap> (js/Promise.resolve {:name "Witek"})))
 
 ;;; maps
 
@@ -240,6 +253,7 @@
   (date-past? "2021-04-03"))
 
 ;;; promises
+
 
 (defn resolve> [result]
   (js/Promise.resolve result))

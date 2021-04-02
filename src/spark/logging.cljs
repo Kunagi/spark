@@ -40,5 +40,24 @@
                                         (name event-keyword)]
                                        (if (keyword? event-keyword)
                                          ["?" (name event-keyword)]
-                                         ["?" (str event-keyword)]))]
+                                         ["?" (str event-keyword)]))
+        event-data (if (and (-> event-data count (= 1))
+                            (-> event-data first second nil?))
+                     (let [value (-> event-data first first)]
+                       (if (map? value)
+                         value
+                         {:_ value}))
+                     event-data)]
     (@WRITER event-namespace event-name event-data)))
+
+
+(defonce TAP (atom nil))
+
+(defn install-tap []
+  (swap! TAP (fn [old-tap]
+               (when old-tap
+                 (remove-tap old-tap))
+               (let  [tap (fn [value]
+                            (log ::tap value))]
+                 (add-tap tap)
+                 tap))))
