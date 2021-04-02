@@ -140,7 +140,7 @@
 
 (defn cmd? [thing]
   (and (map? thing)
-       (get thing(keyword "cmd" "id"))))
+       (get thing (keyword "cmd" "id"))))
 
 (defn assert-cmd [cmd]
   ;; FIXME dev only
@@ -154,12 +154,31 @@
       (-> cmd :cmd/symbol)))
 
 ;;;
+;;; query
+;;;
+
+(defn query? [thing]
+  (and (map? thing)
+       (get thing (keyword "query" "id"))))
+
+(defn assert-query [query]
+  ;; FIXME dev only
+  (when-not (query? query)
+    (throw (ex-info "qeury expected"
+                    {:value query}))))
+
+(defn query-process [query]
+  (assert-query query)
+  (-> query
+      :process))
+
+;;;
 ;;; page
 ;;;
 
 (defn page? [thing]
   (and (map? thing)
-       (get thing(keyword "page" "id"))))
+       (get thing (keyword "page" "id"))))
 
 (defn assert-page [page]
   ;; FIXME dev only
