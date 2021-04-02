@@ -188,19 +188,25 @@
       (assoc-in form [:errors field-id] error)
       (update form :errors dissoc field-id))))
 
+(defn set-field-value [form field-id value]
+  (let [field-index (field-index-by-id form field-id)]
+    (-> form
+        (assoc-in [:values field-id] value)
+        (assoc-in [:fields field-index :value] value)
+        (validate-field field-id))))
+
+(defn set-fields-values [form values]
+  (reduce (fn [form [field-id value]]
+            (set-field-value form field-id value))
+          form values))
+
 (defn on-field-value-change [form field-id new-value]
   (log ::on-field-value-change
        :values (-> form :values)
        :field field-id
        :value new-value)
-  (let [
-        field-index (field-index-by-id form field-id)]
-    (log ::index
-         :index field-index)
-    (-> form
-        (assoc-in [:values field-id] new-value)
-        (assoc-in [:fields field-index :value] new-value)
-        (validate-field field-id))))
+  (-> form
+      (set-field-value field-id new-value)))
 
 
 (defn contains-errors? [form]
@@ -218,3 +224,6 @@
   (->> form :fields (map :id)
        (reduce validate-field form)
        adopt-values))
+
+(defn set-waiting [form value]
+  (assoc form :waiting? (boolean value)))
