@@ -118,6 +118,25 @@
     (apply f (into [v] more-args))
     v))
 
+;;; strings
+
+(defn string-pad-left [s min-len padding]
+  (when s
+    (let [s (if ( string? s) s (str s))
+          padding (if ( string? padding) padding (str padding))]
+      (if (-> padding count (= 0))
+        s
+        (if (-> s count (>= min-len))
+          s
+          (recur (str padding s) min-len padding))))))
+
+(comment
+  (string-pad-left "1" 3 "0")
+  (string-pad-left 1 3 0)
+  (string-pad-left "100" 3 "0")
+  (string-pad-left "1" 3 nil)
+  (string-pad-left "1" 3 ""))
+
 ;;; edn
 
 (defn ->edn [data]
@@ -134,12 +153,56 @@
 (comment
   (timestamp "2020-01-01"))
 
+(defn date [date-or-string]
+  (when date-or-string
+    (let [ts (timestamp date-or-string)]
+      (str (-> ts .getFullYear)
+           "-"
+           (-> ts .getMonth inc (string-pad-left 2 "0"))
+           "-"
+           (-> ts .getDate (string-pad-left 2 "0"))))))
+
+(comment
+  (timestamp "2020-01-01 10:22")
+  (date "2020-01-01 10:22"))
+
+(defn date-today []
+  (date (js/Date.)))
+
+(comment
+  (date-today))
+
 (defn date-same-day? [date-a date-b]
   (let [date-a (timestamp date-a)
         date-b (timestamp date-b)]
     (and (= (-> date-a .getDay)   (-> date-b .getDay))
          (= (-> date-a .getMonth) (-> date-b .getMonth))
-         (= (-> date-a .getYear)  (-> date-b .getYear)))))
+         (= (-> date-a .getFullYear)  (-> date-b .getFullYear)))))
+
+(defn date-before? [date test-date]
+  (let [date (timestamp date)
+        test-date (timestamp test-date)]
+
+    (cond
+      (< (-> date .getFullYear) (-> test-date .getFullYear)) true
+      (> (-> date .getFullYear) (-> test-date .getFullYear)) false
+      :else (cond
+              (< (-> date .getMonth) (-> test-date .getMonth)) true
+              (> (-> date .getMonth) (-> test-date .getMonth)) false
+              :else (cond
+                      (< (-> date .getDay) (-> test-date .getDay)) true
+                      (> (-> date .getDay) (-> test-date .getDay)) false
+                      :else false)))))
+
+(comment
+  (date-before? "2020-01-01" "2020-01-02")
+  (date-before? "2020-01-01" "2020-02-01")
+  (date-before? "2020-01-01" "2021-01-01")
+  (date-before? "2020-01-01" "2020-01-01")
+  (date-before? "2020-01-02" "2020-01-01")
+  (date-before? "2020-02-01" "2020-01-01")
+  (date-before? "2022-01-01" "2020-01-01"))
+
 
 (comment
   (date-same-day? (js/Date.) (js/Date.))
