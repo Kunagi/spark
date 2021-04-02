@@ -175,9 +175,15 @@
 (defn date-same-day? [date-a date-b]
   (let [date-a (timestamp date-a)
         date-b (timestamp date-b)]
-    (and (= (-> date-a .getDay)   (-> date-b .getDay))
+    (and (= (-> date-a .getDate)   (-> date-b .getDate))
          (= (-> date-a .getMonth) (-> date-b .getMonth))
          (= (-> date-a .getFullYear)  (-> date-b .getFullYear)))))
+
+(comment
+  (date-same-day? (js/Date.) (js/Date.))
+  (date-same-day? "2020-01-01" "2020-01-01")
+  (date-same-day? "2020-01-01" "2020-01-02"))
+
 
 (defn date-before? [date test-date]
   (let [date (timestamp date)
@@ -190,8 +196,8 @@
               (< (-> date .getMonth) (-> test-date .getMonth)) true
               (> (-> date .getMonth) (-> test-date .getMonth)) false
               :else (cond
-                      (< (-> date .getDay) (-> test-date .getDay)) true
-                      (> (-> date .getDay) (-> test-date .getDay)) false
+                      (< (-> date .getDate) (-> test-date .getDate)) true
+                      (> (-> date .getDate) (-> test-date .getDate)) false
                       :else false)))))
 
 (comment
@@ -204,10 +210,6 @@
   (date-before? "2022-01-01" "2020-01-01"))
 
 
-(comment
-  (date-same-day? (js/Date.) (js/Date.))
-  (date-same-day? "2020-01-01" "2020-01-01")
-  (date-same-day? "2020-01-01" "2020-01-02"))
 
 ;;; promises
 
