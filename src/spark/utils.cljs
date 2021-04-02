@@ -209,7 +209,16 @@
   (date-before? "2020-02-01" "2020-01-01")
   (date-before? "2022-01-01" "2020-01-01"))
 
+(defn date-past? [date]
+  (date-before? date (date-today)))
 
+(comment
+  (date-today)
+  (date-past? (js/Date.))
+  (date-past? (date-today))
+  (date-past? "2021-04-01")
+  (date-past? "2021-04-02")
+  (date-past? "2021-04-03"))
 
 ;;; promises
 
