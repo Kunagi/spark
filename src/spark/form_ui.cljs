@@ -252,8 +252,30 @@
         form-id (-> form :id)
         form (assoc form :update (fn [f]
                                    (set-form (f form))))
+        update-form_ (fn [f & args]
+                       (set-form (apply f (into [form] args))))
+
+        set-waiting (fn [waiting?]
+                      (update-form_ form/set-waiting waiting?))
+
         update-form (fn [f & args]
-                      (set-form (apply f (into [form] args))))
+                      (let [result (apply f (into [form] args))]
+                        (if (instance? js/Promise result)
+                          (do
+                            (-> result
+                                (.then (fn [f]
+                                         (set-waiting false)
+                                         (update-form_ f)))
+                                (.catch (fn [error]
+                                          (js/console.error
+                                           "update-form promise failed:" error)
+                                          ;; FIXME display error
+                                          (set-waiting false))))
+                            (-> form
+                                (form/set-waiting true)
+                                set-form))
+                          (set-form result))))
+
         ;; form (assoc form :update update-form)
         close (fn []
                 (update-form assoc :open? false)
@@ -265,15 +287,15 @@
                         (let [values (form/values form)]
                           (log ::submit
                                :form form
-                               :values values )
+                               :values values)
                           #_(when-let [command (get form :command)]
-                            (-> (runtime/execute-command>
-                                 command
-                                 (assoc context
-                                        :values values))
-                                (.then close)))
+                              (-> (runtime/execute-command>
+                                   command
+                                   (assoc context
+                                          :values values))
+                                  (.then close)))
                           (when-let [submit (get form :submit)]
-                            (submit values )
+                            (submit values)
                             (close))))))]
     (d/div
      ($ mui/Dialog
