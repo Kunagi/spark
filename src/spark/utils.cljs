@@ -311,6 +311,15 @@
      (js/setTimeout #(resolve (f))
                     wait-millis))))
 
+(comment
+  (-> (resolve> {:log []})
+      (.then #(update % :log conj "a"))
+      (.then tap>)
+      (.then #(later> 1000 (fn [] (update % :log conj "b"))))
+      (.then #(update % :log conj "c"))
+      (.then #(resolve> (update % :log conj "d")))
+      (.then tap>)))
+
 (defn transform>
   "Returns `js/Promise` which resolves the application of `transform` on the
   value of `promise`.
