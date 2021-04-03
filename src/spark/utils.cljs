@@ -273,7 +273,6 @@
 
 ;;; promises
 
-
 (defn resolve> [result]
   (js/Promise.resolve result))
 
@@ -305,6 +304,12 @@
                     (map as>)
                     (into promises))))
            [] promises-or-lists-of-promises)))
+
+(defn later> [wait-millis f]
+  (js/Promise.
+   (fn [resolve _]
+     (js/setTimeout #(resolve (f))
+                    wait-millis))))
 
 (defn transform>
   "Returns `js/Promise` which resolves the application of `transform` on the
