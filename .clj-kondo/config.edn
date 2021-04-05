@@ -1,18 +1,21 @@
-{:lint-as {
-           helix.core/defnc       clojure.core/defn
+;; https://github.com/clj-kondo/clj-kondo/blob/master/doc/config.md
 
-           spark.react/defnc       clojure.core/defn
-           spark.core/def-doc     clojure.core/def
-           spark.core/def-field   clojure.core/def
-           spark.core/def-subdoc  clojure.core/def
-           spark.core/def-cmd     clojure.core/def
-           spark.core/def-query   clojure.core/def
-           spark.core/def-spa     clojure.core/def
-           spark.core/def-test    clojure.core/fn
+{
+ :lint-as {
+           helix.core/defnc clojure.core/defn
 
-           spark.ui/def-ui        clojure.core/defn
-           spark.ui/def-ui-test   clojure.core/fn
-           spark.ui/def-page      clojure.core/def
+           spark.react/defnc     clojure.core/defn
+           spark.core/def-doc    clojure.core/def
+           spark.core/def-field  clojure.core/def
+           spark.core/def-subdoc clojure.core/def
+           spark.core/def-cmd    clojure.core/def
+           spark.core/def-query  clojure.core/def
+           spark.core/def-spa    clojure.core/def
+           spark.core/def-test   clojure.core/fn
+
+           spark.ui/def-ui      clojure.core/defn
+           spark.ui/def-ui-test clojure.core/fn
+           spark.ui/def-page    clojure.core/def
 
            spark.models/def-model clojure.core/def
            }}
