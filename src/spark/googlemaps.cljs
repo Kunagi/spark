@@ -308,21 +308,22 @@
                       :secondary_text])))))) 
 
 
-(defnc PositionInput [{:keys [set-position]}]
-  (let [fetch (ui/use-memo
-               [] (throttle 
-                   (fn [request callback]
-                     ^js (. (.-current autocompleteService)
-                            getPlacePredictions request callback)
-                              ;; (->  autocompleteService ; Don't know where to put Metadata in threading macro
-                              ;;      .-current
-                              ;;      (.getPlacePredictions
-                              ;;       request callback))
-                     ) 200))
+(defnc PositionInput [{:keys [set-position
+                              on-place-selected]}]
+  (let [fetch                         (ui/use-memo
+                                       [] (throttle
+                                           (fn [request callback]
+                                             ^js (. (.-current autocompleteService)
+                                                    getPlacePredictions request callback)
+                                             ;; (->  autocompleteService ; Don't know where to put Metadata in threading macro
+                                             ;;      .-current
+                                             ;;      (.getPlacePredictions
+                                             ;;       request callback))
+                                             ) 200))
         [input-value set-input-value] (ui/use-state "")
-        [options set-options] (ui/use-state [])
-        [ort set-ort] (ui/use-state
-                       (js/window.localStorage.getItem "standort"))]
+        [options set-options]         (ui/use-state [])
+        [ort set-ort]                 (ui/use-state
+                                       (js/window.localStorage.getItem "standort"))]
     
     
     (ui/use-effect
@@ -331,43 +332,57 @@
     
     ($ :div
        ($ :form
-          {:style {:width "300px"}
+          {:style    {:width "300px"}
            :onSubmit (fn [^js event]
                        (-> event .preventDefault)
                        (js/window.localStorage.setItem "standort" ort)
                        (when ort 
                          (-> (geocode-address> ort)
-                             (.then #(set-position (-> %
-                                                       first
-                                                       .-geometry
-                                                       .-location
-                                                       js->clj)))))
+                             (.then #(when set-position
+                                       (set-position (-> %
+                                                         first
+                                                         .-geometry
+                                                         .-location
+                                                         js->clj))))))
                        false)}          
           ($ mui-lab/Autocomplete
-             {:getOptionLabel #(if (string? %) % (.-description %))
-              :options (clj->js options) ; warum manuell?
-              :autoComplete true
+             {:getOptionLabel     #(if (string? %) % (.-description %))
+              :options            (clj->js options) ; warum manuell?
+              :autoComplete       true
               :includeInputInList true
-              :getOptionSelected #(= (get %1 "place_id")
-                                     (get %2 "place_id"))
-              :value ort
-              :onChange (fn [event new-value]
-                          (set-options (if new-value (into [new-value] options)
-                                           options))
-                          (if (.-description new-value)
-                           (set-ort (.-description new-value))))
-              :onInputChange (fn [event new-input-value]
-                               (set-input-value new-input-value))
-              :renderInput (fn [params]
-                             ($ mui/TextField
-                                {:label "Bitte Standort eingeben"
-                                 ;; :onChange #(-> % .-target .-value set-ort)
-                                 :variant "outlined"
-                                 :type "text"
-                                 :autoFocus true
-                                 :& params}))
+              :getOptionSelected  #(= (get %1 "place_id")
+                                      (get %2 "place_id"))
+              :value              ort
+              :onChange           (fn [^js event ^js new-value]
+                                    (set-options (if new-value
+                                                   (into [new-value] options)
+                                                   options))
+                                    (when (and
+                                           new-value
+                                           (.hasOwnProperty new-value "description")
+                                           (.-description new-value))
+                                      (js/console.log "new-value" new-value)
+                                      (set-ort (.-description new-value))
+                                      (when on-place-selected
+                                        (on-place-selected
+                                         {:place_id    (-> new-value .-place_id)
+                                          :description (-> new-value .-description)
+                                          }))
+                                      ))
+              :onInputChange      (fn [event new-input-value]
+                                    (set-input-value new-input-value))
+              :renderInput        (fn [params]
+                                    ($ mui/TextField
+                                       {
+                                        ;; :label     "Bitte Standort eingeben"
+                                        :placeholder "Ort eingeben"
+                                        ;; :onChange #(-> % .-target .-value set-ort)
+                                        :variant     "outlined"
+                                        :type        "text"
+                                        :autoFocus   true
+                                        :&           params}))
               ;; :renderOption #(str (js->clj %))
-              :renderOption render-google-option})))))
+              :renderOption       render-google-option})))))
 
  
 (def-ui-test [PositionInput] ;TODO: Write Proper test?
