@@ -972,13 +972,17 @@
 ;;;
 
 (defnc PageContent []
-  (let [page (use-page)]
-    ($ mui/Container
-        {:maxWidth (get page :max-width "sm")}
-        ($ ValuesLoadGuard {:values (-> page :data vals)
-                            :padding 2}
-           ($ (-> page :content))))
-     ))
+  (let [page           (use-page)
+        use-container? (get page :use-container true)
+        Content        ($ ValuesLoadGuard {:values  (-> page :data vals)
+                                           :padding 2}
+                          ($ (-> page :content)))]
+    (if use-container?
+      ($ mui/Container
+         {:maxWidth (get page :max-width "sm")}
+         Content)
+      Content)
+    ))
 
 
 (defonce ADDITIONAL_PAGES (atom nil))
