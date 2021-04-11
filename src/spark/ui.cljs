@@ -1021,46 +1021,56 @@
 (defnc PageWrapper [{:keys [spa page devtools-component children]}]
   {:helix/features {:check-invalid-hooks-usage false}}
   ;; (log ::render-PageWrapper)
-  (let [context (use-spark-context)
-        params (use-params-2)
+  (let [context        (use-spark-context)
+        params         (use-params-2)
+        uid            (use-uid)
+        force-sign-in? (-> page :force-sign-in)
+
+        sign-in-request? (and force-sign-in? (nil? uid))
 
         context (assoc context :spark/page page)
         context (merge context params)
 
         ;; TODO query parameters form request
 
-        docs (reduce (fn [docs [k Doc]]
-                       (let [id (get context k)
-                             doc (use-doc Doc id)]
-                         (assoc docs k doc)))
-                     {} (-> page :use-docs))
+        docs    (reduce (fn [docs [k Doc]]
+                          (let [id  (get context k)
+                                doc (use-doc Doc id)]
+                            (assoc docs k doc)))
+                        {} (-> page :use-docs))
         context (merge context docs)
 
         update-context (-> spa :update-page-context)
-        context (u/safe-apply update-context [context])
+        context        (u/safe-apply update-context [context])
         update-context (-> page :update-context)
-        context (u/safe-apply update-context [context])]
+        context        (u/safe-apply update-context [context])]
 
-    ($ ValuesLoadGuard
-       {:values (concat (mapv #(get context %) (-> page :wait-for))
-                        (vals docs))
-        :padding 4}
-       (provider
-        {:context SPARK_CONTEXT :value context}
-        (provider ;; TODO deprecated, kill it
-         {:context PAGE :value page}
-         (div
-          (if ^boolean js/goog.DEBUG
-            ($ DevPageWrapper
-               {:page page
-                :context context}
-               children)
-            children)
-          ($ DialogsContainer)
-          ($ ErrorDialog)
-          ($ FormDialogsContainer)
-          (when (and  ^boolean js/goog.DEBUG devtools-component)
-            ($ devtools-component))))))))
+    (provider
+     {:context SPARK_CONTEXT :value context}
+     (provider ;; TODO deprecated, kill it
+      {:context PAGE :value page}
+      (<>
+       (if sign-in-request?
+         (if-let [component (-> spa :sign-in-request-component)]
+           ($ component)
+           (div "Permission Denied"))
+         ($ ValuesLoadGuard
+            {:values  (concat (mapv #(get context %) (-> page :wait-for))
+                              (vals docs))
+             :padding 4}
+            (if ^boolean js/goog.DEBUG
+              ($ DevPageWrapper
+                 {:page    page
+                  :context context}
+                 children)
+              children)))
+       ($ DialogsContainer)
+       ($ ErrorDialog)
+       ($ FormDialogsContainer)
+       (when (and  ^boolean js/goog.DEBUG devtools-component)
+         ($ devtools-component)))))
+
+    ))
 
 
 (defnc PageSwitch [{:keys [spa devtools-component children]}]
