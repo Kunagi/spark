@@ -58,6 +58,6 @@
                (when old-tap
                  (remove-tap old-tap))
                (let  [tap (fn [value]
-                            (log ::tap value))]
+                            (log ::tap> value))]
                  (add-tap tap)
                  tap))))

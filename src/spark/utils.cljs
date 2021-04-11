@@ -16,7 +16,10 @@
 
 (defn tap> [value]
   (if (instance? js/Promise value)
-    (-> value (.then clojure.core/tap>))
+    (-> value (.then (fn [result]
+                       (clojure.core/tap> {:promise/resolved result}))
+                     (fn [error]
+                       (clojure.core/tap> {:promise/rejected error}))))
     (clojure.core/tap> value))
   value)
 
