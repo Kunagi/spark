@@ -29,32 +29,35 @@
 
 
 (defn- initialize-field [form idx field]
-  (let [field (if (spark/field-schema? field)
-                (spark/field-schema-as-form-field field)
-                field)
-        id (-> field field-id)
-        values (-> form :values)
+  (let [field         (if (spark/field-schema? field)
+                        (spark/field-schema-as-form-field field)
+                        field)
+        id            (-> field field-id)
+        values        (-> form :values)
         fields-values (-> form :fields-values)
-        field-type (let [type (-> field :type)]
-                     (cond
-                       (nil? type) :text
-                       (string? type) (keyword type)
-                       :else type))
-        value (or (get values id)
-                  (get field :value)
-                  (get fields-values id)
-                  (get field :default-value))
-        value (case field-type
-                :checkboxes (into #{} value)
-                value)
-        field (if value
-                (assoc field :value value)
-                field)
-        field-name (or (-> field :name)
-                       (when-let [id (-> field :id)]
-                         (if (keyword? id)
-                           (name id)
-                           (str id))))]
+        field-type    (let [type (-> field :type)]
+                        (cond
+                          (nil? type)    :text
+                          (string? type) (keyword type)
+                          :else          type))
+        value         (or (get values id)
+                          (get field :value)
+                          (get fields-values id)
+                          (get field :default-value))
+        value         (case field-type
+                        :checkboxes (into #{} value)
+                        :chips      (if (-> field :sort?)
+                                      (sort value)
+                                      value)
+                        value)
+        field         (if value
+                        (assoc field :value value)
+                        field)
+        field-name    (or (-> field :name)
+                          (when-let [id (-> field :id)]
+                            (if (keyword? id)
+                              (name id)
+                              (str id))))]
     (assoc field
            :auto-focus? (= 0 idx)
            :name field-name
@@ -155,16 +158,17 @@
         (-> (field-by-id form field-id) :value))))
 
 
-
-
 (defn adopt-value [value form field-id]
   (let [field-type (field-type form field-id)
-        value (if (string? value) (str/trim value) value)]
+        value      (if (string? value) (str/trim value) value)]
+    (log ::adopt-value
+         :type field-type)
     (if (or (nil? value)
             (= "" value))
       nil
       (case field-type
         :number (js/parseInt value)
+        ;; :chips  (into #{} value)
         value))))
 
 (defn adopt-values [form]

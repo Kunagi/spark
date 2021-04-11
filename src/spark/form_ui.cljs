@@ -168,39 +168,39 @@
 
 (defmethod create-input "chips" [field]
   ($ mui-lab/Autocomplete
-     {:value (clj->js (-> field :value sort))
-      :onChange #((:on-change field) (-> %2 js->clj))
-      :multiple true
-      :freeSolo true
+     {:value            (clj->js (-> field :value))
+      :onChange         #((:on-change field) (-> %2 js->clj))
+      :multiple         true
+      :freeSolo         true
       :disableClearable true
-      :id (-> field :id name)
-      :name (-> field :name)
-      :options (clj->js (or (-> field :options)
-                            []))
-      :getOptionLabel identity
-      :renderInput (fn [props]
-                     ($ mui/TextField
-                        {:label (-> field :label)
-                         :id (-> props .-id)
-                         :name (-> props .-name)
-                         :disabled (-> props .-disabled)
-                         :fullWidth true
-                         :autoFocus (-> field :auto-focus?)
-                         :size (-> props .-size)
-                         :InputLabelProps (-> props .-InputLabelProps)
-                         :InputProps (-> props .-InputProps)
-                         :inputProps (-> props .-inputProps)}))})
+      :id               (-> field :id name)
+      :name             (-> field :name)
+      :options          (clj->js (or (-> field :options)
+                                     []))
+      :getOptionLabel   identity
+      :renderInput      (fn [props]
+                          ($ mui/TextField
+                             {:label           (-> field :label)
+                              :id              (-> props .-id)
+                              :name            (-> props .-name)
+                              :disabled        (-> props .-disabled)
+                              :fullWidth       true
+                              :autoFocus       (-> field :auto-focus?)
+                              :size            (-> props .-size)
+                              :InputLabelProps (-> props .-InputLabelProps)
+                              :InputProps      (-> props .-InputProps)
+                              :inputProps      (-> props .-inputProps)}))})
   #_($ ChipInput
-     {
-      :id (-> field :id name)
-      :name (-> field :name)
-      :defaultValue (clj->js (-> field :value))
-      :onChange #((:on-change field) (-> % js->clj))
-      :dataSource (clj->js ["hallo" "welt"])
-      :label (-> field :label)
-      :autoFocus (-> field :auto-focus?)
-      :margin "dense"
-      :fullWidth true}))
+       {
+        :id           (-> field :id name)
+        :name         (-> field :name)
+        :defaultValue (clj->js (-> field :value))
+        :onChange     #((:on-change field) (-> % js->clj))
+        :dataSource   (clj->js ["hallo" "welt"])
+        :label        (-> field :label)
+        :autoFocus    (-> field :auto-focus?)
+        :margin       "dense"
+        :fullWidth    true}))
 
 (defmethod create-input "boolean" [field]
   ($ mui/FormControl
