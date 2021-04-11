@@ -1053,7 +1053,7 @@
        (if sign-in-request?
          (if-let [component (-> spa :sign-in-request-component)]
            ($ component)
-           (div "Permission Denied"))
+           (div "Authentication required"))
          ($ ValuesLoadGuard
             {:values  (concat (mapv #(get context %) (-> page :wait-for))
                               (vals docs))
@@ -1178,33 +1178,32 @@
 
 (defnc AppFrame-inner [{:keys [children styles spa]}]
   (let [class (use-styles-class (app-styles styles))]
-    ($ AuthCompletedGuard
-       {:padding 4}
-       ($ mui/CssBaseline)
-       ($ router/BrowserRouter {}
-          ($ PageSwitch {:spa spa}
-             ($ :div
-                {:class class}
-                children)))))
-  )
+    (<>
+     ($ mui/CssBaseline)
+     ($ :div {:class class}
+        ($ AuthCompletedGuard
+           {:padding 4}
+           ($ router/BrowserRouter {}
+              ($ PageSwitch {:spa spa}
+                 children)))))))
 
 (defnc AppFrame [{:keys [spa children theme styles]}]
   ;; (log ::render-AppFrame)
-  (let [uid (use-uid)
-        spark-context {:spark/spa spa
-                       :spark/page :MISSING!
-                       :uid uid}
+  (let [uid                (use-uid)
+        spark-context      {:spark/spa  spa
+                            :spark/page :MISSING!
+                            :uid        uid}
         update-app-context (-> spa :update-app-context)
-        spark-context (u/safe-apply update-app-context [spark-context])]
+        spark-context      (u/safe-apply update-app-context [spark-context])]
     ($ mui/ThemeProvider
        {:theme (-> theme clj->js
                    mui-styles/createMuiTheme
                    mui-styles/responsiveFontSizes)}
        (provider
         {:context SPARK_CONTEXT
-         :value spark-context}
+         :value   spark-context}
         ($ AppFrame-inner {:styles styles
-                           :spa spa
+                           :spa    spa
                            }
            children)))))
 
