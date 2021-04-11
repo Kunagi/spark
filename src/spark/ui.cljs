@@ -1012,23 +1012,14 @@
 
 (defnc DevPageWrapper [{:keys [page context children]}]
   (div
-   {:display :grid
+   {:display               :grid
     :grid-template-columns "1fr 1fr"}
    (div
     children)
    (page-dev-sidebar page context)))
 
-(defnc PageWrapper [{:keys [spa page devtools-component children]}]
-  {:helix/features {:check-invalid-hooks-usage false}}
-  ;; (log ::render-PageWrapper)
-  (let [context        (use-spark-context)
-        params         (use-params-2)
-        uid            (use-uid)
-        force-sign-in? (-> page :force-sign-in)
-
-        sign-in-request? (and force-sign-in? (nil? uid))
-
-        context (assoc context :spark/page page)
+(defn load-docs+context [context spa page params]
+  (let [context (assoc context :spark/page page)
         context (merge context params)
 
         ;; TODO query parameters form request
@@ -1044,6 +1035,24 @@
         context        (u/safe-apply update-context [context])
         update-context (-> page :update-context)
         context        (u/safe-apply update-context [context])]
+    [docs context])
+  )
+
+(defnc PageWrapper [{:keys [spa page devtools-component children]}]
+  {:helix/features {:check-invalid-hooks-usage false}}
+  ;; (log ::render-PageWrapper)
+  (let [context        (use-spark-context)
+        params         (use-params-2)
+        uid            (use-uid)
+        force-sign-in? (-> page :force-sign-in)
+
+        sign-in-request? (and force-sign-in? (nil? uid))
+
+        [docs context] (if sign-in-request?
+                         [nil context]
+                         (load-docs+context context spa page params))
+
+        ]
 
     (provider
      {:context SPARK_CONTEXT :value context}
