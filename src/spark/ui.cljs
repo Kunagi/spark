@@ -1001,7 +1001,13 @@
 (defn- page-dev-sidebar [page context]
   (div
    {:background-color "#424242"
-    :color "#eee"}
+    :color            "#eee"}
+   (flex
+    {:padding "8px"}
+    ($ Button
+       {:to   "/ui/devcards"
+        :text "DevCards"
+        :size "small"}))
    (dev-section
     "PAGE CONTEXT"
     (div
@@ -1010,7 +1016,15 @@
         {:key k}
         (expandable-data k v)))))))
 
-(defnc DevPageWrapper [{:keys [page context children]}]
+(defonce DEV-SIDEBAR-ENABLED (atom false))
+(def use-dev-sidebar-enabled (atom-hook DEV-SIDEBAR-ENABLED))
+
+(defnc DevSidebarToggleIconButton []
+  ($ mui/IconButton
+     {:onClick #(swap! DEV-SIDEBAR-ENABLED not)}
+     (icon "developer_mode")))
+
+(defnc DevSidebarPageWrapper [{:keys [page context children]}]
   (div
    {:display               :grid
     :grid-template-columns "1fr 1fr"}
@@ -1038,12 +1052,15 @@
     [docs context])
   )
 
-(defnc PageWrapper [{:keys [spa page devtools-component children]}]
+(defnc PageWrapper [{:keys [spa page children]}]
   {:helix/features {:check-invalid-hooks-usage false}}
   ;; (log ::render-PageWrapper)
-  (let [context        (use-spark-context)
-        params         (use-params-2)
-        uid            (use-uid)
+  (let [context      (use-spark-context)
+        params       (use-params-2)
+        uid          (use-uid)
+        dev-sidebar? (use-dev-sidebar-enabled)
+
+
         force-sign-in? (-> page :force-sign-in)
 
         sign-in-request? (and force-sign-in? (nil? uid))
@@ -1067,8 +1084,8 @@
             {:values  (concat (mapv #(get context %) (-> page :wait-for))
                               (vals docs))
              :padding 4}
-            (if ^boolean js/goog.DEBUG
-              ($ DevPageWrapper
+            (if dev-sidebar?
+              ($ DevSidebarPageWrapper
                  {:page    page
                   :context context}
                  children)
@@ -1076,38 +1093,34 @@
        ($ DialogsContainer)
        ($ ErrorDialog)
        ($ FormDialogsContainer)
-       (when (and  ^boolean js/goog.DEBUG devtools-component)
-         ($ devtools-component)))))
-
-    ))
+       )))))
 
 
-(defnc PageSwitch [{:keys [spa devtools-component children]}]
+(defnc PageSwitch [{:keys [spa children]}]
   (let [pages (spark/spa-pages spa)
         pages (concat @ADDITIONAL_PAGES pages)
         ]
     ($ router/Switch
        (for [page pages]
          ($ router/Route
-            {:key (-> page :path)
+            {:key  (-> page :path)
              :path (-> page :path)}
-            ($ PageWrapper {:spa spa
-                            :page page
-                            :devtools-component devtools-component}
+            ($ PageWrapper {:spa  spa
+                            :page page}
                children))))))
 
 
 (defnc VersionInfo []
   ($ :div
-   {:style {:margin-top "4rem"
-            :margin-right "1rem"
-            :text-align :right
-            :color "lightgrey"
-            :font-size "75%"}}
-   "v1."
-   (str (resource/inline "../spa/version.txt"))
-   " · "
-   (str (resource/inline "../spa/version-time.txt"))))
+     {:style {:margin-top   "4rem"
+              :margin-right "1rem"
+              :text-align   :right
+              :color        "lightgrey"
+              :font-size    "75%"}}
+     "v1."
+     (str (resource/inline "../spa/version.txt"))
+     " · "
+     (str (resource/inline "../spa/version-time.txt"))))
 
 (defnc AuthCompletedGuard [{:keys [children padding]}]
   (let [auth-completed (use-auth-completed)]
