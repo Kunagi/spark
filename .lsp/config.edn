@@ -1,3 +1,5 @@
-{:linters
-
- {:unused-public-var {:level :off}}}
+{
+ :auto-add-ns-to-new-files?    false
+ :how-docs-arity-on-same-line? true
+ :linters                      {:unused-public-var {:level :off}}
+ }
