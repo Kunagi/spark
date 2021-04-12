@@ -1,5 +1,5 @@
 .clj-kondo/.cache
-.lsp
+.lsp/*.db
 pom.xml
 pom.xml.asc
 *.jar
