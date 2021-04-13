@@ -93,6 +93,9 @@
 (defn use-param-2 [param-key]
   (-> (use-params-2) (get param-key)))
 
+
+(def use-history router/useHistory)
+
 ;;;
 ;;; auth
 ;;;
