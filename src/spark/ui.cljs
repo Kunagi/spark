@@ -1131,7 +1131,7 @@
        children)))
 
 
-(defn- app-styles [styles]
+(defn app-styles [styles]
   (fn [theme]
     (conform-styles
      (merge {
@@ -1144,7 +1144,7 @@
              :.grid-4 {:display :grid :grid-gap (-> theme (.spacing 4))}
              :.grid-5 {:display :grid :grid-gap (-> theme (.spacing 5))}
 
-             :.stack {:display :grid :grid-gap (-> theme (.spacing 1))}
+             :.stack   {:display :grid :grid-gap (-> theme (.spacing 1))}
              :.stack-0 {:display :grid}
              :.stack-1 {:display :grid :grid-gap (-> theme (.spacing 1))}
              :.stack-2 {:display :grid :grid-gap (-> theme (.spacing 2))}
@@ -1152,24 +1152,24 @@
              :.stack-4 {:display :grid :grid-gap (-> theme (.spacing 4))}
              :.stack-5 {:display :grid :grid-gap (-> theme (.spacing 5))}
 
-             ".flex" {:display :flex :flex-wrap "wrap"
-                      :margin (str "-" (-> theme (.spacing 1) (/ 2)) "px")}
-             ".flex > *" {:margin (str (-> theme (.spacing 1) (/ 2)) "px")}
-             ".flex-0" {:display :flex :flex-wrap "wrap"}
-             ".flex-1" {:display :flex :flex-wrap "wrap"
-                        :margin (str "-" (-> theme (.spacing 1) (/ 2)) "px")}
+             ".flex"       {:display :flex :flex-wrap "wrap"
+                            :margin  (str "-" (-> theme (.spacing 1) (/ 2)) "px")}
+             ".flex > *"   {:margin (str (-> theme (.spacing 1) (/ 2)) "px")}
+             ".flex-0"     {:display :flex :flex-wrap "wrap"}
+             ".flex-1"     {:display :flex :flex-wrap "wrap"
+                            :margin  (str "-" (-> theme (.spacing 1) (/ 2)) "px")}
              ".flex-1 > *" {:margin (str (-> theme (.spacing 1) (/ 2)) "px")}
-             ".flex-2" {:display :flex :flex-wrap "wrap"
-                        :margin (str "-" (-> theme (.spacing 2) (/ 2)) "px")}
+             ".flex-2"     {:display :flex :flex-wrap "wrap"
+                            :margin  (str "-" (-> theme (.spacing 2) (/ 2)) "px")}
              ".flex-2 > *" {:margin (str (-> theme (.spacing 2) (/ 2)) "px")}
-             ".flex-3" {:display :flex :flex-wrap "wrap"
-                        :margin (str "-" (-> theme (.spacing 3) (/ 2)) "px")}
+             ".flex-3"     {:display :flex :flex-wrap "wrap"
+                            :margin  (str "-" (-> theme (.spacing 3) (/ 2)) "px")}
              ".flex-3 > *" {:margin (str (-> theme (.spacing 3) (/ 2)) "px")}
-             ".flex-4" {:display :flex :flex-wrap "wrap"
-                        :margin (str "-" (-> theme (.spacing 4) (/ 2)) "px")}
+             ".flex-4"     {:display :flex :flex-wrap "wrap"
+                            :margin  (str "-" (-> theme (.spacing 4) (/ 2)) "px")}
              ".flex-4 > *" {:margin (str (-> theme (.spacing 4) (/ 2)) "px")}
-             ".flex-5" {:display :flex :flex-wrap "wrap"
-                        :margin (str "-" (-> theme (.spacing 5) (/ 2)) "px")}
+             ".flex-5"     {:display :flex :flex-wrap "wrap"
+                            :margin  (str "-" (-> theme (.spacing 5) (/ 2)) "px")}
              ".flex-5 > *" {:margin (str (-> theme (.spacing 5) (/ 2)) "px")}
              }
             (styles theme)))))
