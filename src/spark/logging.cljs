@@ -54,6 +54,7 @@
 (defonce TAP (atom nil))
 
 (defn install-tap []
+  (log ::install-tap)
   (swap! TAP (fn [old-tap]
                (when old-tap
                  (remove-tap old-tap))

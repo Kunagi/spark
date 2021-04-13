@@ -276,6 +276,9 @@
 
 ;;; promises
 
+(defn promise> [f-with-resolve-and-reject]
+  (js/Promise. f-with-resolve-and-reject))
+
 (defn resolve> [result]
   (js/Promise.resolve result))
 

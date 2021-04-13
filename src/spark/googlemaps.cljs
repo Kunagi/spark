@@ -5,10 +5,13 @@
    ["@material-ui/lab" :as mui-lab]
    ["lodash.throttle" :as throttle]
    ["autosuggest-highlight/parse" :as parse]
+
    [spark.logging :refer [log]]
-    
-   [spark.ui :as ui :refer [defnc $ def-ui-test]]
-   ))
+   [spark.utils :as u]
+
+   [spark.ui :as ui :refer [defnc $ def-ui def-ui-test]]
+
+   [clojure.string :as str]))
 
 
 (def zoomlevel-continent 5)
@@ -184,7 +187,7 @@
   (js/Promise.
    (fn [resolve reject]
      (let [geocoder (js/google.maps.Geocoder.)
-           options {:address address}]
+           options  {:address address}]
        (.geocode
         ^js geocoder
         (clj->js options)
@@ -199,26 +202,38 @@
 ;; #############################
 
 
-(def autocompleteService (clj->js {:current nil}))
+(def AUTOCOMPLETE_SERVICE (atom nil))
 
-;; Places-API Experimentation
+(defn autocomplete-service []
+  (if-let [as @AUTOCOMPLETE_SERVICE]
+    as
+    (let [as (new (-> js/window .-google .-maps
+                      .-places .-AutocompleteService))]
+      (reset! AUTOCOMPLETE_SERVICE as)
+      as)))
+
+(defn get-place-predictions [input callback]
+  (log ::get-place-predictions>
+       :input input)
+  (if (-> input str/blank?)
+    (callback [])
+    (-> ^js (autocomplete-service)
+        (.getPlacePredictions
+         (clj->js {:input                 input
+                   :componentRestrictions {:country ["de"]}
+                   :language              "de"})
+         #(callback (into [] %))))))
+
+(def get-place-predictions-throtteled (throttle get-place-predictions 300))
 
 (comment
- (set! (.. autocompleteService -current) 
-       (new (-> js/window .-google .-maps
-                .-places .-AutocompleteService)))
- (.-current autocompleteService)
- ^js/window.google.maps.places.AutocompleteService
- (->  
-  autocompleteService
-  .-current
-  (.getPlacePredictions (clj->js {:input "Kö"})
-                        #(js/console.log "google Places said " %))))
+  (get-place-predictions "Kö" tap>)
+  (get-place-predictions-throtteled "Kö" tap>))
 
 ;;
 ;; Mocking to replace the actual google call if needed
 ;;
- 
+
 (defn rand-str [len]
   (.toLowerCase
    (apply str (take len (repeatedly #(char (+ (rand 26) 65))))))) 
@@ -227,13 +242,13 @@
 (defn options-mock-effect 
   ""
   [set-options input-value value fetch]
-  (let [c (count input-value)
+  (let [c           (count input-value)
         new-options (conj (map #(str input-value %)
-                          (take (Math/ceil (/ 6 (if (>= c 1) c 1)))
-                                (repeatedly
-                                 #(rand-str (if (< c 6)
-                                              (Math/ceil (- 6 c))
-                                              1))))) "")]
+                               (take (Math/ceil (/ 6 (if (>= c 1) c 1)))
+                                     (repeatedly
+                                      #(rand-str (if (< c 6)
+                                                   (Math/ceil (- 6 c))
+                                                   1))))) "")]
     (set-options
      (into [ ] new-options))))
 
@@ -241,65 +256,37 @@
 ;; Helpers for PositionInput
 ;; 
 
-(defn options-from-google-effect
-  "Effect that makes a call to the google places Autocomplete-API"
-  [set-options input-value ort fetch] 
-  (fn []
-    (let [active? (atom true)]
-      (if (and (not (.-current autocompleteService))
-               js/window.google.maps.places)
-        (set! (.. autocompleteService -current)  ;TODO: factor out the side-effect??
-              (new (-> js/window .-google .-maps
-                       .-places .-AutocompleteService))))
-
-      (cond
-        (not (.-current autocompleteService)) nil
-        (empty? input-value) (do (set-options (if ort [ort] []))
-                                 nil)
-        :else
-        (fetch (clj->js {:input input-value
-                         :componentRestrictions {:country ["de"]}
-                         :language "de"})
-               (fn [results] ; this is the callback we hand to the API-call
-                 ;; (js/console.log "google said " (js->clj results :keywordize-keys true))
-                 (if @active?
-                   (set-options
-                    (into
-                     (if ort [ort] [])
-                     results))))))
-      #(reset! active? false))))
-
 
 (defn render-google-option
   "Renders the Dropdown Options containing the google places"
   [option]
   (let [option
         (js->clj option :keywordize-keys true)                                    
-        matches (get-in option 
-                        [:structured_formatting
-                         :main_text_matched_substrings])
+        matches   (get-in option
+                          [:structured_formatting
+                           :main_text_matched_substrings])
         main-text (get-in option [:structured_formatting
                                   :main_text])
-        parts (js->clj
-               (parse main-text
-                      (clj->js
-                       (map
-                        (fn [{:keys [offset length]}]
-                          [offset (+ length offset)])
-                        matches))) :keywordize-keys true)]
+        parts     (js->clj
+                   (parse main-text
+                          (clj->js
+                           (map
+                            (fn [{:keys [offset length]}]
+                              [offset (+ length offset)])
+                            matches))) :keywordize-keys true)]
     ($ mui/Grid
-       {:container true
+       {:container  true
         :alignItems "center"}
        ($ mui/Grid
           {:item true
-           :xs 2}
+           :xs   2}
           (ui/icon "location_on"))
        ($ mui/Grid
           {:item true
-           :xs 10}                                      
+           :xs   10}
           (map-indexed (fn [i {:keys [text highlight]}]
                          ($ :span
-                            {:key i
+                            {:key   i
                              :style {:fontWeight (if highlight 700 400)}} text)) parts)
           ($ mui/Typography
              {:variant "body2" :color "textSecondary"}
@@ -308,85 +295,56 @@
                       :secondary_text])))))) 
 
 
-(defnc PositionInput [{:keys [set-position
-                              on-place-selected]}]
-  (let [fetch                         (ui/use-memo
-                                       [] (throttle
-                                           (fn [request callback]
-                                             ^js (. (.-current autocompleteService)
-                                                    getPlacePredictions request callback)
-                                             ;; (->  autocompleteService ; Don't know where to put Metadata in threading macro
-                                             ;;      .-current
-                                             ;;      (.getPlacePredictions
-                                             ;;       request callback))
-                                             ) 200))
-        [input-value set-input-value] (ui/use-state "")
-        [options set-options]         (ui/use-state [])
-        [ort set-ort]                 (ui/use-state
-                                       (js/window.localStorage.getItem "standort"))]
-    
-    
-    (ui/use-effect
-     [ort input-value fetch] ; runs when any of these change
-     (options-from-google-effect set-options input-value ort fetch))
-    
-    ($ :div
-       ($ :form
-          {:style    {:width "300px"}
-           :onSubmit (fn [^js event]
-                       (-> event .preventDefault)
-                       (js/window.localStorage.setItem "standort" ort)
-                       (when ort 
-                         (-> (geocode-address> ort)
-                             (.then #(when set-position
-                                       (set-position (-> %
-                                                         first
-                                                         .-geometry
-                                                         .-location
-                                                         js->clj))))))
-                       false)}          
-          ($ mui-lab/Autocomplete
-             {:getOptionLabel     #(if (string? %) % (.-description %))
-              :options            (clj->js options) ; warum manuell?
-              :autoComplete       true
-              :includeInputInList true
-              :getOptionSelected  #(= (get %1 "place_id")
-                                      (get %2 "place_id"))
-              :value              ort
-              :onChange           (fn [^js event ^js new-value]
-                                    (set-options (if new-value
-                                                   (into [new-value] options)
-                                                   options))
-                                    (when (and
-                                           new-value
-                                           (.hasOwnProperty new-value "description")
-                                           (.-description new-value))
-                                      (js/console.log "new-value" new-value)
-                                      (set-ort (.-description new-value))
-                                      (when on-place-selected
-                                        (on-place-selected
-                                         {:place_id    (-> new-value .-place_id)
-                                          :description (-> new-value .-description)
-                                          }))
-                                      ))
-              :onInputChange      (fn [event new-input-value]
-                                    (set-input-value new-input-value))
-              :renderInput        (fn [params]
-                                    ($ mui/TextField
-                                       {
-                                        ;; :label     "Bitte Standort eingeben"
-                                        :placeholder "Ort eingeben"
-                                        ;; :onChange #(-> % .-target .-value set-ort)
-                                        :variant     "outlined"
-                                        :type        "text"
-                                        :autoFocus   true
-                                        :&           params}))
-              ;; :renderOption #(str (js->clj %))
-              :renderOption       render-google-option})))))
+(def-ui PositionInput [on-place-selected label placeholder]
+  (let [[input-value set-input-value] (ui/use-state "")
+        [options set-options]         (ui/use-state [])]
+
+    ($ mui-lab/Autocomplete
+       {:getOptionLabel     #(if (string? %) % (.-description %))
+        :options            (clj->js options) ; warum manuell?
+        :autoComplete       true
+        :includeInputInList true
+        :getOptionSelected  #(= (get %1 "place_id")
+                                (get %2 "place_id"))
+        :value              input-value
+        :onChange           (fn [^js event ^js new-value]
+                              (when (and
+                                     new-value
+                                     (.hasOwnProperty new-value "description")
+                                     (-> new-value .-description))
+                                (set-input-value (.-description new-value))
+                                (when on-place-selected
+                                  (on-place-selected
+                                   {:place_id    (-> new-value .-place_id)
+                                    :description (-> new-value .-description)
+                                    }))
+                                ))
+        :onInputChange      (fn [^js _event new-input-value]
+                              (set-input-value new-input-value)
+                              (when-not (-> new-input-value str/blank?)
+                                (get-place-predictions-throtteled
+                                 new-input-value set-options)))
+        :fullWidth          true
+        :renderInput        (fn [props]
+
+                              ;; Workaround fixes damaging of styles of other components
+                              (-> props .-InputProps .-endAdornment (set! js/undefined))
+
+                              ($ mui/TextField
+                                 {
+                                  :label       label
+                                  :placeholder placeholder
+                                  ;; :onChange #(-> % .-target .-value set-ort)
+                                  :variant     "outlined"
+                                  :type        "text"
+                                  :autoFocus   true
+                                  :&           props}))
+        ;; :renderOption #(str (js->clj %))
+        :renderOption render-google-option})))
 
  
 (def-ui-test [PositionInput] ;TODO: Write Proper test?
-   ($ PositionInput {:set-position js/alert}))
+  ($ PositionInput {:set-position js/alert}))
 
 
 ;; #########
