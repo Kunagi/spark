@@ -330,6 +330,9 @@
                               ;; Workaround fixes damaging of styles of other components
                               (-> props .-InputProps .-endAdornment (set! js/undefined))
 
+                              (-> props .-InputProps .-startAdornment
+                                  (set! (ui/icon "place")))
+
                               ($ mui/TextField
                                  {
                                   :label       label
