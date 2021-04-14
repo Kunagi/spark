@@ -93,6 +93,10 @@
 (defn use-param-2 [param-key]
   (-> (use-params-2) (get param-key)))
 
+(defn use-location []
+  (js->clj
+   (router/useLocation)
+   :keywordize-keys true))
 
 (def use-history router/useHistory)
 
@@ -356,11 +360,11 @@
 
 ;; TODO deprecated
 (defn style-bg-img [url]
-  {:background-image (str "url(" url ")")
-   :background-repeat "no-repeat"
+  {:background-image      (str "url(" url ")")
+   :background-repeat     "no-repeat"
    :background-position-x "center"
    :background-position-y "top"
-   :background-size "contain"})
+   :background-size       "contain"})
 
 
 
@@ -473,6 +477,7 @@
 (defn unsplash [width id]
   (str "https://images.unsplash.com/photo-" id "?&w=" width))
 
+(def flex-filler (div {:flex 1}))
 
 ;;;
 ;;; def-cmp
@@ -501,11 +506,12 @@
 ;;; common components
 ;;;
 
+
 (defnc Spacer [{:keys [width height]}]
   (let [theme (mui-styles/useTheme)]
     (d/div
-     {:style {:width (-> theme (.spacing (or width 1)))
-              :height(-> theme (.spacing (or width 1)))}})))
+     {:style {:width  (-> theme (.spacing (or width 1)))
+              :height (-> theme (.spacing (or width 1)))}})))
 
 
 (defnc Icon [{:keys [name theme]}]
@@ -552,17 +558,23 @@
   (let [children (if (seqable? children)
                    (->> children (remove nil?))
                    [children])
-        theme (mui-styles/useTheme)]
+        theme    (mui-styles/useTheme)]
     (d/div
      {:style {:display :flex
               ;; FIXME :gap (-> theme (.spacing (or spacing 1)))
               }}
      (for [[idx child] (map-indexed vector children)]
        (d/div
-        {:key idx
+        {:key   idx
          :style (merge  {:margin-right (-> theme (.spacing (or spacing 1)))}
                         style)}
         child)))))
+
+(defnc Link--no-styles [{:keys [to children]}]
+  ($ Link
+     {:to        to
+      :className "Link--no-styles"}
+     children))
 
 ;;; dialogs
 
@@ -1171,6 +1183,10 @@
              ".flex-5"     {:display :flex :flex-wrap "wrap"
                             :margin  (str "-" (-> theme (.spacing 5) (/ 2)) "px")}
              ".flex-5 > *" {:margin (str (-> theme (.spacing 5) (/ 2)) "px")}
+
+             "a.Link--no-styles" {:text-decoration :none
+                                  :color           :unset
+                                  :display         :block}
              }
             (styles theme)))))
 
@@ -1325,13 +1341,13 @@
 
 
 (defn show-selection-list-dialog [dialog]
-  (let [dialog-id (str "selection-list_" (random-uuid))
+  (let [dialog-id     (str "selection-list_" (random-uuid))
         SelectionList ($ SelectionList
-                         {:items (-> dialog :items)
+                         {:items     (-> dialog :items)
                           :on-select (fn [item]
                                        (hide-dialog dialog-id)
                                        ((-> dialog :on-select) item))})
-        dialog (assoc dialog
-                      :id dialog-id
-                      :content SelectionList)]
+        dialog        (assoc dialog
+                             :id dialog-id
+                             :content SelectionList)]
     (show-dialog dialog)))
