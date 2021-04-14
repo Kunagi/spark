@@ -119,17 +119,20 @@
            lokationen
            google-types]}]
   (assert position)
-  (let [fetch-google-markers
+  (let [position                          (if (map? position)
+                                           (clj->js position)
+                                           position)
+        fetch-google-markers
         (ui/use-memo
          [] (throttle
              (fn [placesService callback]
                ^js (.nearbySearch placesService (clj->js {:location position
-                                                    :radius 5000})
-                        callback))))
-        map-element-id (or id "map")
-        [gmap set-gmap] (ui/use-state nil)
+                                                          :radius   5000})
+                                  callback))))
+        map-element-id                    (or id "map")
+        [gmap set-gmap]                   (ui/use-state nil)
         [placesService set-placesService] (ui/use-state nil)
-        [all-markers set-all-markers] (ui/use-state nil)]
+        [all-markers set-all-markers]     (ui/use-state nil)]
 
     (ui/use-effect
      [lokationen]
@@ -138,7 +141,7 @@
          (set-gmap new-gmap)
          (set-placesService
           (new (-> js/window .-google .-maps
-                      .-places .-PlacesService) new-gmap)))))
+                   .-places .-PlacesService) new-gmap)))))
 
     (ui/use-effect
      [gmap lokationen]
@@ -159,42 +162,65 @@
                                             (concat google-markers markers))))))))
 
     ($ :div
-       {:id map-element-id
+       {:id    map-element-id
         :style {:height (or height "40vh")}})))
 
 (def-ui-test [MapWithPosition]
   ($ :div {:style {:width "400px"}}
      ($ MapWithPosition
-        {:id "test-MapWithPosition"
-         :height "400px"
+        {:id           "test-MapWithPosition"
+         :height       "400px"
          :google-types {"restaurant"
                         "bar"
                         "cafe"
                         "meal_takeaway"
-                        "meal_delivery"  ;TODO: mark as delivery?
+                        "meal_delivery" ;TODO: mark as delivery?
                         "night_club"}
-         :position {:lat 52.1875305
-                    :lng 9.0788149}
-         :markers [{:title "Bodega"
-                    :label "Bodega"
-                    :position {:lat 52.1875305
-                               :lng 9.0788149}}]})))
+         :position     {:lat 52.1875305
+                        :lng 9.0788149}
+         :markers      [{:title    "Bodega"
+                         :label    "Bodega"
+                         :position {:lat 52.1875305
+                                    :lng 9.0788149}}]})))
 
 
-(defn geocode-address> [address]
-  (log ::geocode-address
-       :address address)
+;; https://developers.google.com/maps/documentation/javascript/reference/geocoder#GeocoderRequest
+
+(defn geocode-place-id> [place-id]
+  (log ::geocode-place-id>
+       :place-id place-id)
   (js/Promise.
    (fn [resolve reject]
      (let [geocoder (js/google.maps.Geocoder.)
-           options  {:address address}]
+           options  {:placeId place-id}]
        (.geocode
         ^js geocoder
         (clj->js options)
         (fn [^js results status]
           (if (= status "OK")
-            (resolve results)
+            (if-let [^js result (aget results 0)]
+              (let [^js location (-> result .-geometry .-location)]
+                (resolve {:lat (-> location .lat)
+                          :lng (-> location .lng)}))
+              (reject {:message "no results"}))
             (reject results))))))))
+
+;; (defn geocode-address> [address]
+;;   (log ::geocode-address
+;;        :address address)
+;;   (js/Promise.
+;;    (fn [resolve reject]
+;;      (let [geocoder (js/google.maps.Geocoder.)
+;;            options  {:address address}]
+;;        (.geocode
+;;         ^js geocoder
+;;         (clj->js options)
+;;         (fn [^js results status]
+;;           (if (= status "OK")
+;;             (resolve results)
+;;             (reject results))))))))
+
+
 
 
 ;; #############################
@@ -219,6 +245,7 @@
     (callback [])
     (-> ^js (autocomplete-service)
         (.getPlacePredictions
+         ;; https://developers.google.com/maps/documentation/javascript/reference/places-autocomplete-service#AutocompletionRequest
          (clj->js {:input                 input
                    :componentRestrictions {:country ["de"]}
                    :language              "de"})
@@ -314,6 +341,7 @@
                                      (-> new-value .-description))
                                 (set-input-value (.-description new-value))
                                 (when on-place-selected
+                                  (js/console.log "!!!!" new-value)
                                   (on-place-selected
                                    {:place_id    (-> new-value .-place_id)
                                     :description (-> new-value .-description)
@@ -358,9 +386,9 @@
   ($ PositionInput {:set-position js/alert}))
 
 
-(defnc Map
-  [{:keys [id height markers google-types
-           force-position-input? lokationen]}]
+(def-ui Map
+  [id height markers google-types
+   force-position-input? lokationen]
   (let [[position set-position] (ui/use-state (when-not force-position-input?
                                                 :loading))]
 
@@ -382,24 +410,24 @@
 
     (case position
       :loading ($ :div
-                  {:style {:height height
-                           :display :flex
+                  {:style {:height        height
+                           :display       :flex
                            :place-content "center"
-                           :place-items "center"}}
+                           :place-items   "center"}}
                   ($ mui/CircularProgress))
-      nil ($ :div
-             {:style {:height height
-                      :display :flex
-                      :place-content "center"
-                      :place-items "center"}}
-             ($ PositionInput
-                {:set-position set-position}))
+      nil      ($ :div
+                  {:style {:height        height
+                           :display       :flex
+                           :place-content "center"
+                           :place-items   "center"}}
+                  ($ PositionInput
+                     {:set-position set-position}))
       ($ MapWithPosition
-         {:id id
-          :height height
-          :markers markers
-          :position position
-          :lokationen lokationen
+         {:id           id
+          :height       height
+          :markers      markers
+          :position     position
+          :lokationen   lokationen
           :google-types google-types}))))
 
 (def-ui-test [Map]
