@@ -14,7 +14,7 @@ function echo-usage {
     echo ""
     echo "where <command> is one of:"
     echo "    $(tput rev)dev$(tput sgr0), release, "
-    echo "    shadow-watch, firebase-emulators, build-docs,"
+    echo "    shadow-watch, emulators, build-docs,"
     echo "    clean, npm-install, collect-spa-resources"
     echo ""
 }
@@ -36,6 +36,8 @@ fi
 PROJECT_DIR=$PWD
 SPARK_DIR=$(realpath $PWD/../spark)
 
+SPAWN_TERMINALS=false
+
 ###
 ### helpers
 ###
@@ -43,6 +45,12 @@ SPARK_DIR=$(realpath $PWD/../spark)
 function echo-task {
     echo ""
     echo "$(tput rev)[ spark: $1 ] $(tput sgr0)"
+    echo ""
+}
+
+function echo-exec {
+    echo ""
+    echo "    exec> $(tput rev) $1  $(tput sgr0)"
     echo ""
 }
 
@@ -103,7 +111,13 @@ function shadow-watch {
 
     mkdir -p target
     date -Iminutes > src/spa/version-time.txt
-    gnome-terminal -t "Shadow-CLJS watch" -- clojure -M:shadow-cljs watch spa gcf
+    SHADOW_CMD="clojure -M:shadow-cljs watch spa gcf"
+    echo-exec "$SHADOW_CMD"
+    if $SPAWN_TERMINALS; then
+        gnome-terminal -t "Shadow-CLJS watch" -- $SHADOW_CMD
+    else
+        $SHADOW_CMD
+    fi
 }
 
 if [ $1 = "shadow-watch" ]
@@ -130,21 +144,36 @@ function collect-spa-resources {
 }
 
 ###
-### firebase-emulators
+### firebase emulators
 ###
 
-function firebase-emulators {
-    echo-task "firebase-emulators"
+function emulators {
+    echo-task "emulators"
     collect-spa-resources
     cd firebase
     touch functions/index.js
-    gnome-terminal -t "Firebase Emulators" -- firebase emulators:start --import=./dev-data --export-on-exit=./dev-data
+
+    DATA_DIR="./dev-data"
+
+    if [[ -d $DATA_DIR ]]
+    then
+        EMULATORS_CMD="firebase emulators:start --import=$DATA_DIR --export-on-exit=$DATA_DIR"
+    else
+        EMULATORS_CMD="firebase emulators:start --export-on-exit=$DATA_DIR"
+    fi
+
+    echo-exec "$EMULATORS_CMD"
+    if $SPAWN_TERMINALS; then
+        gnome-terminal -t "Firebase Emulators" -- $EMULATORS_CMD
+    else
+        $EMULATORS_CMD
+    fi
     cd ..
 }
 
-if [ $1 = "firebase-emulators" ]
+if [ $1 = "emulators" ]
 then
-    firebase-emulators
+    emulators
     exit 0
 fi
 
@@ -163,9 +192,10 @@ function assert-spark-exists {
 
 if [ $1 = "dev" ]
 then
+    SPAWN_TERMINALS=true
     clean
     npm-install
-    firebase-emulators
+    emulators
     shadow-watch
     exit 0
 fi
