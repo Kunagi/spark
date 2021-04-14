@@ -26,12 +26,12 @@
                  [{:keys params}])
 
         opts? (map? (first body))
-        opts (if opts?
-               (first body)
-               {})
-        body (if opts?
-               (rest body)
-               body)
+        opts  (if opts?
+                (first body)
+                {})
+        body  (if opts?
+                (rest body)
+                body)
 
         lets []
 
@@ -52,6 +52,7 @@
        ~type
        ~@(when docstring [docstring])
        ~params
+       ~opts
        ~@body)))
 
 
