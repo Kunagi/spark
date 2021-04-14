@@ -124,6 +124,15 @@
 (defmacro center [& style-and-children]
   (html-element :span style-and-children "center" nil))
 
+(defmacro imgdiv [img-url & style-and-children]
+  (html-element :div style-and-children nil
+                {:background-image    `(str "url(" ~img-url ")")
+                 :background-repeat   "no-repeat"
+                 :background-position "center"
+                 :background-size     "cover"}))
+
+;;; grid
+
 (defn- grid-div [grid-template-columns gap style-and-children]
   (html-element :div style-and-children
                 (str "grid-" gap) {:grid-template-columns grid-template-columns}))
@@ -168,9 +177,8 @@
 (defmacro flex-4 [& children] (div-class "flex-4" children))
 (defmacro flex-5 [& children] (div-class "flex-5" children))
 
-
 (defmacro map$ [component item-key items]
   `(for [item# ~items]
-      ($ ~component
-         {:key item#
-          ~item-key item#})))
+     ($ ~component
+        {:key      item#
+         ~item-key item#})))
