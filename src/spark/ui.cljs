@@ -22,6 +22,7 @@
    [helix.dom :as d]
 
    ["react" :as react]
+   ["react-dom" :as rdom]
    ["react-router-dom" :as router]
 
    ["@material-ui/core" :as mui]
@@ -33,13 +34,13 @@
    [spark.react :as spark-react]
    [spark.core :as spark]
    [spark.firestore :as firestore]
-    
+
    [spark.firebase-storage :as storage]
    [spark.runtime :as runtime]
    [spark.form-ui :as form-ui]
    [spark.auth :as auth]
 
-   [spark.firestore-hooks :as firestore-hooks]
+   [spark.ui.styles :as styles]
    ))
 
 
@@ -269,60 +270,28 @@
    (fn [theme]
      (clj->js (styles-f theme)))))
 
-
-(defn- conform-style-value [v]
-  (cond
-    (vector? v)(->> v (map conform-style-value) (str/join " "))
-    (string? v) v
-    (keyword? v) (name v)
-    :else v))
-
-
-(defn- conform-style [styles]
-  (reduce (fn [styles [k v]]
-            (if (and (string? k) (str/starts-with? "&" k))
-              (assoc styles k (conform-style v))
-              (assoc styles k (conform-style-value v))))
-          {} styles))
-
-(defn- conform-styles-selector [s]
-  (cond
-    (keyword? s) (str "& " (name s))
-    (str/starts-with? s "& ") s
-    :else (str "& " s)))
-
-(defn- conform-styles [styles]
-  (reduce (fn [styles [k v]]
-            (assoc styles
-                   (conform-styles-selector k)
-                   (conform-style v)))
-          {} styles))
-
-
 (defn use-styles-class [styles-f]
   (when styles-f
-    (let [theme (use-theme)
+    (let [theme            (use-theme)
           styles-f-wrapper (fn [theme]
-                             {:root (conform-style
+                             {:root (styles/conform-style
                                      (if (fn? styles-f)
                                        (styles-f theme)
                                        styles-f))})
-          use-styles (make-styles styles-f-wrapper)
-          ^js styles (use-styles theme)]
+          use-styles       (make-styles styles-f-wrapper)
+          ^js styles       (use-styles theme)]
       (-> styles .-root))))
-
 
 ;;;
 ;;; storage
 ;;;
 
-
 (defn use-storage-files [path]
   (let [[files set-files] (use-state [])
-        reload-f (fn []
-                   (-> (storage/list-files> path)
-                       (.then (fn [^js result]
-                                (set-files (-> result .-items js->clj))))))]
+        reload-f          (fn []
+                            (-> (storage/list-files> path)
+                                (.then (fn [^js result]
+                                         (set-files (-> result .-items js->clj))))))]
 
     (use-effect
      :once
@@ -576,7 +545,20 @@
       :className "Link--no-styles"}
      children))
 
+;;;
+;;; SPA
+;;;
+
+(defonce SPA (atom nil))
+(def use-spa (atom-hook SPA))
+
+(defn use-app-styles-class []
+  (let [spa (use-spa)]
+    (use-styles-class (-> spa :styles))))
+
+;;;
 ;;; dialogs
+;;;
 
 (defonce DIALOGS (atom {}))
 
@@ -608,17 +590,19 @@
 
 (defnc Dialog [{:keys [dialog]}]
   {:wrap [memo]}
-  (provider
-   {:context DIALOG_ID
-    :value (-> dialog :id)}
-   ($ mui/Dialog
-      {
-       :open (-> dialog :open?)
-       :onClose #(hide-dialog (-> dialog :id))}
-      (when-let [title (-> dialog :title)]
-        ($ mui/DialogTitle title))
-      ($ mui/DialogContent
-         (-> dialog :content)))))
+  (let [class (use-app-styles-class)]
+    (provider
+     {:context DIALOG_ID
+      :value   (-> dialog :id)}
+     ($ mui/Dialog
+        {
+         :open      (-> dialog :open?)
+         :onClose   #(hide-dialog (-> dialog :id))
+         :className class}
+        (when-let [title (-> dialog :title)]
+          ($ mui/DialogTitle title))
+        ($ mui/DialogContent
+           (-> dialog :content))))))
 
 (defnc DialogsContainer []
   (let [dialogs (-> (use-dialogs) vals)]
@@ -1143,52 +1127,7 @@
        children)))
 
 
-(defn app-styles [styles]
-  (fn [theme]
-    (conform-styles
-     (merge {
-             :.center {:display :grid :place-items "center"}
 
-             :.grid-0 {:display :grid}
-             :.grid-1 {:display :grid :grid-gap (-> theme (.spacing 1))}
-             :.grid-2 {:display :grid :grid-gap (-> theme (.spacing 2))}
-             :.grid-3 {:display :grid :grid-gap (-> theme (.spacing 3))}
-             :.grid-4 {:display :grid :grid-gap (-> theme (.spacing 4))}
-             :.grid-5 {:display :grid :grid-gap (-> theme (.spacing 5))}
-
-             :.stack   {:display :grid :grid-gap (-> theme (.spacing 1))}
-             :.stack-0 {:display :grid}
-             :.stack-1 {:display :grid :grid-gap (-> theme (.spacing 1))}
-             :.stack-2 {:display :grid :grid-gap (-> theme (.spacing 2))}
-             :.stack-3 {:display :grid :grid-gap (-> theme (.spacing 3))}
-             :.stack-4 {:display :grid :grid-gap (-> theme (.spacing 4))}
-             :.stack-5 {:display :grid :grid-gap (-> theme (.spacing 5))}
-
-             ".flex"       {:display :flex :flex-wrap "wrap"
-                            :margin  (str "-" (-> theme (.spacing 1) (/ 2)) "px")}
-             ".flex > *"   {:margin (str (-> theme (.spacing 1) (/ 2)) "px")}
-             ".flex-0"     {:display :flex :flex-wrap "wrap"}
-             ".flex-1"     {:display :flex :flex-wrap "wrap"
-                            :margin  (str "-" (-> theme (.spacing 1) (/ 2)) "px")}
-             ".flex-1 > *" {:margin (str (-> theme (.spacing 1) (/ 2)) "px")}
-             ".flex-2"     {:display :flex :flex-wrap "wrap"
-                            :margin  (str "-" (-> theme (.spacing 2) (/ 2)) "px")}
-             ".flex-2 > *" {:margin (str (-> theme (.spacing 2) (/ 2)) "px")}
-             ".flex-3"     {:display :flex :flex-wrap "wrap"
-                            :margin  (str "-" (-> theme (.spacing 3) (/ 2)) "px")}
-             ".flex-3 > *" {:margin (str (-> theme (.spacing 3) (/ 2)) "px")}
-             ".flex-4"     {:display :flex :flex-wrap "wrap"
-                            :margin  (str "-" (-> theme (.spacing 4) (/ 2)) "px")}
-             ".flex-4 > *" {:margin (str (-> theme (.spacing 4) (/ 2)) "px")}
-             ".flex-5"     {:display :flex :flex-wrap "wrap"
-                            :margin  (str "-" (-> theme (.spacing 5) (/ 2)) "px")}
-             ".flex-5 > *" {:margin (str (-> theme (.spacing 5) (/ 2)) "px")}
-
-             "a.Link--no-styles" {:text-decoration :none
-                                  :color           :unset
-                                  :display         :block}
-             }
-            (styles theme)))))
 
 (def-ui-test [stack]
   (stack (tdiv-red) (tdiv-blue) (tdiv-green))
@@ -1217,8 +1156,8 @@
        (map$ Button :text)
        (grid ["1fr" "2fr" "1fr"])))
 
-(defnc AppFrame-inner [{:keys [children styles spa]}]
-  (let [class (use-styles-class (app-styles styles))]
+(defnc AppFrame-inner [{:keys [children spa]}]
+  (let [class (use-app-styles-class)]
     (<>
      ($ mui/CssBaseline)
      ($ :div {:class class}
@@ -1228,25 +1167,34 @@
               ($ PageSwitch {:spa spa}
                  children)))))))
 
-(defnc AppFrame [{:keys [spa children theme styles]}]
+
+(defnc AppFrame [{:keys [children]}]
   ;; (log ::render-AppFrame)
-  (let [uid                (use-uid)
+  (let [spa                (use-spa)
+        uid                (use-uid)
         spark-context      {:spark/spa  spa
                             :spark/page :MISSING!
                             :uid        uid}
         update-app-context (-> spa :update-app-context)
         spark-context      (u/safe-apply update-app-context [spark-context])]
     ($ mui/ThemeProvider
-       {:theme (-> theme clj->js
-                   mui-styles/createMuiTheme
-                   mui-styles/responsiveFontSizes)}
+       {:theme (-> spa :theme)}
        (provider
         {:context SPARK_CONTEXT
          :value   spark-context}
-        ($ AppFrame-inner {:styles styles
-                           :spa    spa
-                           }
+        ($ AppFrame-inner {:spa spa}
            children)))))
+
+
+(defn load-spa [spa]
+  (log ::load-spa
+       :spa spa)
+  (let [spa (-> spa
+                (update :theme styles/adapt-theme)
+                (update :styles styles/adapt-styles))]
+    (reset! SPA spa)
+    (rdom/render ($ (-> spa :root-component))
+                 (js/document.getElementById "app"))))
 
 ;;;
 ;;; storage
@@ -1256,16 +1204,16 @@
   [{:keys [id accept capture
            storage-path then]}]
   ($ :input
-     {:id id
-      :type "file"
-      :accept accept
-      :capture capture
+     {:id       id
+      :type     "file"
+      :accept   accept
+      :capture  capture
       :onChange (fn [event]
                   (when-let [file (-> event .-target .-files (aget 0))]
                     (-> (storage/upload-file> file storage-path)
                         (.then #(storage/url> storage-path))
                         (.then then))))
-      :style {:display "none"}}))
+      :style    {:display "none"}}))
 
 
 (defnc StorageImg [{:keys [path height style]}]
