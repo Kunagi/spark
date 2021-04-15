@@ -101,27 +101,27 @@
   ""
   [element-id position]
   (init-map element-id
-                 {:center position
-                  :zoom 10
-                  :streetViewControl false
-                  :styles [
-                           {:featureType "poi"
-                            :stylers [{:visibility "off"}]}
-                           ]}))
+            {:center            position
+             :zoom              zoomlevel-streets
+             :streetViewControl false
+             :styles            [
+                                 {:featureType "poi"
+                                  :stylers     [{:visibility "off"}]}
+                                 ]}))
 
 
 
-(defnc MapWithPosition 
-  [{:keys [id
-           height
-           markers
-           position
-           lokationen
-           google-types]}]
+(def-ui MapWithPosition
+  [id
+   height
+   markers
+   position
+   lokationen
+   google-types]
   (assert position)
   (let [position                          (if (map? position)
-                                           (clj->js position)
-                                           position)
+                                            (clj->js position)
+                                            position)
         fetch-google-markers
         (ui/use-memo
          [] (throttle
