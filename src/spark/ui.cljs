@@ -401,13 +401,17 @@
       {:key i}
       (colored-data-block nil "#333" "#6f6" data)))))
 
+(defn DEBUG [& datas]
+  (when goog.DEBUG
+    (apply data datas)))
+
 (defnc ExpandableData [{:keys [label value]}]
   (let [[expanded set-expanded] (use-state false)]
     (if expanded
       (colored-data-block label "#333" "#6f6" value)
       ($ :div
          {:onClick #(set-expanded true)
-          :style {:cursor "pointer"}}
+          :style   {:cursor "pointer"}}
          (colored-data-line label "#333" "#6f6" value)))))
 
 (defn expandable-data [label value]
@@ -907,28 +911,30 @@
 
 
 
-(defnc IconButton [{:keys [icon onClick color size command theme className
+(defnc IconButton [{:keys [onClick on-click
+                           icon color size command theme className
                            then context]}]
-  (let [context (merge (use-spark-context)
-                       context)
-        command (u/trampoline-if command)
-        command (when command (-> command upgrade-legacy-command complete-command ))
-        onClick (wrap-in-error-handler
-                 (or onClick
-                     (when command (-> command :onClick))
-                     (when command #(execute-command> command context then))))
-        icon (when-let [icon (or icon
-                                 (-> command :icon)
-                                 "play_arrow")]
-               (if (string? icon)
-                 (d/div {:class (str "material-icons" (when theme (str "-" theme)))}
-                        icon)
-                 icon))]
+  (let [context  (merge (use-spark-context)
+                        context)
+        on-click (or on-click onClick)
+        command  (u/trampoline-if command)
+        command  (when command (-> command upgrade-legacy-command complete-command ))
+        onClick  (wrap-in-error-handler
+                  (or onClick
+                      (when command (-> command :onClick))
+                      (when command #(execute-command> command context then))))
+        icon     (when-let [icon (or icon
+                                     (-> command :icon)
+                                     "play_arrow")]
+                   (if (string? icon)
+                     (d/div {:class (str "material-icons" (when theme (str "-" theme)))}
+                            icon)
+                     icon))]
     ($ mui/IconButton
        {:className className
-        :onClick onClick
-        :color color
-        :size size}
+        :onClick   on-click
+        :color     color
+        :size      size}
        icon)))
 
 
