@@ -48,20 +48,40 @@
                         :display         :block}
    })
 
+(def attr-with-px?
+  #{
+    :padding "padding"
+    :padding-top "padding-top"
+    :padding-bottom "padding-bottom"
+    :padding-left "padding-left"
+    :padding-right "padding-right"
 
-(defn- conform-style-value [v]
+    :margin "margin"
+    :margin-top "margin-top"
+    :margin-bottom "margin-bottom"
+    :margin-left "margin-left"
+    :margin-right "margin-right"
+
+    :grid-gap "grid-gap"
+    :gap "gap"
+    })
+
+(defn- conform-style-value [v attr]
   (cond
-    (vector? v)  (->> v (map conform-style-value) (str/join " "))
-    (string? v)  v
-    (keyword? v) (name v)
-    :else        v))
+    (vector? v)                (->> v (map #(conform-style-value % attr)) (str/join " "))
+    (string? v)                v
+    (keyword? v)               (name v)
+    (= 0 v)                    v
+    (and (number? v)
+         (attr-with-px? attr)) (str v "px")
+    :else                      v))
 
 
 (defn- conform-style [styles]
   (reduce (fn [styles [k v]]
             (if (and (string? k) (str/starts-with? "&" k))
               (assoc styles k (conform-style v))
-              (assoc styles k (conform-style-value v))))
+              (assoc styles k (conform-style-value v k))))
           {} styles))
 
 (defn- conform-styles-selector [s]
