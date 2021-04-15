@@ -35,31 +35,36 @@
                     (js/Promise.resolve))))))
 
 (defn create-doc> [path-or-Doc values]
-  (let [doc? (spark/doc-schema? path-or-Doc)
-        id (or (-> values :id)
-               (if doc?
-                 (let [id-generator (spark/doc-schema-id-generator path-or-Doc)]
-                   (id-generator {:values values}))
-                 (str (random-uuid))))
+  (let [doc?   (spark/doc-schema? path-or-Doc)
+        id     (or (-> values :id)
+                   (if doc?
+                     (let [id-generator (spark/doc-schema-id-generator path-or-Doc)]
+                       (id-generator {:values values}))
+                     (str (random-uuid))))
         values (assoc values
                       :id id
                       :ts-created [:db/timestamp]
                       :ts-updated [:db/timestamp])
-        path (if doc?
-               [(spark/doc-schema-col-path path-or-Doc) id]
-               (conj path-or-Doc id))]
+        path   (if doc?
+                 [(spark/doc-schema-col-path path-or-Doc) id]
+                 (if (string? path-or-Doc)
+                   path-or-Doc
+                   (conj path-or-Doc id)))]
     (firestore/create-doc> path values)))
 
 
 (defn update-doc> [path-or-doc values]
-  (let [doc? (-> path-or-doc :firestore/path)
+  (let [doc?   (-> path-or-doc :firestore/path)
         values (-> values
                    (assoc :ts-updated [:db/timestamp])
                    (dissoc :id))
-        path (if doc?
-               (-> path-or-doc :firestore/path)
-               path-or-doc)]
-    (firestore/update-fields> path values)))
+        path   (if doc?
+                 (-> path-or-doc :firestore/path)
+                 path-or-doc)]
+    (if (and doc? (-> path-or-doc :firestore/exists? not))
+      (create-doc> (-> path-or-doc :firestore/path) values)
+      (firestore/update-fields> path values)
+      )))
 
 
 (defn- inner-path-as-string [path]
