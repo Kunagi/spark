@@ -102,7 +102,7 @@
         (.onAuthStateChanged
          (fn [^js google-js-user]
            (let [user (import-user google-js-user)]
-             (log ::auth-state-chenged
+             (log ::auth-state-changed
                   :user user)
              (let [auth-completed? (auth-completed?)]
                (when-not auth-completed?
