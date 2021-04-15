@@ -207,6 +207,9 @@
 (comment
   (timestamp "2020-01-01"))
 
+(defn timestamp--now []
+  (js/Date.))
+
 (defn date [date-or-string]
   (when date-or-string
     (let [ts (timestamp date-or-string)]
@@ -273,6 +276,28 @@
   (date-past? "2021-04-01")
   (date-past? "2021-04-02")
   (date-past? "2021-04-03"))
+
+
+(defn time-of-date
+  ([date-or-string]
+   (time-of-date date-or-string false false))
+  ([date-or-string seconds?]
+   (time-of-date date-or-string seconds? false))
+  ([date-or-string seconds? milliseconds?]
+   (when date-or-string
+     (let [ts (timestamp date-or-string)]
+       (str (-> ts .getHours (string-pad-left 2 "0"))
+            ":"
+            (-> ts .getMinutes (string-pad-left 2 "0"))
+            (when seconds?
+              (str ":" (-> ts .getSeconds (string-pad-left 2 "0"))))
+            (when (and seconds? milliseconds?)
+              (str ":" (-> ts .getMilliseconds (string-pad-left 3 "0")))))))))
+
+(comment
+  (time-of-date (js/Date.))
+  (time-of-date (js/Date.) true)
+  (time-of-date (js/Date.) true true))
 
 ;;; promises
 
