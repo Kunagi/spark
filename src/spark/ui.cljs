@@ -1,7 +1,7 @@
 (ns spark.ui
   (:require-macros [spark.ui :refer [<> def-ui def-ui-test
                                      map$
-                                     div center
+                                     div center icon imgdiv
                                      grid grid-0 grid-1 grid-2
                                      grid-3 grid-4 grid-5
                                      stack stack-0 stack-1 stack-2
@@ -442,10 +442,6 @@
          (tdiv-red) (tdiv-yellow) (tdiv-blue) (tdiv-green)
          (tdiv-red) (tdiv-yellow) (tdiv-blue) (tdiv-green))))
 
-(defn icon [icon-name]
-  (d/div
-   {:class "material-icons"}
-   icon-name))
 
 (defn unsplash [width id]
   (str "https://images.unsplash.com/photo-" id "?&w=" width))
@@ -1225,9 +1221,14 @@
 (defnc StorageImg [{:keys [path height style]}]
   (let [url (use-storage-url path)]
     ($ :img
-       {:src url
+       {:src    url
         :height height
-        :style style})))
+        :style  style})))
+
+(defnc StorageImgDiv [{:keys [path padding-bottom]}]
+  (let [url (use-storage-url path)]
+    (imgdiv url {:padding-bottom padding-bottom}))
+  )
 
 (defnc StorageImageActionArea
   [{:keys [id storage-path upload-text
@@ -1245,16 +1246,16 @@
                       .click)}
        ($ mui/CardContent
           ($ HiddenStorageUploadField
-             {:id id
-              :accept "image/jpeg"
+             {:id           id
+              :accept       "image/jpeg"
               :storage-path storage-path
-              :then set-url})
+              :then         set-url})
           (if (= :loading url)
             ($ mui/CircularProgress)
             (if url
               (if img-style
                 ($ :img
-                   {:src url
+                   {:src   url
                     :style img-style})
                 ($ mui/Avatar
                    {:src url}))
@@ -1263,21 +1264,21 @@
 
 
 (defnc StorageImagesScroller [{:keys [storage-path reload-on-change]}]
-  (let [[bilder-files reload] (use-storage-files storage-path)
+  (let [[bilder-files reload]             (use-storage-files storage-path)
         [reload-marker set-reload-marker] (use-state reload-on-change)]
     (when (not= reload-marker reload-on-change)
       (reload)
       (set-reload-marker reload-on-change))
     ($ :div
-       {:style {:overflow-x "auto"
+       {:style {:overflow-x       "auto"
                 :reload-on-change reload-on-change}}
        ($ :div
           {:style {:display :flex
-                   :gap "8px"}}
+                   :gap     "8px"}}
           (for [picture-ref bilder-files]
             ($ StorageImg
-               {:key (-> ^js picture-ref)
-                :path picture-ref
+               {:key    (-> ^js picture-ref)
+                :path   picture-ref
                 :height "200px"}))))))
 
 ;;; dialogs
