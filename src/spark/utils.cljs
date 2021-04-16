@@ -1,3 +1,5 @@
+;; * utils
+;; ** ns
 (ns spark.utils
   (:refer-clojure :exclude [pos? zero? min max tap>])
   (:require
@@ -12,7 +14,7 @@
 
 ;; http://weavejester.github.io/medley/medley.core.html
 
-;;; tap
+;; ** tap
 
 (defn tap> [value]
   (if (instance? js/Promise value)
@@ -28,7 +30,7 @@
   (tap> {:name "Witek"})
   (tap> (js/Promise.resolve {:name "Witek"})))
 
-;;; fetch
+;; ** fetch
 
 (defn fetch>
   ([url]
@@ -47,7 +49,7 @@
        (.then (fn [^js json]
                 (js->clj json :keywordize-keys true))))))
 
-;;; maps
+;; ** maps
 
 (defn deep-merge
   "Recursively merges maps together. If all the maps supplied have nested maps
@@ -113,7 +115,7 @@
   [f coll]
   (persistent! (reduce #(assoc! %1 (f %2) %2) (transient {}) coll)))
 
-;;; vectors
+;; ** vectors
 
 (defn v-contains?
   "Checks if `vec` contains `elem`."
@@ -123,7 +125,7 @@
        boolean))
 
 
-;;; functions
+;; ** functions
 
 (defn trampoline-if
   "Calls `trampoline` if `fn-or-value` is `fn?`,
@@ -153,7 +155,7 @@
     (apply f (into [v] more-args))
     v))
 
-;;; strings
+;; ** strings
 
 (defn string-pad-left [s min-len padding]
   (when s
@@ -172,12 +174,12 @@
   (string-pad-left "1" 3 nil)
   (string-pad-left "1" 3 ""))
 
-;;; edn
+;; ** edn
 
 (defn ->edn [data]
   (with-out-str (pprint data)))
 
-;;; date and time
+;; ** date and time
 
 (defn millis [thing]
   (cond
@@ -299,7 +301,7 @@
   (time-of-date (js/Date.) true)
   (time-of-date (js/Date.) true true))
 
-;;; promises
+;; ** promises
 
 (defn promise> [f-with-resolve-and-reject]
   (js/Promise. f-with-resolve-and-reject))
@@ -415,13 +417,13 @@
         (.then #(js/console.log "promise result #1:" %)))))
 
 
-;;; deprecations
+;; ** deprecations
 
 (defn log-deprecated [info]
   (js/console.error "DEPRECATED" (js/Error info)))
 
 
-;;; malli
+;; ** malli
 
 
 (defn malli-explain->user-message [explain schema]
@@ -431,7 +433,7 @@
            (malli-error/humanize explain)
            (catch :default ex
              (throw (ex-info "Malli schema error humanization failed."
-                             {:schema schema
+                             {:schema  schema
                               :explain explain}
                              ex)))))))
 
