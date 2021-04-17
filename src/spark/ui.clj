@@ -13,6 +13,9 @@
 (defmacro use-state [& body] `(r/use-state ~@body))
 (defmacro use-effect [& body] `(r/use-effect ~@body))
 (defmacro use-memo [& body] `(r/use-memo ~@body))
+(defmacro create-context [& body] `(r/create-context ~@body))
+(defmacro use-context [& body] `(r/use-context ~@body))
+(defmacro provider [& body] `(r/provider ~@body))
 
 (defmacro def-page [sym opts] `(spark/def-page ~sym ~opts))
 
@@ -100,19 +103,28 @@
                  (merge style extra-style)
                  style)
 
-         props {}
+         props         {}
          [props style] (if-let [k (-> style :key)]
                          [(assoc props :key k) (dissoc style :key)]
                          [props style])
          [props style] (if-let [id (-> style :id)]
                          [(assoc props :id id) (dissoc style :id)]
                          [props style])
+         [props style] (if-let [v (-> style :tab-index)]
+                         [(assoc props :tab-index v) (dissoc style :tab-index)]
+                         [props style])
+         [props style] (if-let [v (-> style :onKeyDown)]
+                         [(assoc props :onKeyDown v) (dissoc style :onKeyDown)]
+                         [props style])
+         [props style] (if-let [v (-> style :onKeyPress)]
+                         [(assoc props :onKeyPress v) (dissoc style :onKeyPress)]
+                         [props style])
          [props style] (if-let [class (if extra-class
                                         (str extra-class " " (-> style :class))
                                         (-> style :class))]
                          [(assoc props :className class) (dissoc style :class)]
                          [props style])
-         props (assoc props :style (conform-style style))]
+         props         (assoc props :style (conform-style style))]
      `($ ~element ~props ~@children))))
 
 (defmacro div [& style-and-children]

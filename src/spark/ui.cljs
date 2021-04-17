@@ -1,6 +1,7 @@
 (ns spark.ui
   (:require-macros [spark.ui :refer [<> def-ui def-ui-test
                                      map$
+                                     create-context use-context provider
                                      div center icon imgdiv
                                      grid grid-0 grid-1 grid-2
                                      grid-3 grid-4 grid-5
@@ -8,11 +9,9 @@
                                      stack-3 stack-4 stack-5
                                      flex flex-0 flex-1 flex-2
                                      flex-3 flex-4 flex-5]]
-                   [spark.react :refer [use-state use-effect defnc $ provider
-                                        use-context create-context]]
+                   [spark.react :refer [use-state use-effect defnc $]]
                    [clojure.string :as str])
   (:require
-   [clojure.spec.alpha :as s]
    [clojure.string :as str]
    [cljs.pprint :refer [pprint]]
    [shadow.resource :as resource]
@@ -21,7 +20,6 @@
    [helix.core]
    [helix.dom :as d]
 
-   ["react" :as react]
    ["react-dom" :as rdom]
    ["react-router-dom" :as router]
 
@@ -61,12 +59,6 @@
 (def show-form-dialog form-ui/show-form-dialog)
 
 (def Link router/Link)
-
-
-(defn create-context [value]
-  (-> react (.createContext value)))
-
-
 
 ;;;
 ;;; routing
