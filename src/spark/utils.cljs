@@ -1,5 +1,4 @@
-;; * utils
-;; ** ns
+;; * ns
 (ns spark.utils
   (:refer-clojure :exclude [pos? zero? min max tap>])
   (:require
@@ -14,7 +13,7 @@
 
 ;; http://weavejester.github.io/medley/medley.core.html
 
-;; ** tap
+;; * tap
 
 (defn tap> [value]
   (if (instance? js/Promise value)
@@ -30,7 +29,7 @@
   (tap> {:name "Witek"})
   (tap> (js/Promise.resolve {:name "Witek"})))
 
-;; ** fetch
+;; * fetch
 
 (defn fetch>
   ([url]
@@ -49,7 +48,7 @@
        (.then (fn [^js json]
                 (js->clj json :keywordize-keys true))))))
 
-;; ** maps
+;; * maps
 
 (defn deep-merge
   "Recursively merges maps together. If all the maps supplied have nested maps
@@ -115,6 +114,30 @@
   [f coll]
   (persistent! (reduce #(assoc! %1 (f %2) %2) (transient {}) coll)))
 
+
+;; * sequences
+
+(defn seq-indexed
+  "Returns a lazy sequence of [index, item] pairs, where items come
+  from 's' and indexes count up from zero.
+  (indexed '(a b c d))  =>  ([0 a] [1 b] [2 c] [3 d])"
+  [s]
+  (map vector (iterate inc 0) s))
+
+(defn seq-positions
+  "Returns a lazy sequence containing the positions at which pred
+   is true for items in coll."
+  [pred coll]
+  (for [[idx elt] (seq-indexed coll) :when (pred elt)] idx))
+
+(defn seq-position [pred coll]
+  (first (seq-positions pred coll)))
+
+(comment
+  (seq-position #{:b} [:a :b :c])
+  (seq-position #{:b} [:a ])
+  (seq-position #{:b} nil))
+
 ;; ** vectors
 
 (defn v-contains?
@@ -124,8 +147,29 @@
        (some #(= % elem))
        boolean))
 
+(defn v-remove
+  [pred coll]
+  (when coll
+    (vec (remove pred coll))))
 
-;; ** functions
+(comment
+  (v-remove number? [1 "2" :3])
+  (v-remove number? nil)
+  (v-remove number? '()))
+
+(defn v-assoc-last [coll val]
+  (if (seq coll)
+    (let [idx (-> coll count dec)]
+      (assoc coll idx val))
+    [val]))
+
+(comment
+  (v-assoc-last [0 1] :x)
+  (v-assoc-last [0] :x)
+  (v-assoc-last nil :x))
+
+
+;; * functions
 
 (defn trampoline-if
   "Calls `trampoline` if `fn-or-value` is `fn?`,
@@ -155,11 +199,11 @@
     (apply f (into [v] more-args))
     v))
 
-;; ** strings
+;; * strings
 
 (defn string-pad-left [s min-len padding]
   (when s
-    (let [s (if ( string? s) s (str s))
+    (let [s       (if ( string? s) s (str s))
           padding (if ( string? padding) padding (str padding))]
       (if (-> padding count (= 0))
         s
@@ -174,19 +218,19 @@
   (string-pad-left "1" 3 nil)
   (string-pad-left "1" 3 ""))
 
-;; ** edn
+;; * edn
 
 (defn ->edn [data]
   (with-out-str (pprint data)))
 
-;; ** date and time
+;; * date and time
 
 (defn millis [thing]
   (cond
-    (nil? thing) nil
-    (number? thing) thing
+    (nil? thing)              nil
+    (number? thing)           thing
     (instance? js/Date thing) (-> thing .getTime)
-    :else (js/Date.parse thing)))
+    :else                     (js/Date.parse thing)))
 
 (comment
   (js/Date. (millis "2020-01-01"))
@@ -301,7 +345,7 @@
   (time-of-date (js/Date.) true)
   (time-of-date (js/Date.) true true))
 
-;; ** promises
+;; * promises
 
 (defn promise> [f-with-resolve-and-reject]
   (js/Promise. f-with-resolve-and-reject))
@@ -417,13 +461,13 @@
         (.then #(js/console.log "promise result #1:" %)))))
 
 
-;; ** deprecations
+;; * deprecations
 
 (defn log-deprecated [info]
   (js/console.error "DEPRECATED" (js/Error info)))
 
 
-;; ** malli
+;; * malli
 
 
 (defn malli-explain->user-message [explain schema]
