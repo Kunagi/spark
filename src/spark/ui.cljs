@@ -482,15 +482,19 @@
      name))
 
 
-(defnc ValueLoadGuard [{:keys [children value padding]}]
+(defnc ValueLoadGuard [{:keys [children value padding debug-info]}]
   (let [theme (mui-styles/useTheme)]
     (if value
       children
       ($ :div
-          {:style {:display :flex
-                   :padding (when padding (-> theme (.spacing padding)))
-                   :justify-content "space-around"}}
-          ($ mui/CircularProgress)))))
+         {:style {:display         :flex
+                  :padding         (when padding (-> theme (.spacing padding)))
+                  :justify-content "space-around"}}
+         (if (and goog.DEBUG debug-info)
+           (stack
+            ($ mui/CircularProgress)
+            (data debug-info))
+           ($ mui/CircularProgress))))))
 
 (defnc ValuesLoadGuard [{:keys [children values padding]}]
   (let [theme (mui-styles/useTheme)]
