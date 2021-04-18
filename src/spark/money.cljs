@@ -32,11 +32,10 @@
       (money {:amount (-> (js/parseFloat v) (* 100) int)})
 
       (map? v)
-      (let [amount (or (-> v :amount) 0)
+      (let [amount   (or (-> v :amount) 0)
             currency (or (-> v :currency)
                          (default-currency))]
-        (js/console.log amount currency)
-        (dinero (clj->js {:amount amount
+        (dinero (clj->js {:amount   amount
                           :currency currency})))
 
       (.hasOwnProperty v "toUnit")

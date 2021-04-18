@@ -766,34 +766,36 @@
 (defnc CommandButton [{:keys [command context then
                               icon as-icon? icon-theme
                               variant color size
-                              class styles]}]
-  (let [command (u/trampoline-if command)
-        onClick (wrap-in-error-handler (new-command-on-click command context then))
-        variant (or variant "contained")
-        color (or color
-                  (when (-> command :inconspicuous?) "default")
-                  "primary")
-        icon (when-let [icon (or icon
-                                 (-> command :icon))]
-               ($ Icon {:name icon
-                        :theme icon-theme}))
+                              class styles
+                              text]}]
+  (let [command      (u/trampoline-if command)
+        onClick      (wrap-in-error-handler (new-command-on-click command context then))
+        variant      (or variant "contained")
+        color        (or color
+                         (when (-> command :inconspicuous?) "default")
+                         "primary")
+        icon         (when-let [icon (or icon
+                                         (-> command :icon))]
+                       ($ Icon {:name  icon
+                                :theme icon-theme}))
         styles-class (use-styles-class styles)
-        classes (str/join " " [class styles-class])]
+        classes      (str/join " " [class styles-class])]
     (if as-icon?
       ($ mui/IconButton
-         {:onClick onClick
-          :color color
-          :size size
+         {:onClick   onClick
+          :color     color
+          :size      size
           :className classes}
          icon)
       ($ mui/Button
-         {:onClick onClick
-          :variant variant
-          :color color
+         {:onClick   onClick
+          :variant   variant
+          :color     color
           :startIcon icon
-          :size size
+          :size      size
           :className classes}
-        (spark/cmd-label command)))))
+         (or text
+             (spark/cmd-label command))))))
 
 (def-ui-test [CommandButton]
   ($ CommandButton {:command {:label "default" :f (fn [_] [])}})
