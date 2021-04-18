@@ -58,30 +58,31 @@
      ;; ($ :pre (str field))
      ($ mui/TextField
         {
-         :id (-> field :id name)
-         :name (-> field :name)
+         :id           (-> field :id name)
+         :name         (-> field :name)
          :autoComplete (-> field :auto-complete)
-         :value (or (-> field :value) "")
-         :required (-> field :required?)
-         :error (boolean (-> field :error))
-         :helperText (-> field :error)
-         :onChange #((:on-change field)
-                     (-> % .-target .-value))
-         :onKeyPress (when-not (-> field :multiline?)
-                       #(when (= "Enter" (-> ^js % .-nativeEvent .-code))
-                          ((:on-submit field))))
-         :label (-> field :label)
-         :type (-> field :input-type)
-         :multiline (get field :multiline?)
-         :rows (get field :rows (when (get field :multiline?) 5))
-         :autoFocus (-> field :auto-focus?)
-         :inputProps (if-let [props (-> field :input-props)]
-                       (clj->js props)
-                       (clj->js {}))
+         :value        (or (-> field :value) "")
+         :required     (-> field :required?)
+         :error        (boolean (-> field :error))
+         :helperText   (-> field :error)
+         :onChange     #((:on-change field)
+                         (-> % .-target .-value))
+         :onKeyPress   (when-not (-> field :multiline?)
+                         #(when (= "Enter" (-> ^js % .-nativeEvent .-code))
+                            ((:on-submit field))))
+         :label        (-> field :label)
+         :type         (-> field :input-type)
+         :multiline    (get field :multiline?)
+         :rows         (get field :rows (when (get field :multiline?) 5))
+         :autoFocus    (-> field :auto-focus?)
+         :inputProps   (if-let [props (-> field :input-props)]
+                         (clj->js props)
+                         (clj->js {}))
          ;; :InputLabelProps #js {:shrink false}
-         :margin "dense"
+         :margin       "dense"
          ;; :variant "filled"
-         :fullWidth true})))
+         :variant      "outlined"
+         :fullWidth    true})))
 
 
 (defmethod create-input "tel" [field]
@@ -233,27 +234,65 @@
            (-> field :label))
         (for [option (-> field :options)]
           ($ mui/FormControlLabel
-             {:key (-> option :value)
-              :label (or (-> option :label)
-                         (-> option :value str))
+             {:key     (-> option :value)
+              :label   (or (-> option :label)
+                           (-> option :value str))
               :control ($ mui/Checkbox
-                          {:name (-> option :value str)
-                           :checked (-> field :value (contains? (-> option :value)))
+                          {:name     (-> option :value str)
+                           :checked  (-> field :value (contains? (-> option :value)))
                            :onChange #(let [checked? (-> % .-target .-checked)
-                                            value (-> field :value)
-                                            value (if checked?
-                                                    (conj value (-> option :value))
-                                                    (disj value (-> option :value)))]
+                                            value    (-> field :value)
+                                            value    (if checked?
+                                                       (conj value (-> option :value))
+                                                       (disj value (-> option :value)))]
                                         ((-> field :on-change) value))})})))))
 
+(defmethod create-input "ui" [field]
+  ($ :div
+     ($ (-> field :component)
+        {:field field})))
+
+(defnc FormField [{:keys [field form on-submit update-form]}]
+  (let [field-id (-> field :id)
+        error    (form/field-error form field-id)
+        Input    (d/div
+                  (create-input
+                   (assoc field
+                          :form form
+                          :error error
+                          :on-submit on-submit
+                          :on-change #(update-form
+                                       form/on-field-value-change
+                                       field-id %)))
+                  (when-let [helptext (-> field :helptext)]
+                    (d/div
+                     {:style {:color "#666"}}
+                     helptext)))]
+    ($ :div
+       {:key field-id}
+       (if-let [action (-> field :action)]
+         ($ :div
+            {:style {:display "flex"}}
+            Input
+            ($ :div
+               {:style {:margin-left "8px"
+                        :padding-top "22px"}}
+               ($ mui/Button
+                  {:onClick (fn [_]
+                              (update-form (-> action :f)))
+                   :variant "contained"
+                   :color   "secondary"
+                   :size    "small"}
+                  (-> action :label))))
+         Input))))
 
 (defnc FormDialog [{:keys [form]}]
   (let [[form set-form] (hooks/use-state form)
-        form-id (-> form :id)
-        form (assoc form :update (fn [f]
-                                   (set-form (f form))))
-        update-form_ (fn [f & args]
-                       (set-form (apply f (into [form] args))))
+        form-id         (-> form :id)
+        form            (assoc form :update (fn [f]
+                                              (set-form (f form))))
+        update-form_    (fn [f & args]
+                          (set-form (apply f (into [form] args))))
 
         set-waiting (fn [waiting?]
                       (update-form_ form/set-waiting waiting?))
@@ -277,9 +316,9 @@
                           (set-form result))))
 
         ;; form (assoc form :update update-form)
-        close (fn []
-                (update-form assoc :open? false)
-                (close-form-dialog form-id))
+        close     (fn []
+                    (update-form assoc :open? false)
+                    (close-form-dialog form-id))
         on-submit (fn []
                     (let [form (form/on-submit form)]
                       (update-form (fn [_] form))
@@ -302,44 +341,26 @@
         {:open (-> form :open? boolean)
          ;; :onClose close
          }
+
+        (when-let [title (-> form :title)]
+          ($ mui/DialogTitle
+             title))
+
         ($ mui/DialogContent
            #_($ :pre (-> context keys str))
            ($ :div
-              {:style {:width "500px"
+              {:style {:width     "500px"
                        :max-width "100%"}}
+
               (for [field (get form :fields)]
-                (let [field-id (-> field :id)
-                      error (form/field-error form field-id)
-                      Input (d/div
-                             (create-input
-                              (assoc field
-                                     :form form
-                                     :error error
-                                     :on-submit on-submit
-                                     :on-change #(update-form
-                                                  form/on-field-value-change
-                                                  field-id %)))
-                             (when-let [helptext (-> field :helptext)]
-                               (d/div
-                                {:style {:color "#666"}}
-                                helptext)))]
-                  ($ :div
-                     {:key field-id}
-                     (if-let [action (-> field :action)]
-                       ($ :div
-                          {:style {:display "flex"}}
-                          Input
-                          ($ :div
-                             {:style {:margin-left "8px"
-                                      :padding-top "22px"}}
-                             ($ mui/Button
-                                {:onClick (fn [_]
-                                            (update-form (-> action :f)))
-                                 :variant "contained"
-                                 :color "secondary"
-                                 :size "small"}
-                                (-> action :label))))
-                       Input))))
+                ($ FormField
+                   {:key         (-> field :id)
+                    :field       field
+                    :form        form
+                    :on-submit   on-submit
+                    :update-form update-form}))
+
+
               (get form :content))
            ;; (ui/data form)
            )
@@ -350,7 +371,7 @@
            ($ mui/Button
               {:onClick on-submit
                :variant "contained"
-               :color "primary"}
+               :color   "primary"}
               "Ok"))
         ($ :div
            {:style {:min-height "4px"}}
