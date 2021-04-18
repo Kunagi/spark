@@ -1,3 +1,4 @@
+;; * ns
 (ns spark.ui
   (:require-macros [spark.ui :refer [<> def-ui def-ui-test
                                      map$
@@ -42,9 +43,7 @@
    ))
 
 
-(def atom-hook spark-react/atom-hook)
-(def memo spark-react/memo)
-
+;; * Misc
 
 (def StringVectorChips form-ui/StringVectorChips)
 (def FormCardArea form-ui/FormCardArea)
@@ -58,11 +57,13 @@
 
 (def show-form-dialog form-ui/show-form-dialog)
 
+(def atom-hook spark-react/atom-hook)
+(def memo spark-react/memo)
+
 (def Link router/Link)
 
-;;;
-;;; routing
-;;;
+;; * routing
+
 ;; TODO deprecated
 (defn use-params []
   (->> (router/useParams)
@@ -93,10 +94,7 @@
 
 (def use-history router/useHistory)
 
-;;;
-;;; auth
-;;;
-
+;; * auth
 
 (def use-auth-completed (atom-hook auth/AUTH_COMPLETED))
 
@@ -107,9 +105,7 @@
     (-> user :uid)))
 
 
-;;;
-;;; page and context data
-;;;
+;; * page and context data
 
 
 (def PAGE (create-context {:page nil :data nil}))
@@ -125,9 +121,7 @@
   (use-context SPARK_CONTEXT))
 
 
-;;;
-;;; repository
-;;;
+;; * repository
 
 (defn use-doc
   "React hook for a document."
@@ -149,16 +143,16 @@
         (log ::use-doc--subscribe
              :path path)
         ;; (set-watching true)
-        (let [ref (firestore/ref path)
+        (let [ref         (firestore/ref path)
               on-snapshot (fn [doc-snapshot]
                             (log ::doc-snapshot-received
                                  :collection path
                                  :snapshot doc-snapshot)
                             (set-doc (firestore/wrap-doc doc-snapshot)))
-              on-error (fn [^js error]
-                         (log ::doc-atom-error
-                              :path path
-                              :exception error))
+              on-error    (fn [^js error]
+                            (log ::doc-atom-error
+                                 :path path
+                                 :exception error))
               unsubscribe (.onSnapshot ref on-snapshot on-error)]
 
           unsubscribe)))
@@ -249,10 +243,7 @@
     (when result
       (runtime/post-process-query-result query context result))))
 
-;;;
-;;; Styles / Theme
-;;;
-
+;; * Styles / Theme
 
 (defn use-theme []
   (mui-styles/useTheme))
@@ -274,9 +265,7 @@
           ^js styles       (use-styles theme)]
       (-> styles .-root))))
 
-;;;
-;;; storage
-;;;
+;; * storage
 
 (defn use-storage-files [path]
   (let [[files set-files] (use-state [])
@@ -298,9 +287,9 @@
    (use-storage-url path nil))
   ([path fallback-url]
    (let [[url set-url] (use-state nil)
-         update-url (fn [url]
-                      (set-url (or url
-                                   fallback-url)))]
+         update-url    (fn [url]
+                         (set-url (or url
+                                      fallback-url)))]
 
      (use-effect
       :always
@@ -312,12 +301,7 @@
      url)))
 
 
-
-
-
-;;;
-;;; styles
-;;;
+;; * styles
 
 ;; TODO deprecated
 (defn style-bg-img [url]
@@ -327,34 +311,30 @@
    :background-position-y "top"
    :background-size       "contain"})
 
-
-
+;; * devcards
 
 (defn reg-devcard [devcard]
   (spark/reg-test devcard))
 
 
-
-;;;
-;;; common ui functions
-;;;
+;; * common ui functions
 
 (defn colored-data-block [label background-color color data]
   (d/div
-   {:style {:white-space "pre-wrap"
-            :font-family :monospace
-            :overflow "auto"
-            :width "100%"
+   {:style {:white-space      "pre-wrap"
+            :font-family      :monospace
+            :overflow         "auto"
+            :width            "100%"
             :background-color background-color
-            :color color
-            :padding "1rem"
-            :border-radius "4px"
-            :margin "1px"
+            :color            color
+            :padding          "1rem"
+            :border-radius    "4px"
+            :margin           "1px"
             }}
    (when label
      (div
       {:font-weight 900
-       :text-align "center"}
+       :text-align  "center"}
       (with-out-str (print label))))
    (with-out-str (pprint data))))
 
@@ -411,11 +391,21 @@
      {:label label
       :value value}))
 
+(defn spacer
+  ([size]
+   (spacer size size))
+  ([width height]
+   (div
+    {:width  width
+     :height height})))
+
+;; * test helpers
+
 (defn tdiv [color]
   ($ :div
      {:style {:background-color color
-              :min-width "64px"
-              :min-height "16px"}}))
+              :min-width        "64px"
+              :min-height       "16px"}}))
 
 (defn tdiv-red [] (tdiv "#c62828"))
 (defn tdiv-blue [] (tdiv "#1565c0"))

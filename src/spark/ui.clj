@@ -80,10 +80,10 @@
 
 (defn- conform-style-value [v]
   (cond
-    (vector? v)(->> v (map conform-style-value) (str/join " "))
-    (string? v) v
+    (vector? v)  (->> v (map conform-style-value) (str/join " "))
+    (string? v)  v
     (keyword? v) (name v)
-    :else v))
+    :else        v))
 
 
 (defn- conform-style [styles]
@@ -100,7 +100,7 @@
                             [nil style-and-children])
 
          style (if extra-style
-                 (merge style extra-style)
+                 (merge extra-style style)
                  style)
 
          props         {}
@@ -151,8 +151,14 @@
 ;;; grid
 
 (defn- grid-div [grid-template-columns gap style-and-children]
-  (html-element :div style-and-children
-                (str "grid-" gap) {:grid-template-columns grid-template-columns}))
+  (let [grid-template-columns (if-not (vector? grid-template-columns)
+                                grid-template-columns
+                                (mapv #(if (number? %)
+                                         (str % "px")
+                                         %)
+                                      grid-template-columns))]
+    (html-element :div style-and-children
+                  (str "grid-" gap) {:grid-template-columns `~grid-template-columns})))
 
 (defmacro grid [grid-template-columns & style-and-children]
   (grid-div grid-template-columns 1 style-and-children))
