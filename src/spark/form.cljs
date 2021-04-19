@@ -161,8 +161,10 @@
 (defn adopt-value [value form field-id]
   (let [field-type (field-type form field-id)
         value      (if (string? value) (str/trim value) value)]
-    (log ::adopt-value
-         :type field-type)
+    ;; (log ::adopt-value
+    ;;      :field-id field-id
+    ;;      :type field-type
+    ;;      :value value)
     (if (or (nil? value)
             (= "" value))
       nil
@@ -176,10 +178,7 @@
        (reduce (fn [form field-id]
                  (let [value (adopt-value (get-in form [:values field-id])
                                           form field-id)]
-                   (if (nil? value)
-                     (update form :values dissoc field-id)
-                     (assoc-in form [:values field-id]
-                               value))))
+                   (assoc-in form [:values field-id] value)))
                form)))
 
 (defn validate-field [form field-id]

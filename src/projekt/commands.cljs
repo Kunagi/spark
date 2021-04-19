@@ -1,8 +1,9 @@
 (ns projekt.commands
   (:require
 
+   [spark.logging :refer [log]]
    [spark.core :as spark :refer [def-cmd]]
-    
+
    [projekt.projekt :as projekt]
    [projekt.story :as story]
    [projekt.sprint :as sprint ]
@@ -32,24 +33,26 @@
 (def-cmd update-story
   {:label "Story bearbeiten"
 
-    :context-args [[:projekt projekt/Projekt
-                    :story map?
-                    :uid string?]]
+   :context-args [[:projekt projekt/Projekt
+                   :story map?
+                   :uid string?]]
 
-    :form (fn [{:keys [projekt story uid]}]
-            (let [fields (if (projekt/developer-uid? projekt uid)
-                           [story/Bez story/Beschreibung
-                            story/Tasks
-                            story/Voraussetzungen
-                            story/Klaerungsbedarf
-                            story/Feature-id story/Sprint-id
-                            story/Aufwand]
-                           [story/Klaerungsbedarf])]
-              {:fields fields
-               :values story}))
+   :form (fn [{:keys [projekt story uid]}]
+           (let [fields (if (projekt/developer-uid? projekt uid)
+                          [story/Bez story/Beschreibung
+                           story/Tasks
+                           story/Voraussetzungen
+                           story/Klaerungsbedarf
+                           story/Feature-id story/Sprint-id
+                           story/Aufwand]
+                          [story/Klaerungsbedarf])]
+             {:fields fields
+              :values story}))
 
-    :f (fn [{:keys [projekt values]}]
-         [[:db/update-child projekt [:storys] (-> values :id) values]])})
+   :f (fn [{:keys [projekt values]}]
+        (log ::update-story
+             :values values)
+        [[:db/update-child projekt [:storys] (-> values :id) values]])})
 
 
 (def-cmd update-sprint
