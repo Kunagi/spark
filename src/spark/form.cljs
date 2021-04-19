@@ -147,6 +147,15 @@
       :type
       (or "text")))
 
+(defn field-validator [form field-id]
+  (-> form
+      (field-by-id field-id)
+      :validator))
+
+(defn field-coercer [form field-id]
+  (-> form
+      (field-by-id field-id)
+      :coercer))
 
 (defn values [form]
   (-> form :values))
@@ -158,35 +167,49 @@
         (-> (field-by-id form field-id) :value))))
 
 
-(defn adopt-value [value form field-id]
+(defn coerce-value [value form field-id]
   (let [field-type (field-type form field-id)
         value      (if (string? value) (str/trim value) value)]
-    ;; (log ::adopt-value
+    ;; (log ::coerce-value
     ;;      :field-id field-id
     ;;      :type field-type
     ;;      :value value)
     (if (or (nil? value)
             (= "" value))
       nil
-      (case field-type
-        :number (js/parseInt value)
-        ;; :chips  (into #{} value)
+      (let [value   (case field-type
+                      :number (js/parseInt value)
+                      value)
+            coercer (field-coercer form field-id)
+            value   (if-not coercer
+                      value
+                      (coercer value form))]
         value))))
 
-(defn adopt-values [form]
+(defn coerce-values [form]
   (->> form :fields (map :id)
        (reduce (fn [form field-id]
-                 (let [value (adopt-value (get-in form [:values field-id])
-                                          form field-id)]
+                 (let [value (coerce-value (get-in form [:values field-id])
+                                           form field-id)]
                    (assoc-in form [:values field-id] value)))
                form)))
 
 (defn validate-field [form field-id]
-  (let [field (field-by-id form field-id)
-        value (field-value form field-id)
-        value (adopt-value value form field-id)
-        error (when (and  (-> field :required?) (nil? value))
-                "Input required.")]
+  (let [field     (field-by-id form field-id)
+        value     (field-value form field-id)
+        value     (coerce-value value form field-id)
+        error     (when (and  (-> field :required?) (nil? value))
+                    "Input required.")
+        validator (field-validator form field-id)
+        error     (or error
+                      (when (and value validator)
+                        (try
+                          (validator value form)
+                          (catch :default ex
+                            (log ::field-validator-failed
+                                 :field field
+                                 :form form)
+                            (str ex)))))]
     (if error
       (assoc-in form [:errors field-id] error)
       (update form :errors dissoc field-id))))
@@ -204,10 +227,10 @@
           form values))
 
 (defn on-field-value-change [form field-id new-value]
-  (log ::on-field-value-change
-       :values (-> form :values)
-       :field field-id
-       :value new-value)
+  ;; (log ::on-field-value-change
+  ;;      :values (-> form :values)
+  ;;      :field field-id
+  ;;      :value new-value)
   (-> form
       (set-field-value field-id new-value)))
 
@@ -226,7 +249,7 @@
   ;;      :form form)
   (->> form :fields (map :id)
        (reduce validate-field form)
-       adopt-values))
+       coerce-values))
 
 (defn set-waiting [form value]
   (assoc form :waiting? (boolean value)))

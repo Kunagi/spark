@@ -110,3 +110,6 @@
          (assoc doc
                 :id doc-id
                 :ts-updated [:db/timestamp]))))))
+
+(defn delete-doc> [doc-path]
+  (firestore/delete-doc> doc-path))
