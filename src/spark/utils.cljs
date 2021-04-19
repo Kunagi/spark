@@ -517,6 +517,12 @@
     (= :keyword schema)
     (keyword data)
 
+    (= :string schema)
+    (str data)
+
+    (= :int schema)
+    (js/parseInt data)
+
     (or (nil? data) (string? data) (number? data) (boolean? data))
     (js->clj data)
 
@@ -541,14 +547,20 @@
 
       :map-of
       (reduce (fn [m js-key]
-                (let [k js-key
-                      v (gobj/get data js-key)
+                (let [k        js-key
+                      v        (gobj/get data js-key)
+                      k-schema (if (map? (second schema))
+                                 (nth schema 2)
+                                 (nth schema 1))
                       v-schema (if (map? (second schema))
                                  (nth schema 3)
                                  (nth schema 2))]
-                  (assoc m k (conform-js-data v v-schema))))
+                  (assoc m
+                         (conform-js-data k k-schema)
+                         (conform-js-data v v-schema))))
               {} (js/Object.keys data))
 
+      ;; else
       (reduce (fn [m js-key]
                 (let [k (keyword js-key)
                       v (gobj/get data js-key)]
