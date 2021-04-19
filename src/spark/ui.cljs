@@ -1221,8 +1221,16 @@
 
 (defnc StorageImageActionArea
   [{:keys [id storage-path upload-text
-           img-style]}]
-  (let [[url set-url] (use-state :loading)]
+           img-style on-url-changed]}]
+  (let [[url set-url_] (use-state :loading)
+        set-url        (fn [new-url]
+                         (when (not= url new-url)
+                           (log ::file-uploaded
+                                :url new-url
+                                :on-url-changed on-url-changed)
+                           (when on-url-changed
+                             (on-url-changed new-url))
+                           (set-url_ new-url)))]
 
     (use-effect
      :always
@@ -1251,25 +1259,6 @@
               ($ :div (or  upload-text
                            "Bild auswählen..."))))))))
 
-
-(defnc StorageImagesScroller [{:keys [storage-path reload-on-change]}]
-  (let [[bilder-files reload]             (use-storage-files storage-path)
-        [reload-marker set-reload-marker] (use-state reload-on-change)]
-    (when (not= reload-marker reload-on-change)
-      (reload)
-      (set-reload-marker reload-on-change))
-    ($ :div
-       {:style {:overflow-x       "auto"
-                :reload-on-change reload-on-change}}
-       ($ :div
-          {:style {:display :flex
-                   :gap     "8px"}}
-          (for [picture-ref bilder-files]
-            ($ StorageImg
-               {:key    (-> ^js picture-ref)
-                :path   picture-ref
-                :height "200px"}))))))
-
 ;;; dialogs
 
 
@@ -1277,8 +1266,8 @@
   ($ mui/List
      (for [[idx item] (map-indexed vector items)]
        ($ mui/ListItem
-          {:key (or (-> item :id) idx)
-           :button true
+          {:key     (or (-> item :id) idx)
+           :button  true
            :onClick #(on-select item)}
           ($ mui/ListItemText
              {:primary (-> item :label)})))))
