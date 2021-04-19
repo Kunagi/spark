@@ -1213,9 +1213,10 @@
         :height height
         :style  style})))
 
-(defnc StorageImgDiv [{:keys [path padding-bottom]}]
+(defnc StorageImgDiv [{:keys [path padding-bottom border-radius]}]
   (let [url (use-storage-url path)]
-    (imgdiv url {:padding-bottom padding-bottom}))
+    (imgdiv url {:padding-bottom padding-bottom
+                 :border-radius  border-radius}))
   )
 
 (defnc StorageImageActionArea
