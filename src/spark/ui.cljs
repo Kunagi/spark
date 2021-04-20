@@ -60,7 +60,20 @@
 (def atom-hook spark-react/atom-hook)
 (def memo spark-react/memo)
 
-(def Link router/Link)
+(defnc Link [{:keys [to className children]}]
+  (let [remote? (and (string? to)
+                     (or (-> to (.startsWith "https:"))
+                         (-> to (.startsWith "http:"))))]
+    (if remote?
+      ($ :a
+         {:href      to
+          :target    "_blank"
+          :className className}
+         children)
+      ($ router/Link
+         {:to        to
+          :className className}
+         children))))
 
 ;; * routing
 
