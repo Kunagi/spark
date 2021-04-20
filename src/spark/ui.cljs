@@ -1206,17 +1206,18 @@
       :style    {:display "none"}}))
 
 
-(defnc StorageImg [{:keys [path height style]}]
+(defnc StorageImg [{:keys [path height style class]}]
   (let [url (use-storage-url path)]
     ($ :img
-       {:src    url
-        :height height
-        :style  style})))
+       {:src       url
+        :height    height
+        :className class
+        :style     style})))
 
-(defnc StorageImgDiv [{:keys [path padding-bottom border-radius]}]
+(defnc StorageImgDiv [{:keys [path padding-bottom class]}]
   (let [url (use-storage-url path)]
     (imgdiv url {:padding-bottom padding-bottom
-                 :border-radius  border-radius}))
+                 :class          class}))
   )
 
 (defnc StorageImageActionArea
