@@ -180,8 +180,9 @@
   (let [[style children] (if (-> children first map?)
                            [(first children) (rest children)]
                            [{} children])
-        props {:style style
-               :className class}]
+        style            (conform-style style)
+        props            {:style     style
+                          :className class}]
     `($ :div ~props ~@children)))
 
 (defmacro stack [& children] (div-class "stack" children))
