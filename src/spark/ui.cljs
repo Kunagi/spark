@@ -60,6 +60,8 @@
 (def atom-hook spark-react/atom-hook)
 (def memo spark-react/memo)
 
+(def RouterLink router/Link)
+
 (defnc Link [{:keys [to className children]}]
   (let [remote? (and (string? to)
                      (or (-> to (.startsWith "https:"))
@@ -555,9 +557,9 @@
   (let [spa (use-spa)]
     (use-styles-class (-> spa :styles))))
 
-;;;
-;;; dialogs
-;;;
+
+;; * dialogs
+
 
 (defonce DIALOGS (atom {}))
 
@@ -610,9 +612,34 @@
        ($ Dialog {:key (-> dialog :id) :dialog dialog})))))
 
 
+;; ** PromiseProgress
 
+(def-ui PromiseProgress [promise]
+  (let [hide (use-hide-dialog)]
 
-;;; errors
+    (use-effect
+     :once
+     (-> promise
+         (.then (fn [result]
+                  (hide)
+                  result)))
+     nil)
+
+    (stack
+     ($ mui/CircularProgress))))
+
+(defn eval-with-progress-dialog [f>]
+  (let [promise (f>)]
+    (when (instance? js/Promise promise)
+      (show-dialog
+       {:content ($ PromiseProgress {:promise promise})}))
+    promise))
+
+(defn with-progress-dialog [f]
+  (when f
+    #(eval-with-progress-dialog f)))
+
+;;; * errors
 
 (defonce ERROR (atom nil))
 
@@ -712,8 +739,8 @@
 
 (defnc LinkCardActionArea [{:keys [to children]}]
   ($ mui/CardActionArea
-     {:to to
-      :component Link}
+     {:to        to
+      :component RouterLink}
      children))
 
 (defnc SimpleLinkCard [{:keys [to children]}]
@@ -782,7 +809,9 @@
                               class styles
                               text]}]
   (let [command      (u/trampoline-if command)
-        onClick      (wrap-in-error-handler (new-command-on-click command context then))
+        on-click     (new-command-on-click command context then)
+        on-click     (wrap-in-error-handler on-click)
+        on-click     (with-progress-dialog on-click)
         variant      (or variant "contained")
         color        (or color
                          (when (-> command :inconspicuous?) "default")
@@ -795,13 +824,13 @@
         classes      (str/join " " [class styles-class])]
     (if as-icon?
       ($ mui/IconButton
-         {:onClick   onClick
+         {:onClick   on-click
           :color     color
           :size      size
           :className classes}
          icon)
       ($ mui/Button
-         {:onClick   onClick
+         {:onClick   on-click
           :variant   variant
           :color     color
           :startIcon icon
@@ -863,44 +892,45 @@
   (when command
     (log ::Button.DEPRECATED.with-command
          {:command command}))
-  (let [context (merge (use-spark-context)
-                       context)
-        command (u/trampoline-if command)
-        command (when command (-> command upgrade-legacy-command complete-command))
-        text (or text (-> command :label) ":text missing")
-        icon (when-let [icon (or icon (-> command :icon))]
-               (if (string? icon)
-                 (d/div {:class "i material-icons"} icon)
-                 icon))
-        on-click (or on-click onClick)
-        on-click (wrap-in-error-handler
-                  (or on-click
-                      (-> command :onClick)
-                      (when command
-                        #(execute-command> command context then))))
-        color (or color
-                  (when (-> command :inconspicuous?) "default")
-                  "primary")
+  (let [context      (merge (use-spark-context)
+                            context)
+        command      (u/trampoline-if command)
+        command      (when command (-> command upgrade-legacy-command complete-command))
+        text         (or text (-> command :label) ":text missing")
+        icon         (when-let [icon (or icon (-> command :icon))]
+                       (if (string? icon)
+                         (d/div {:class "i material-icons"} icon)
+                         icon))
+        on-click     (or on-click onClick)
+        on-click     (or on-click
+                         (-> command :onClick)
+                         (when command
+                           #(execute-command> command context then)))
+        on-click     (with-progress-dialog on-click)
+        on-click     (wrap-in-error-handler on-click)
+        color        (or color
+                         (when (-> command :inconspicuous?) "default")
+                         "primary")
         styles-class (use-styles-class styles)
-        classes (str/join " " [class styles-class])]
+        classes      (str/join " " [class styles-class])]
     (if to
       ($ mui/Button
-         {:to to
+         {:to        to
           :component router/Link
-          :variant (or variant "contained")
-          :color (or color "primary")
+          :variant   (or variant "contained")
+          :color     (or color "primary")
           :startIcon icon
-          :size size
+          :size      size
           :className classes}
          text)
       ($ mui/Button
-         {:onClick on-click
-          :href href
-          :target target
-          :variant (or variant "contained")
-          :color (or color "primary")
+         {:onClick   on-click
+          :href      href
+          :target    target
+          :variant   (or variant "contained")
+          :color     (or color "primary")
           :startIcon icon
-          :size size
+          :size      size
           :className classes}
          text))))
 
@@ -916,10 +946,12 @@
         on-click (or on-click onClick)
         command  (u/trampoline-if command)
         command  (when command (-> command upgrade-legacy-command complete-command ))
-        onClick  (wrap-in-error-handler
-                  (or onClick
+        on-click (wrap-in-error-handler
+                  (or on-click
                       (when command (-> command :onClick))
                       (when command #(execute-command> command context then))))
+        on-click (with-progress-dialog on-click)
+        on-click (wrap-in-error-handler on-click)
         icon     (when-let [icon (or icon
                                      (-> command :icon)
                                      "play_arrow")]
