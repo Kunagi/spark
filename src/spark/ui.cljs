@@ -66,11 +66,13 @@
   (let [remote? (and (string? to)
                      (or (-> to (.startsWith "https:"))
                          (-> to (.startsWith "http:"))))]
-    (if remote?
+    (if (or remote? (nil? to))
       ($ :a
          {:href      to
-          :target    "_blank"
-          :className className}
+          :onClick   on-click
+          :target    (when remote? "_blank")
+          :className className
+          :style     {:cursor "pointer"}}
          children)
       ($ router/Link
          {:to        to
