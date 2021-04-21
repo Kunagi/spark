@@ -514,6 +514,9 @@
 (defn conform-js-data [^js data schema]
   (cond
 
+    (nil? data)
+    nil
+
     (= :keyword schema)
     (keyword data)
 
@@ -523,7 +526,7 @@
     (= :int schema)
     (js/parseInt data)
 
-    (or (nil? data) (string? data) (number? data) (boolean? data))
+    (or (string? data) (number? data) (boolean? data))
     (js->clj data)
 
     (instance? (if (exists? js/firebase)
