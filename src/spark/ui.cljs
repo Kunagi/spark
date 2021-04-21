@@ -1304,8 +1304,9 @@
                     :style img-style})
                 ($ mui/Avatar
                    {:src url}))
-              ($ :div (or  upload-text
-                           "Bild auswählen..."))))))))
+              (div
+               {:class "MuiButtonBase-root MuiButton-root MuiButton-contained"}
+               (or upload-text "Bild auswählen..."))))))))
 
 ;;; dialogs
 

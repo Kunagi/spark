@@ -136,6 +136,9 @@
 (defmacro center [& style-and-children]
   (html-element :span style-and-children "center" nil))
 
+(defmacro center-div [& style-and-children]
+  (html-element :div style-and-children "center" nil))
+
 (defmacro icon [icon-name & style-and-children]
   (html-element :div
                 (conj style-and-children icon-name)
