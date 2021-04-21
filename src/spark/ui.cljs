@@ -62,7 +62,7 @@
 
 (def RouterLink router/Link)
 
-(defnc Link [{:keys [to className children]}]
+(defnc Link [{:keys [to on-click className children]}]
   (let [remote? (and (string? to)
                      (or (-> to (.startsWith "https:"))
                          (-> to (.startsWith "http:"))))]
@@ -74,6 +74,7 @@
          children)
       ($ router/Link
          {:to        to
+          :onClick   on-click
           :className className}
          children))))
 
@@ -540,9 +541,10 @@
                         style)}
         child)))))
 
-(defnc Link--no-styles [{:keys [to children]}]
+(defnc Link--no-styles [{:keys [to on-click children]}]
   ($ Link
      {:to        to
+      :on-click  on-click
       :className "Link--no-styles"}
      children))
 
