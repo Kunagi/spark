@@ -563,12 +563,12 @@
                          (conform-js-data v v-schema))))
               {} (js/Object.keys data))
 
-      ;; else
+      ;; else -> :map
       (reduce (fn [m js-key]
-                (let [k       (keyword js-key)
-                      v       (gobj/get data js-key)
-                      v-shema (malli-map-field-schema-by-id schema k)
-                      v       (conform-js-data v v-shema)]
+                (let [k        (keyword js-key)
+                      v        (gobj/get data js-key)
+                      v-schema (malli-map-field-schema-by-id schema k)
+                      v        (conform-js-data v v-schema)]
                   (if (nil? v)
                     m
                     (assoc m k v))))
