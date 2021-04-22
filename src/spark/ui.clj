@@ -179,14 +179,9 @@
   (grid-div grid-template-columns 5 style-and-children))
 
 
-(defn- div-class [class children]
-  (let [[style children] (if (-> children first map?)
-                           [(first children) (rest children)]
-                           [{} children])
-        style            (conform-style style)
-        props            {:style     style
-                          :className class}]
-    `($ :div ~props ~@children)))
+(defn- div-class [class style-and-children]
+  (html-element :div style-and-children
+                class nil))
 
 (defmacro stack [& children] (div-class "stack" children))
 (defmacro stack-0 [& children] (div-class "stack-0" children))
