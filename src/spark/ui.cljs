@@ -72,12 +72,13 @@
           :onClick   on-click
           :target    (when remote? "_blank")
           :className className
-          :style     {:cursor "pointer"}}
+          :style     {:cursor "pointer"
+                      :color  "unset"}}
          children)
       ($ router/Link
          {:to        to
           :onClick   on-click
-          :className className}
+          :className (str "Link " className)}
          children))))
 
 ;; * routing
