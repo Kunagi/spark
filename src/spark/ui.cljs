@@ -83,7 +83,6 @@
 
 ;; * routing
 
-;; TODO deprecated
 (defn use-params []
   (->> (router/useParams)
        cljs-bean/->clj
@@ -91,7 +90,6 @@
                  (assoc m (csk/->kebab-case k) v))
                {})))
 
-;; TODO deprecated
 (defn use-param [param-key]
   (-> (use-params) (get param-key)))
 
@@ -1073,15 +1071,28 @@
 
 (defn load-docs+context [context spa page params]
   (let [context (assoc context :spark/page page)
-        context (merge context params)
 
-        ;; TODO query parameters form request
+        ;; put page params into context
+        context (reduce (fn [context [k v]]
+                          (assoc context
+                                 k v
+                                 (csk/->kebab-case-keyword k) v)
+                          )
+                        context params)
 
-        docs    (reduce (fn [docs [k Doc]]
-                          (let [id  (get context k)
-                                doc (use-doc Doc id)]
-                            (assoc docs k doc)))
-                        {} (-> page :use-docs))
+        docs (merge (reduce (fn [docs [k Doc]]
+                              (let [id  (get context k)
+                                    doc (use-doc Doc id)]
+                                (assoc docs k doc)))
+                            {} (-> page :use-docs))
+                    (reduce (fn [docs [k Doc]]
+                              (let [param (-> Doc
+                                              spark/doc-schema-page-param)
+                                    id    (get context param)
+                                    doc   (use-doc Doc id)]
+                                (assoc docs k doc)))
+                            {} (spark/page-docs page)))
+
         context (merge context docs)
 
         update-context (-> spa :update-page-context)
@@ -1137,16 +1148,16 @@
 
 (defnc PageSwitch [{:keys [spa children]}]
   (let [pages (spark/spa-pages spa)
-        pages (concat @ADDITIONAL_PAGES pages)
-        ]
+        pages (concat @ADDITIONAL_PAGES pages)]
     ($ router/Switch
        (for [page pages]
-         ($ router/Route
-            {:key  (-> page :path)
-             :path (-> page :path)}
-            ($ PageWrapper {:spa  spa
-                            :page page}
-               children))))))
+         (let [path (spark/page-path page)]
+           ($ router/Route
+              {:key  path
+               :path path}
+              ($ PageWrapper {:spa  spa
+                              :page page}
+                 children)))))))
 
 
 (defnc VersionInfo []

@@ -2,7 +2,9 @@
   (:require-macros [spark.core :refer [def-test]])
   (:require
    [clojure.string :as str]
-   [spark.firestore :as firestore]))
+   [spark.firestore :as firestore]
+   [camel-snake-kebab.core :as csk]
+   ))
 
 ;;;
 ;;; test registry
@@ -101,6 +103,19 @@
   (or (-> Doc schema-opts :spark/id-generator)
       (fn [_context] (-> (random-uuid) str))))
 
+(defn doc-schema-router-param [Doc]
+  (assert-doc-schema Doc)
+  (str ":"
+       (-> Doc schema-opts :doc-schema/symbol (str "Id"))))
+
+(defn doc-schema-page-param [Doc]
+  (assert-doc-schema Doc)
+  (-> Doc schema-opts :doc-schema/symbol (str "-id") csk/->kebab-case-keyword))
+
+(defn doc-schema-context-key [Doc]
+  (assert-doc-schema Doc)
+  (-> Doc schema-opts :doc-schema/symbol csk/->kebab-case-keyword))
+
 (defn new-doc-id [Doc context]
   (assert-doc-schema Doc)
   (-> Doc
@@ -124,8 +139,19 @@
 (defn subdoc-schema? [thing]
   (schema-type-of? :subdoc-schema thing))
 
-(defn subdoc-schema-id-generator [Doc]
-  (or (-> Doc schema-opts :spark/id-generator)
+(defn assert-subdoc-schema [Subdoc]
+  ;; FIXME dev only
+  (when-not (subdoc-schema? Subdoc)
+    (throw (ex-info "subdoc schema expected"
+                    {:value Subdoc}))))
+
+(defn subdoc-schema-router-param [Subdoc]
+  (assert-subdoc-schema Subdoc)
+  (str ":"
+       (-> Subdoc schema-opts :subdoc-schema/symbol (str "Id"))))
+
+(defn subdoc-schema-id-generator [Subdoc]
+  (or (-> Subdoc schema-opts :spark/id-generator)
       (fn [_context] (-> (random-uuid) str))))
 
 (defn new-subdoc-id [Subdoc context]
@@ -180,11 +206,51 @@
   (and (map? thing)
        (get thing (keyword "page" "id"))))
 
-(defn assert-page [page]
+(defn assert-page [Page]
   ;; FIXME dev only
-  (when-not (page? page)
+  (when-not (page? Page)
     (throw (ex-info "page expected"
-                    {:value page}))))
+                    {:value Page}))))
+
+(defn- coerce-page-path [thing]
+  (if (string? thing)
+
+    thing
+
+    (->> thing
+         (map (fn [path-element]
+                (cond
+                  (keyword? path-element)
+                  (str ":" (-> path-element csk/->camelCaseString))
+
+                  (doc-schema? path-element)
+                  (-> path-element doc-schema-router-param)
+
+                  (subdoc-schema? path-element)
+                  (-> path-element subdoc-schema-router-param)
+
+                  :else
+                  (str path-element))))
+         (str/join "/")
+         (str "/ui/"))))
+
+(comment
+  (coerce-page-path "/ui/book/:book")
+  (coerce-page-path ["book" :book-id])
+  (coerce-page-path []))
+
+(defn page-path [Page]
+  (-> Page :path coerce-page-path))
+
+(defn page-docs [Page]
+  (reduce (fn [docs path-element]
+            (if (doc-schema? path-element)
+              (assoc docs
+                     (doc-schema-context-key path-element)
+                     path-element)
+              docs))
+          {} (-> Page :path)))
+
 
 ;;;
 ;;; spa
