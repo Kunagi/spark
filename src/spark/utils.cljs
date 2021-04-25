@@ -391,7 +391,8 @@
 (defn => [promise & thens]
   (reduce (fn [promise then]
             (-> promise
-                (.then then)))
+                (.then (fn [result]
+                         (as> (then result))))))
           (as> promise) thens))
 
 (comment
