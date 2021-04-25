@@ -37,7 +37,7 @@
 
 (defn- format-response [val]
   (cond
-    (or (nil? val) (seq? val) (map? val) (vector? val) (list? val))
+    (or (nil? val) (sequential? val) (map? val) (vector? val) (list? val))
     (wrap-in-html (with-out-str (pprint val)))
 
     (or (string? val) (number? val))
@@ -45,6 +45,7 @@
 
     ;; :else (str val)
     :else (js/JSON.stringify val)
+    ;; :else (str val)
     ))
 
 

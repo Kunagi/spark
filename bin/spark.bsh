@@ -260,6 +260,11 @@ function release {
 
     bump-version
 
+    if [ -f "./bin/backup.bsh" ]
+    then
+        ./bin/backup.bsh
+    fi
+
     if [ -f "./bin/deploy.bsh" ]
     then
         ./bin/deploy.bsh
