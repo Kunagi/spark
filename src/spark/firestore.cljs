@@ -269,8 +269,8 @@
                 (let [doc (update-f %)]
                   (cond
                     (= doc :db/delete) (delete-doc> %)
-                    doc (save-doc> doc)
-                    :else (js/Promise.resolve :db/no-op)))
+                    doc                (save-doc> doc)
+                    :else              (js/Promise.resolve :db/no-op)))
                 (let [data (update-f nil)]
                   (cond
                     (= :db/delete data)
@@ -281,3 +281,69 @@
 
                     :else
                     (js/Promise.resolve nil)))))))
+
+;; * transactions
+
+(defn get>
+  ([path]
+   (get> nil path nil))
+  ([transaction path]
+   (get> transaction path nil))
+  ([^js transaction path not-found]
+   (log ::get>
+        :path        path
+        :transaction transaction)
+   (u/=> (if transaction
+           (.get transaction (ref path))
+           (.get (ref path)))
+         (fn [^js doc]
+           (if (-> doc .-exists)
+             (wrap-doc doc)
+             not-found)))))
+
+(comment
+  (u/=> (get> ["devtest" "dummy-1"]) u/tap>)
+  (u/=> (get> "devtest/dummy-1") u/tap>))
+
+(defn set>
+  ([tx-data]
+   (set> nil tx-data))
+  ([^js transaction tx-data]
+   (if (sequential? tx-data)
+     (u/all> (map #(set> transaction %) tx-data))
+     (do
+       (log ::set>
+            :tx-data tx-data
+            :transaction transaction)
+       (let [path (-> tx-data :firestore/path)
+             data (unwrap-doc tx-data)
+             opts (clj->js {:merge true})]
+         (u/=> (if transaction
+                 (.set transaction (ref path) data opts)
+                 (.set (ref path) data opts))))))))
+
+(comment
+  (u/tap> (set> {:firestore/path "devtest/dummy-1" :hello "world"})))
+
+(defn transact> [transaction>]
+  (if (fn? transaction>)
+    (.runTransaction
+     (firestore)
+     (fn [^js transaction]
+       (transaction> {:get> (partial get> transaction)
+                      :set> (partial set> transaction)})))
+    (set> transaction>)))
+
+
+(comment
+  (def id "dummy-3")
+  (let [transaction (fn [{:keys [get> set>]}]
+                      (u/=> (get> ["devtest" id])
+                            (fn [dummy]
+                              (js/console.log "DEBUG dummy-loaded" dummy)
+                              (set> [{:firestore/path (str "devtest/" id)
+                                      :counter        (inc (-> dummy :counter))}])))
+                      )]
+    (u/=> (transact> transaction)
+          u/tap>))
+  )
