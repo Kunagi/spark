@@ -316,18 +316,22 @@
        (log ::set>
             :tx-data tx-data
             :transaction transaction)
-       (let [path (-> tx-data :firestore/path)
-             data (unwrap-doc tx-data)
-             opts (clj->js {:merge true})]
-         (u/=> (if transaction
-                 (.set transaction (ref path) data opts)
-                 (.set (ref path) data opts))))))))
+       (let [path (-> tx-data :firestore/path)]
+         (if (-> tx-data :db/delete (= true))
+           (if transaction
+             (.delete transaction (ref path))
+             (.delete (ref path)))
+           (let [data (unwrap-doc tx-data)
+                 opts (clj->js {:merge true})]
+             (if transaction
+               (.set transaction (ref path) data opts)
+               (.set (ref path) data opts)))))))))
 
 (comment
   (set> {:firestore/path "devtest/dummy-1" :hello "world"})
   (set> {:firestore/path "devtest/dummy-1" :hello [:db/delete]})
+  (u/tap> (set> {:firestore/path "devtest/dummy-1" :db/delete true}))
   (u/tap> (get> "devtest/dummy-1"))
-
   )
 
 (defn transact> [transaction>]
