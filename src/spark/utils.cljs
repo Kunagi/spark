@@ -373,14 +373,16 @@
     (resolve> thing)))
 
 (defn all> [& promises-or-lists-of-promises]
-  (js/Promise.all
-   (reduce (fn [promises promise-or-list]
-             (if (instance? js/Promise promise-or-list)
-               (conj promises promise-or-list)
-               (->> promise-or-list
-                    (map as>)
-                    (into promises))))
-           [] promises-or-lists-of-promises)))
+  (-> (js/Promise.all
+       (reduce (fn [promises promise-or-list]
+                 (if (instance? js/Promise promise-or-list)
+                   (conj promises promise-or-list)
+                   (->> promise-or-list
+                        (map as>)
+                        (into promises))))
+               [] promises-or-lists-of-promises))
+      (.then (fn [results]
+               (as> (vec results))))))
 
 (defn later> [wait-millis f]
   (js/Promise.
