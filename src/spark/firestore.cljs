@@ -54,8 +54,9 @@
     (cond
       (= k :db/array-union)  (array-union (second v))
       (= k :db/array-remove) (array-remove (second v))
-      (= k :db/timestamp) (timestamp)
-      :else nil)))
+      (= k :db/timestamp)    (timestamp)
+      (= k :db/delete)       (-> ^js (FieldValue) .delete)
+      :else                  nil)))
 
 (defn inject-FieldValues [data]
   (reduce (fn [data [k v]]
@@ -323,7 +324,11 @@
                  (.set (ref path) data opts))))))))
 
 (comment
-  (u/tap> (set> {:firestore/path "devtest/dummy-1" :hello "world"})))
+  (set> {:firestore/path "devtest/dummy-1" :hello "world"})
+  (set> {:firestore/path "devtest/dummy-1" :hello [:db/delete]})
+  (u/tap> (get> "devtest/dummy-1"))
+
+  )
 
 (defn transact> [transaction>]
   (if (fn? transaction>)
