@@ -977,13 +977,28 @@
      {:variant "overline"}
      text))
 
-(defnc SimpleCard [{:keys [title children className]}]
-  ($ mui/Card
-     {:className className}
-     ($ mui/CardContent
-        ($ Stack
-           (when title ($ CardOverline {:text title}))
-           ($ Stack children)))))
+(defnc SimpleCard [{:keys [title children className to on-click]}]
+  (let [Content ($ mui/CardContent
+                   ($ Stack
+                      (when title ($ CardOverline {:text title}))
+                      ($ Stack children)))]
+    ($ mui/Card
+       {:className className}
+       (cond
+
+         to
+         ($ mui/CardActionArea
+            {:to        to
+             :component RouterLink}
+            Content)
+
+         on-click
+         ($ mui/CardActionArea
+            {:onClick on-click}
+            Content)
+
+         :else
+         Content))))
 
 (def-ui-test [SimpleCard]
   ($ SimpleCard
