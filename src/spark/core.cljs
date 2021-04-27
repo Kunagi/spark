@@ -66,6 +66,14 @@
   (assert-field-schema Field)
   (schema-opts Field))
 
+(defn field-schema-field-id [Field]
+  (assert-field-schema Field)
+  ( -> (schema-opts Field) :id))
+
+(defn field-schema-label [Field]
+  (assert-field-schema Field)
+  ( -> (schema-opts Field) :label))
+
 ;;;
 ;;; Doc
 ;;;
