@@ -184,6 +184,9 @@
                   (resolve (wrap-docs query-snapshot)))
                 reject)))))
 
+(defn cols-names> []
+  (u/=> (-> (firestore) .listCollections)
+        #(mapv (fn [^js col] (.-id col)) %)))
 
 (defn create-doc>
   "Creates a new document.
@@ -193,7 +196,7 @@
        :path path
        :data data)
   (s/assert ::path path)
-  (let [^js ref (ref path)
+  (let [^js ref  (ref path)
         col-ref? (-> ref .-where boolean)]
     (if col-ref?
       (-> ref (.add (unwrap-doc data)))
