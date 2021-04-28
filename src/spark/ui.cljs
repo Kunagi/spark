@@ -1128,6 +1128,24 @@
     [docs context])
   )
 
+(defnc DefaultAuthenticationRequired [{:keys [spa]}]
+  (stack-3
+   {:margin-top "30vh"}
+   ;; (data (-> spa keys))
+   (center
+    (div
+     {:font-size "120%"
+      ;; :font-weight 900
+      :color     "#666"}
+     "Authentication required"))
+   (center
+    (flex
+     ($ Button
+        {:text     "Sign in"
+         :icon     "login"
+         :on-click auth/sign-in}))))
+  )
+
 (defnc PageWrapper [{:keys [spa page children]}]
   {:helix/features {:check-invalid-hooks-usage false}}
   ;; (log ::render-PageWrapper)
@@ -1155,7 +1173,7 @@
        (if sign-in-request?
          (if-let [component (-> spa :sign-in-request-component)]
            ($ component)
-           (div "Authentication required"))
+           ($ DefaultAuthenticationRequired {:spa spa}))
          ($ ValuesLoadGuard
             {:values  (concat (mapv #(get context %) (-> page :wait-for))
                               (vals docs))
