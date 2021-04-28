@@ -68,16 +68,17 @@
 (defn update-user-doc [doc-schema auth-user update-user]
   (log ::update-user-doc
        :doc-schema doc-schema )
-  (let [uid (-> auth-user :uid)
+  (let [uid   (-> auth-user :uid)
         email (-> auth-user :email)]
     (repository/transact-doc-update>
      doc-schema uid
      (fn [db-user]
        (let [user (merge db-user
-                         {:uid uid
-                          :auth-email email
-                          :auth-domain (email-domain email)
-                          :auth-display-name (-> auth-user :display-name)})
+                         {:uid               uid
+                          :auth-email        email
+                          :auth-domain       (email-domain email)
+                          :auth-display-name (-> auth-user :display-name)
+                          :auth-timestamp    [:db/timestamp]})
              user (u/update-if user update-user auth-user)]
          user)))))
 
