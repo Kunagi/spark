@@ -60,6 +60,17 @@
 (def atom-hook spark-react/atom-hook)
 (def memo spark-react/memo)
 
+(defn coerce-link-to [to]
+  (when to
+    (cond
+      (string? to)     to
+      (sequential? to) (str "/ui/" (->> to (str/join "/")))
+      :else            (throw (ex-info "Unsupported `to` property value."
+                                       {:to   to
+                                        :type (type to)}))
+      ))
+  )
+
 (def RouterLink router/Link)
 
 (defnc Link [{:keys [to on-click className children]}]
@@ -76,7 +87,7 @@
                       :color  "unset"}}
          children)
       ($ router/Link
-         {:to        to
+         {:to        (coerce-link-to to)
           :onClick   on-click
           :className (str "Link " className)}
          children))))
@@ -918,7 +929,7 @@
         classes      (str/join " " [class styles-class])]
     (if to
       ($ mui/Button
-         {:to        to
+         {:to        (coerce-link-to to)
           :component router/Link
           :variant   (or variant "contained")
           :color     (or color "primary")
@@ -988,7 +999,7 @@
 
          to
          ($ mui/CardActionArea
-            {:to        to
+            {:to        (coerce-link-to to)
              :component RouterLink}
             Content)
 
