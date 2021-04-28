@@ -73,8 +73,9 @@
 
 (def RouterLink router/Link)
 
-(defnc Link [{:keys [to on-click className children]}]
-  (let [remote? (and (string? to)
+(defnc Link [{:keys [to href on-click className children]}]
+  (let [to      (or to href)
+        remote? (and (string? to)
                      (or (-> to (.startsWith "https:"))
                          (-> to (.startsWith "http:"))))]
     (if (or remote? (nil? to))
