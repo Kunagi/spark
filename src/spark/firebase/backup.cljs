@@ -41,7 +41,8 @@
 
 (defn backup-cols> [bucket path cols-names]
   (u/all>
-   (map #(backup-col> bucket path cols-names))))
+   (map #(backup-col> bucket path %)
+        cols-names)))
 
 (def date-path-format (tick.format/formatter "yyyy/MM/dd"))
 
@@ -60,6 +61,11 @@
     (u/=> (firestore/cols-names>)
           (fn [cols-names]
             (backup-cols> bucket path cols-names)))))
+
+(comment
+  (let [bucket (bucket "legilo-backups")]
+    (-> (backup-all> bucket)
+        u/tap>)))
 
 (defn bucket [bucket-name]
   (-> ^js admin .storage (.bucket (str "gs://" bucket-name))))
