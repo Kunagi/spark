@@ -273,6 +273,11 @@ function release {
         firebase deploy
         cd ..
     fi
+
+    if [ -f "./bin/post-deploy.bsh" ]
+    then
+        ./bin/post-deploy.bsh
+    fi
 }
 
 if [ $1 = "release" ]
