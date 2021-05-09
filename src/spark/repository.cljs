@@ -113,3 +113,6 @@
 
 (defn delete-doc> [doc-path]
   (firestore/delete-doc> doc-path))
+
+
+(def transact> firestore/transact>)
