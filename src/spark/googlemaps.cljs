@@ -13,6 +13,7 @@
 
    [clojure.string :as str]))
 
+;; * init
 
 (def zoomlevel-continent 5)
 (def zoomlevel-city 10)
@@ -38,7 +39,7 @@
         map (js/google.maps.Map. e (clj->js map-config))]
     map))
 
-(def marker-atom (atom #{}))
+(defonce marker-atom (atom #{}))
 
 (defn create-marker
   [map props]
@@ -51,11 +52,7 @@
     (js/google.maps.Marker. (clj->js marker))))
 
 
-;; #########################################
-;; ######### Lokationen aus Google #########
-;; #########################################
-
-
+;; * Lokationen aus Google
 
 (comment
   
@@ -68,8 +65,8 @@
 
   (-> placesService
       (.nearbySearch (clj->js {:location location-rinteln
-                               :radius 5000
-                                        ; :type "restaurant" ;TODO: Better filter later
+                               :radius   5000
+; :type "restaurant" ;TODO: Better filter later
                                })
                      #(js/console.log
                        "google sent: "
@@ -84,17 +81,15 @@
   ""
   [{:keys [name geometry]}]
   (let [location-obj (:location geometry)]
-    {:title name
-     :label name
-     :icon {:url "/img/grey_map_marker.png"
-            :labelOrigin (new js/google.maps.Point 16 -6)}
+    {:title    name
+     :label    name
+     :icon     {:url         "/img/grey_map_marker.png"
+                :labelOrigin (new js/google.maps.Point 16 -6)}
      :position {:lat ^js (.lat location-obj) 
                 :lng ^js (.lng location-obj)}}))
 
 
-;; #############################
-;; ###### MapWithPosition ######
-;; ############################# 
+;; * MapWithPosition
 
 
 (defn init-default-map
@@ -136,7 +131,7 @@
 
     (ui/use-effect
      [lokationen]
-     (if-not gmap
+     (when-not gmap
        (let [new-gmap (init-default-map id position)]
          (set-gmap new-gmap)
          (set-placesService
@@ -183,6 +178,14 @@
                          :position {:lat 52.1875305
                                     :lng 9.0788149}}]})))
 
+;; * Geocoding
+
+(defn- coerce-geocode-results [^js results status]
+  (when (= status "OK")
+    (when-let [^js result (aget results 0)]
+      (let [^js location (-> result .-geometry .-location)]
+        {:lat (-> location .lat)
+         :lng (-> location .lng)}))))
 
 ;; https://developers.google.com/maps/documentation/javascript/reference/geocoder#GeocoderRequest
 
@@ -205,28 +208,27 @@
               (reject {:message "no results"}))
             (reject results))))))))
 
-;; (defn geocode-address> [address]
-;;   (log ::geocode-address
-;;        :address address)
-;;   (js/Promise.
-;;    (fn [resolve reject]
-;;      (let [geocoder (js/google.maps.Geocoder.)
-;;            options  {:address address}]
-;;        (.geocode
-;;         ^js geocoder
-;;         (clj->js options)
-;;         (fn [^js results status]
-;;           (if (= status "OK")
-;;             (resolve results)
-;;             (reject results))))))))
+(defn geocode-address> [address]
+  (log ::geocode-address
+       :address address)
+  (js/Promise.
+   (fn [resolve reject]
+     (let [geocoder (js/google.maps.Geocoder.)
+           options  {:address address}]
+       (.geocode
+        ^js geocoder
+        (clj->js options)
+        (fn [^js results status]
+          (when-let [result (coerce-geocode-results results status)]
+            (resolve result)
+            (reject results))))))))
+
+(comment
+  (u/=> (geocode-address> "Marschenhausweg 3, 27580 Bremerhaven")
+        u/tap>))
 
 
-
-
-;; #############################
-;; ###### Standorteingabe ###### 
-;; #############################
-
+;; * Standorteingabe
 
 (def AUTOCOMPLETE_SERVICE (atom nil))
 
@@ -279,10 +281,7 @@
     (set-options
      (into [ ] new-options))))
 
-;;
-;; Helpers for PositionInput
-;; 
-
+;; ** Helpers for PositionInput
 
 (defn render-google-option
   "Renders the Dropdown Options containing the google places"
@@ -378,9 +377,7 @@
   ($ PositionInput {:set-position js/alert}))
 
 
-;; #########
-;; ## Map ##
-;; #########
+;; * Map
 
 (def-ui-test [PositionInput]
   ($ PositionInput {:set-position js/alert}))
