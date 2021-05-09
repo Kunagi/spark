@@ -58,7 +58,9 @@
      (if-not (supported?)
        (reject "Notifications not supported")
        (try
-         (resolve (js/Notification. title (clj->js options)))
+         (resolve (js/Notification. title (-> options
+                                              (dissoc :actions)
+                                              clj->js)))
          (catch :default ex
            (log ::show-notification-failed :exception ex)
            (-> (show-via-service-worker> title options)
