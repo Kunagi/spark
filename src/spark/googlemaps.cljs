@@ -46,10 +46,15 @@
   (log ::create-marker
        :map map
        :props props)
-  (let [marker (-> props
-                   (assoc :map map)
-                   (assoc :animation js/google.maps.Animation.DROP))]
-    (js/google.maps.Marker. (clj->js marker))))
+  (let [on-click (-> props :on-click)
+        props    (-> props
+                     (dissoc :on-click)
+                     (assoc :map map)
+                     (assoc :animation js/google.maps.Animation.DROP))
+        marker   (js/google.maps.Marker. (clj->js props))]
+    (when on-click
+      (-> ^js marker (.addListener "click" on-click)))
+    marker))
 
 
 ;; * Lokationen aus Google
