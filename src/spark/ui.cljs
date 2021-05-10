@@ -1255,6 +1255,7 @@
 
 (defnc AppFrame-inner [{:keys [children spa]}]
   (let [class (use-app-styles-class)]
+    (reset! form-ui/DIALOG-CLASS class)
     (<>
      ($ mui/CssBaseline)
      ($ :div {:class class}

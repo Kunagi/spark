@@ -293,13 +293,16 @@
                   (-> action :label))))
          Input))))
 
+(def DIALOG-CLASS (atom nil))
+
 (defnc FormDialog [{:keys [form]}]
   (let [[form set-form] (hooks/use-state form)
-        form-id         (-> form :id)
-        form            (assoc form :update (fn [f]
-                                              (set-form (f form))))
-        update-form_    (fn [f & args]
-                          (set-form (apply f (into [form] args))))
+
+        form-id      (-> form :id)
+        form         (assoc form :update (fn [f]
+                                           (set-form (f form))))
+        update-form_ (fn [f & args]
+                       (set-form (apply f (into [form] args))))
 
         set-waiting (fn [waiting?]
                       (update-form_ form/set-waiting waiting?))
@@ -350,7 +353,8 @@
                                         (then result))))))))))]
     (d/div
      ($ mui/Dialog
-        {:open (-> form :open? boolean)
+        {:open      (-> form :open? boolean)
+         :className @DIALOG-CLASS
          ;; :onClose close
          }
 
