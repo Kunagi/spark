@@ -358,7 +358,9 @@
                               (-> props .-InputProps .-endAdornment (set! js/undefined))
 
                               (-> props .-InputProps .-startAdornment
-                                  (set! (ui/icon "place")))
+                                  (set! (ui/icon
+                                         {:color "#9a958f"}
+                                         "place")))
 
                               ($ mui/TextField
                                  {
