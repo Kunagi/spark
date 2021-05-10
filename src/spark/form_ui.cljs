@@ -32,11 +32,18 @@
 
 (defn show-form-dialog [form]
   (let [form-id (random-uuid)
-        form (form/initialize form)
-        form (assoc form
-                    :open? true
-                    :id form-id)]
+        form    (form/initialize form)
+        form    (assoc form
+                       :open? true
+                       :id form-id)]
     (swap! DIALOG_FORMS assoc form-id form)))
+
+(defn show-form-dialog> [form]
+  (u/promise>
+   (fn [resolve reject]
+     (show-form-dialog (assoc form
+                              :then resolve
+                              :catch reject)))))
 
 (def use-dialog-forms (react/atom-hook DIALOG_FORMS))
 
@@ -334,8 +341,13 @@
                                           :values values))
                                   (.then close)))
                           (when-let [submit (get form :submit)]
-                            (submit values)
-                            (close))))))]
+                            (let [result (submit values)
+                                  p      (u/as> result)]
+                              (u/=> p
+                                    (fn [result]
+                                      (close)
+                                      (when-let [then (get form :then)]
+                                        (then result))))))))))]
     (d/div
      ($ mui/Dialog
         {:open (-> form :open? boolean)

@@ -56,6 +56,7 @@
 (def FormDialogsContainer form-ui/FormDialogsContainer)
 
 (def show-form-dialog form-ui/show-form-dialog)
+(def show-form-dialog> form-ui/show-form-dialog>)
 
 (def atom-hook spark-react/atom-hook)
 (def memo spark-react/memo)
