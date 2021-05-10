@@ -74,19 +74,21 @@
 
 (def RouterLink router/Link)
 
-(defnc Link [{:keys [to href on-click className children]}]
-  (let [to      (or to href)
-        remote? (and (string? to)
-                     (or (-> to (.startsWith "https:"))
-                         (-> to (.startsWith "http:"))))]
+(defnc Link [{:keys [to href on-click class className children style]}]
+  (let [to        (or to href)
+        className (or class className)
+        remote?   (and (string? to)
+                       (or (-> to (.startsWith "https:"))
+                           (-> to (.startsWith "http:"))))]
     (if (or remote? (nil? to))
       ($ :a
          {:href      to
           :onClick   on-click
           :target    (when remote? "_blank")
           :className className
-          :style     {:cursor "pointer"
-                      :color  "unset"}}
+          :style     (merge {:cursor "pointer"
+                             :color  "unset"}
+                            style)}
          children)
       ($ router/Link
          {:to        (coerce-link-to to)
@@ -801,21 +803,21 @@
        (.catch show-error))))
 
 
-(defn- new-command-on-click [command context then]
+(defn new-command-on-click [command context then]
   (runtime/validate-command command)
   (let [ui-context (use-spark-context)
-        form (-> command :form)]
+        form       (-> command :form)]
     (if-not form
       #(execute-command> command (merge ui-context context) then)
       #(let [context (merge ui-context context)
-             _ (runtime/validate-command-context command context)
-             form (complete-form form context)
-             submit (fn [values]
+             _       (runtime/validate-command-context command context)
+             form    (complete-form form context)
+             submit  (fn [values]
                       (execute-command>
                        command
                        (assoc context :values values)
                        then))
-             form (assoc form :submit submit)]
+             form    (assoc form :submit submit)]
          (show-form-dialog form)))))
 
 
