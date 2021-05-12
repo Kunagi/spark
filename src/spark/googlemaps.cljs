@@ -345,7 +345,6 @@
                                      (-> new-value .-description))
                                 (set-input-value (.-description new-value))
                                 (when on-place-selected
-                                  (js/console.log "!!!!" new-value)
                                   (on-place-selected
                                    {:place_id    (-> new-value .-place_id)
                                     :description (-> new-value .-description)
