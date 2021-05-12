@@ -39,12 +39,18 @@
 
 
 (defn- show-via-service-worker> [title options]
+  (log ::show-via-service-worker>
+       :title title
+       :options options)
   (js/Promise.
    (fn [resolve reject]
      (-> js/navigator
          .-serviceWorker
          .getRegistration
          (.then (fn [registration]
+                  (log ::show-via-service-worker>--2
+                       :title title
+                       :options options)
                   (if registration
                     (-> registration
                         (.showNotification title (clj->js options))
@@ -53,6 +59,9 @@
 
 
 (defn show> [title options]
+  (log ::show>
+       :title title
+       :options options)
   (js/Promise.
    (fn [resolve reject]
      (if-not (supported?)
