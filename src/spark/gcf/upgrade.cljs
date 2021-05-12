@@ -1,13 +1,7 @@
 (ns spark.gcf.upgrade
   (:require
-   [clojure.string :as str]
-   [shadow.resource :as resource]
    [tick.locale-en-us]
-   [tick.alpha.api :as tick]
-   [tick.format :as tick.format]
-   ["firebase-admin" :as admin]
    [spark.firestore :as firestore]
-   [spark.utils :as u]
    [spark.gcf :as gcf]))
 
 
