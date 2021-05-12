@@ -1298,6 +1298,23 @@
     (rdom/render ($ (-> spa :root-component))
                  (js/document.getElementById "app"))))
 
+
+(def-ui UpgradeRequest [available-version info-text reload-text color]
+  (let [current-version    (str/trim (str (resource/inline "../spa/version.txt")))
+        upgrade-available? (when available-version
+                             (not= available-version current-version))]
+    (when upgrade-available?
+      (center
+       {:padding "8px"}
+       (flex
+        {:align-items :center}
+        (div (or info-text "A new version is available"))
+        ($ Button
+           {:on-click #(js/window.location.reload)
+            :text     (or reload-text "Reload now")
+            :color    (or color "secondary")
+            :variant  "text"}))))))
+
 ;;;
 ;;; storage
 ;;;
