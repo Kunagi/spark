@@ -20,6 +20,19 @@
 (defn reg-def [type id thing]
   (swap! DEFS assoc-in [type id] thing))
 
+
+;; * entity updates
+
+(defn !update [entity changes]
+  (when-not (empty? changes)
+    (let [path (-> entity :firestore/path)]
+      (when-not path
+        (throw (ex-info (str "Can not create !update for entity without :firestore/path")
+                        {:entity  entity
+                         :changes changes})))
+      (assoc changes
+             :firestore/path path))))
+
 ;;;
 ;;;
 ;;;
