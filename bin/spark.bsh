@@ -56,7 +56,7 @@ function echo-exec {
 
 
 ###
-### npm-install
+### clean
 ###
 
 function clean {
@@ -89,17 +89,37 @@ function npm-install {
     echo-task "npm-install"
 
     cd firebase/functions
-    npm audit fix
     npm install
 
     cd ../..
-    npm audit fix
     npm install
 }
 
 if [ $1 = "npm-install" ]
 then
     npm-install
+    exit 0
+fi
+
+###
+### upgrade
+###
+
+function upgrade {
+    echo-task "upgrade"
+
+    cd firebase/functions
+    npm audit fix
+    npm update
+
+    cd ../..
+    npm audit fix
+    npm update
+}
+
+if [ $1 = "upgrade" ]
+then
+    upgrade
     exit 0
 fi
 
