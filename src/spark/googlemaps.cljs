@@ -326,7 +326,7 @@
                       :secondary_text])))))) 
 
 
-(def-ui PositionInput [on-place-selected label placeholder]
+(def-ui PositionInput [on-place-selected label placeholder auto-focus]
   (let [[input-value set-input-value] (ui/use-state "")
         [options set-options]         (ui/use-state [])]
 
@@ -374,7 +374,7 @@
                                   ;; :onChange #(-> % .-target .-value set-ort)
                                   :variant     "outlined"
                                   :type        "text"
-                                  :autoFocus   true
+                                  :autoFocus   auto-focus
                                   :&           props}))
         ;; :renderOption #(str (js->clj %))
         :renderOption render-google-option})))
