@@ -89,9 +89,11 @@ function npm-install {
     echo-task "npm-install"
 
     cd firebase/functions
+    npm audit fix
     npm install
 
     cd ../..
+    npm audit fix
     npm install
 }
 

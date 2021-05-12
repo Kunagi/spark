@@ -11,11 +11,10 @@
    {:spa-version current-version}))
 
 
-(defn exports [current-version]
+(defn exports [version]
   {
 
    :setSpaVersion
-   (partial gcf/on-request--format-output> handle-set-spa-version>
-            current-version)
+   (gcf/on-request--format-output> (partial handle-set-spa-version> version))
 
    })
