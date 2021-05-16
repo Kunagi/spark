@@ -13,6 +13,12 @@
 
 
 (defn send-text-to-url-via-img [url text]
-  (let [img (js/Image.)
+  (let [img      (js/Image.)
         uri-data (js/encodeURIComponent text)]
     (-> img .-src (set! (str url uri-data)))))
+
+(defn install-global-error-handler [f]
+  (set! (.-onerror js/window)
+        (fn [message url line column error]
+          (f message url line column error)
+          false)))
