@@ -277,6 +277,8 @@
     (when result
       (runtime/post-process-query-result query context result))))
 
+(def transact> firestore/transact>)
+
 ;; * Styles / Theme
 
 (defn use-theme []
