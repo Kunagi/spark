@@ -55,9 +55,6 @@
 (def DocFieldsCard form-ui/DocFieldsCard)
 (def FormDialogsContainer form-ui/FormDialogsContainer)
 
-(def show-form-dialog form-ui/show-form-dialog)
-(def show-form-dialog> form-ui/show-form-dialog>)
-
 (def atom-hook spark-react/atom-hook)
 (def memo spark-react/memo)
 
@@ -633,6 +630,10 @@
      (for [dialog dialogs]
        ($ Dialog {:key (-> dialog :id) :dialog dialog})))))
 
+
+(def show-form-dialog form-ui/show-form-dialog)
+(def show-form-dialog> form-ui/show-form-dialog>)
+(def use-hide-form-dialog form-ui/use-hide-form-dialog)
 
 ;; ** PromiseProgress
 

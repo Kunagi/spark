@@ -157,6 +157,11 @@
   (v-remove number? nil)
   (v-remove number? '()))
 
+(defn v-remove-at
+  "remove elem in coll"
+  [pos coll]
+  (vec (concat (subvec coll 0 pos) (subvec coll (inc pos)))))
+
 (defn v-assoc-last [coll val]
   (if (seq coll)
     (let [idx (-> coll count dec)]

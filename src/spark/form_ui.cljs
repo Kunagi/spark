@@ -12,6 +12,7 @@
    ["@material-ui/core" :as mui]
    ["@material-ui/lab" :as mui-lab]
 
+   [spark.react :as r]
    [spark.utils :as u]
    [spark.core :as spark]
    [spark.logging :refer [log]]
@@ -46,6 +47,11 @@
                               :catch reject)))))
 
 (def use-dialog-forms (react/atom-hook DIALOG_FORMS))
+
+(defonce HIDE_DIALOG (r/create-context nil))
+
+(defn use-hide-form-dialog []
+  (r/use-context HIDE_DIALOG))
 
 ;; (defnc DialogFormsDebugCard []
 ;;   ($ mui/Card
@@ -352,48 +358,53 @@
                                       (close)
                                       (when-let [then (get form :then)]
                                         (then result))))))))))]
-    (d/div
-     ($ mui/Dialog
-        {:open      (-> form :open? boolean)
-         :className @DIALOG-CLASS
-         ;; :onClose close
-         }
+    (r/provider
+     {:context HIDE_DIALOG
+      :value   close}
+     (d/div
+      ($ mui/Dialog
+         {:open      (-> form :open? boolean)
+          :className @DIALOG-CLASS
+          ;; :onClose close
+          }
 
-        (when-let [title (-> form :title)]
-          ($ mui/DialogTitle
-             title))
+         (when-let [title (-> form :title)]
+           ($ mui/DialogTitle
+              title))
 
-        ($ mui/DialogContent
-           #_($ :pre (-> context keys str))
-           ($ :div
-              {:style {:width     "500px"
-                       :max-width "100%"}}
+         ($ mui/DialogContent
+            #_($ :pre (-> context keys str))
+            ($ :div
+               {:style {:width     "500px"
+                        :max-width "100%"}}
 
-              (for [field (get form :fields)]
-                ($ FormField
-                   {:key         (-> field :id)
-                    :field       field
-                    :form        form
-                    :on-submit   on-submit
-                    :update-form update-form}))
+               (for [field (get form :fields)]
+                 ($ FormField
+                    {:key         (-> field :id)
+                     :field       field
+                     :form        form
+                     :on-submit   on-submit
+                     :update-form update-form}))
 
 
-              (get form :content))
-           ;; (ui/data form)
-           )
-        ($ mui/DialogActions
-           ($ mui/Button
-              {:onClick close}
-              "Abbrechen")
-           ($ mui/Button
-              {:onClick on-submit
-               :variant "contained"
-               :color   "primary"}
-              "Ok"))
-        ($ :div
-           {:style {:min-height "4px"}}
-           (when (-> form :waiting?)
-             ($ mui/LinearProgress)))))))
+               (get form :content))
+            ;; (ui/data form)
+            )
+         ($ mui/DialogActions
+            (when-let [extra-buttons (-> form :extra-buttons)]
+              extra-buttons)
+            ($ mui/Button
+               {:onClick close}
+               "Abbrechen")
+            ($ mui/Button
+               {:onClick on-submit
+                :variant "contained"
+                :color   "primary"}
+               "Ok"))
+         ($ :div
+            {:style {:min-height "4px"}}
+            (when (-> form :waiting?)
+              ($ mui/LinearProgress))))))))
 
 
 (defnc FormDialogsContainer []
