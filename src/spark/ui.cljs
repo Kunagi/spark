@@ -1265,7 +1265,9 @@
     (reset! form-ui/DIALOG-CLASS class)
     (<>
      ($ mui/CssBaseline)
-     ($ :div {:class class}
+     ($ :div {:id      "AppFrame.inner"
+              :class   class
+              :display :grid}
         ($ AuthCompletedGuard
            {:padding 4}
            ($ router/BrowserRouter {}
