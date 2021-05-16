@@ -172,6 +172,8 @@
   (@SIGN_IN-F))
 
 
-(defn sign-out []
-  (-> firebase .auth .signOut)
-  (redirect-to-home))
+(defn sign-out> []
+  (u/=> (-> firebase .auth .signOut)
+        (fn [result]
+          (redirect-to-home)
+          result)))

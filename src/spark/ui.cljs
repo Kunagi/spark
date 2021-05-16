@@ -125,7 +125,7 @@
 
 ;; * auth
 
-(def sign-out auth/sign-out)
+(def sign-out> auth/sign-out>)
 
 (def use-auth-completed (atom-hook auth/AUTH_COMPLETED))
 
