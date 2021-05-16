@@ -1,13 +1,14 @@
 (ns spark.auth
   (:require
+
    [spark.logging :refer [log]]
    [spark.utils :as u]
-   [spark.repository :as repository]))
+   [spark.repository :as repository]
+
+   ))
 
 
 (defonce SIGN_IN-F (atom nil))
-
-
 (defonce AUTH_COMPLETED (atom false))
 (defonce AUTH_USER (atom nil))
 
@@ -177,3 +178,31 @@
         (fn [result]
           (redirect-to-home)
           result)))
+
+;; * Email Sign Index
+
+(defonce EMAIL_SIGN_IN (atom nil))
+
+(defn send-sign-in-link-to-email [email url]
+  (log ::sign-in-with-email
+       :email email
+       :url url)
+  (let [settings {:url             url
+                  :handleCodeInApp true}]
+    (-> firebase
+        .auth
+        (.sendSignInLinkToEmail email (clj->js settings))
+        (.then #(do
+                  (js/window.localStorage.setItem "signInEmail" email)
+                  (swap! EMAIL_SIGN_IN assoc
+                         :email email
+                         :status :waiting-for-email))
+               #(reset! EMAIL_SIGN_IN {:error %}))))
+  )
+
+(defn sign-in-with-email []
+  (log ::sign-in-with-email
+       :url (-> js/window.location.href))
+  (reset! EMAIL_SIGN_IN {:status :input-email
+                         :url    (-> js/window.location.href)}))
+
