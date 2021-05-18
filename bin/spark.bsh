@@ -169,6 +169,16 @@ function collect-spa-resources {
 ### firebase emulators
 ###
 
+function backup-dev-data {
+    DATA_DIR="./dev-data"
+    if [[ -d $DATA_DIR/firestore_export ]]
+    then
+        BACKUP_DIR=$DATA_DIR.backups/$(date -Iseconds)
+        mkdir -p $DATA_DIR.backups
+        cp -r $DATA_DIR $BACKUP_DIR
+    fi
+}
+
 function emulators {
     echo-task "emulators"
     collect-spa-resources
@@ -179,9 +189,7 @@ function emulators {
 
     if [[ -d $DATA_DIR ]]
     then
-        BACKUP_DIR=$DATA_DIR.backups/$(date -Iseconds)
-        mkdir -p $DATA_DIR.backups
-        cp -r $DATA_DIR $BACKUP_DIR
+        backup-dev-data
         EMULATORS_CMD="firebase emulators:start --import=$DATA_DIR --export-on-exit=$DATA_DIR"
     else
         EMULATORS_CMD="firebase emulators:start --export-on-exit=$DATA_DIR"
