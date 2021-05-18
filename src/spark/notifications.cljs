@@ -54,7 +54,7 @@
                   (if registration
                     (-> registration
                         (.showNotification title (clj->js options))
-                        (.then resolve))
+                        (.then #(resolve true)))
                     (reject "No registration for ServiceWorker"))))))))
 
 
@@ -67,9 +67,10 @@
      (if-not (supported?)
        (reject "Notifications not supported")
        (try
-         (resolve (js/Notification. title (-> options
-                                              (dissoc :actions)
-                                              clj->js)))
+         (js/Notification. title (-> options
+                                     (dissoc :actions)
+                                     clj->js))
+         (resolve true)
          (catch :default ex
            (log ::show-notification-failed :exception ex)
            (-> (show-via-service-worker> title options)
@@ -81,10 +82,10 @@
    (fn [resolve reject]
      (let [localstorage-key (str "notification-once." identifier)]
        (if (-> js/window .-localStorage (.getItem localstorage-key))
-         (resolve "Notification already shown")
+         (resolve false)
          (-> (show> title options)
              (.then #(-> js/window
                          .-localStorage
                          (.setItem localstorage-key
                                    (-> (js/Date.) .getTime str))))
-             (.then resolve)))))))
+             (.then #(resolve true))))))))
