@@ -306,7 +306,10 @@
         reload-f          (fn []
                             (-> (storage/list-files> path)
                                 (.then (fn [^js result]
-                                         (set-files (-> result .-items js->clj))))))]
+                                         (set-files (->> result
+                                                         .-items
+                                                         (map (fn [^js item]
+                                                                (.-fullPath item)))))))))]
 
     (use-effect
      :once
@@ -315,24 +318,98 @@
 
     [files reload-f]))
 
+(defonce STORAGE_URLS_CACHE (atom {}))
+(def use-storage-urls-cache (atom-hook STORAGE_URLS_CACHE))
+
 
 (defn use-storage-url
   ([path]
    (use-storage-url path nil))
   ([path fallback-url]
-   (let [[url set-url] (use-state nil)
-         update-url    (fn [url]
-                         (set-url (or url
-                                      fallback-url)))]
+   ;; (log ::use-storage-url
+   ;;      :path path
+   ;;      :fallback fallback-url)
+   (let [cache (use-storage-urls-cache)]
 
      (use-effect
       :always
-      (-> (storage/url> path)
-          (.then update-url)
-          (.catch #(update-url nil)))
+      (when path
+        (when-not (get cache path)
+          (-> (u/=> (storage/url> path)
+                    (fn [new-url]
+                      (log ::use-storage-url--received
+                           :url new-url
+                           :path path)
+                      (swap! STORAGE_URLS_CACHE
+                             assoc path (or new-url fallback-url))))
+              (.catch #(when fallback-url (swap! STORAGE_URLS_CACHE
+                                                 assoc path fallback-url))))))
       nil)
 
-     url)))
+     (if path
+       (get cache path)
+       fallback-url))))
+
+;; (defn use-storage-url
+;;   ([path]
+;;    (use-storage-url path nil))
+;;   ([path fallback-url]
+;;    ;; (log ::use-storage-url
+;;    ;;      :path path
+;;    ;;      :fallback fallback-url)
+;;    (let [[url set-url] (use-state (if path
+;;                                     fallback-url
+;;                                     nil))
+;;          update-url    (fn [url]
+;;                          (set-url (or url
+;;                                       fallback-url)))]
+
+;;      (use-effect
+;;       :always
+;;       (let [ACTIVE (atom true)]
+;;         (when path
+;;           (-> (u/=> (storage/url> path)
+;;                     (fn [new-url]
+;;                       ;; (log ::use-storage-url--received
+;;                       ;;      :url url
+;;                       ;;      :path path
+;;                       ;;      :active @ACTIVE)
+;;                       (when @ACTIVE
+;;                         (update-url new-url))))
+;;               (.catch #(when @ACTIVE (update-url nil)))))
+;;         #(reset! ACTIVE false)))
+
+;;      url)))
+
+;; (defn use-storage-urls
+;;   [paths]
+;;   (log ::use-storage-urls
+;;        :paths paths)
+;;   (let [[urls set-urls] (use-state nil)]
+
+;;     (use-effect
+;;      :always
+;;      (let [ACTIVE (atom true)]
+;;        (when (seq paths)
+;;          (u/=> (u/all> (map (fn [path]
+;;                               (storage/url> path))
+;;                             paths))
+;;                (fn [new-urls]
+;;                  (log ::use-storage-urls--received
+;;                       :urls new-urls
+;;                       :paths paths
+;;                       :active @ACTIVE)
+;;                  (when @ACTIVE
+;;                    (set-urls new-urls)))))
+;;        #(reset! ACTIVE false)))
+
+;;     urls))
+
+;; (defn use-storage-urls [paths]
+;;   (when paths
+;;     (mapv (fn [path]
+;;             (use-storage-url path))
+;;           paths)))
 
 
 ;; * styles
@@ -1351,6 +1428,7 @@
         :style     style})))
 
 (defnc StorageImgDiv [{:keys [path padding-bottom class]}]
+  ;; (js/console.log "DEBUG render StorageImgDiv" path padding-bottom class)
   (let [url (use-storage-url path)]
     (imgdiv url {:padding-bottom padding-bottom
                  :class          class}))
