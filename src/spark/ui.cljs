@@ -1343,14 +1343,14 @@
     (reset! form-ui/DIALOG-CLASS class)
     (<>
      ($ mui/CssBaseline)
-     ($ :div {:id      "AppFrame.inner"
-              :class   class
-              :display :grid}
-        ($ AuthCompletedGuard
-           {:padding 4}
-           ($ router/BrowserRouter {}
-              ($ PageSwitch {:spa spa}
-                 children)))))))
+     (div {:id     "AppFrame.inner"
+           :class  class
+           :height "100%"}
+          ($ AuthCompletedGuard
+             {:padding 4}
+             ($ router/BrowserRouter {}
+                ($ PageSwitch {:spa spa}
+                   children)))))))
 
 
 (defnc AppFrame [{:keys [children]}]
