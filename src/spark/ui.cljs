@@ -176,10 +176,11 @@
         ;; (set-watching true)
         (let [ref         (firestore/ref path)
               on-snapshot (fn [doc-snapshot]
-                            (log ::doc-snapshot-received
-                                 :collection path
-                                 :snapshot doc-snapshot)
-                            (set-doc (firestore/wrap-doc doc-snapshot)))
+                            (let [doc (firestore/wrap-doc doc-snapshot)]
+                              (log ::doc-snapshot-received
+                                   :path path
+                                   :doc doc)
+                              (set-doc doc)))
               on-error    (fn [^js error]
                             (log ::doc-atom-error
                                  :path path
