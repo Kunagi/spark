@@ -298,17 +298,22 @@
    (log ::get>
         :path        path
         :transaction transaction)
-   (u/=> (if transaction
-           (.get transaction (ref path))
-           (.get (ref path)))
-         (fn [^js doc]
-           (if (-> doc .-exists)
-             (wrap-doc doc)
-             not-found)))))
+   (let [ref      (ref path)
+         col-ref? (-> ref .-where boolean)]
+     (u/=> (if transaction
+             (.get transaction ref)
+             (.get ref))
+           (fn [^js result]
+             (if col-ref?
+               (wrap-docs result)
+               (if (-> result .-exists)
+                 (wrap-doc result)
+                 not-found)))))))
 
 (comment
   (u/=> (get> ["devtest" "dummy-1"]) u/tap>)
-  (u/=> (get> "devtest/dummy-1") u/tap>))
+  (u/=> (get> "devtest/dummy-1") u/tap>)
+  (u/=> (get> ["devtest"]) u/tap>))
 
 (defn set>
   ([tx-data]
