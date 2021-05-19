@@ -123,13 +123,13 @@
 (defn- fs-collection [source path-elem]
   (if (map? path-elem)
     (let [{:keys [id wheres where]} path-elem
-          wheres (if where
-                   (conj wheres where)
-                   wheres)
-          wheres (remove nil? wheres)
-          collection (-> ^js source (.collection id))]
+          wheres                    (if where
+                                      (conj wheres where)
+                                      wheres)
+          wheres                    (remove nil? wheres)
+          collection                (-> ^js source (.collection id))]
       (reduce (fn [collection [attr op val]]
-                (-> ^js collection (.where attr op val)))
+                (-> ^js collection (.where attr op (clj->js val))))
               collection wheres))
     (-> ^js source (.collection path-elem))))
 
@@ -364,3 +364,13 @@
     (u/=> (transact> transaction)
           u/tap>))
   )
+
+
+(defn delete-docs> [path]
+  (u/=> (get> path)
+        (fn [docs]
+          (transact>
+           (mapv (fn [doc]
+                   {:firestore/path (-> doc :firestore/path)
+                    :db/delete      true})
+                 docs)))))
