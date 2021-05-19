@@ -250,7 +250,6 @@
 
 (defn update-child-fields> [doc child-path child-id child-changes]
   (let [changes (flatten-map {} (str child-path "." child-id) child-changes)]
-    (js/console.log "DEBUG changes" changes)
     (update-fields> doc changes)))
 
 
@@ -332,7 +331,6 @@
              (.delete (ref path)))
            (let [data (unwrap-doc tx-data)
                  opts (clj->js {:merge true})]
-             (js/console.log "DEBUG--set" data)
              (if transaction
                (.set transaction (ref path) data opts)
                (.set (ref path) data opts)))))))))
