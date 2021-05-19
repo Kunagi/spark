@@ -93,7 +93,6 @@
       .-pubsub
       (.schedule schedule-pattern)
       (.onRun (fn [^js context]
-                (js/console.log "!!!!!!!!!!!!!!!!! SCHEDULED !!!!!!!!!" context)
                 (handler> context)))
       ))
 
