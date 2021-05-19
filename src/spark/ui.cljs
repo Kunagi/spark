@@ -999,9 +999,10 @@
         command      (when command (-> command upgrade-legacy-command complete-command))
         text         (or text (-> command :label) ":text missing")
         icon         (when-let [icon (or icon (-> command :icon))]
-                       (if (string? icon)
-                         (d/div {:class "i material-icons"} icon)
-                         icon))
+                       (cond
+                         (string? icon)  (d/div {:class "material-icons"} icon)
+                         (keyword? icon) (d/div {:class "material-icons"} (name icon))
+                         :else           icon))
         on-click     (or on-click onClick)
         on-click     (or on-click
                          (-> command :onClick)

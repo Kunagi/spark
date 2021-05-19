@@ -140,9 +140,12 @@
   (html-element :div style-and-children "center" nil))
 
 (defmacro icon [icon-name & style-and-children]
-  (html-element :div
-                (conj style-and-children icon-name)
-                "material-icons" nil))
+  (let [icon-name (if (keyword? icon-name)
+                    (name icon-name)
+                    icon-name)]
+    (html-element :div
+                  (conj style-and-children icon-name)
+                  "material-icons" nil)))
 
 (defmacro imgdiv [img-url & style-and-children]
   (html-element :div style-and-children nil
