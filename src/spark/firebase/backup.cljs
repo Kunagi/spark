@@ -54,25 +54,25 @@
      "/"
      (tick/now))))
 
-(defn backup-all> [bucket]
-  (let [path (str (if goog.DEBUG "dev" "prod")
-                  "/"
-                  (date-path))]
+(defn bucket [bucket-name]
+  (-> ^js admin .storage (.bucket (str "gs://" bucket-name))))
+
+(defn backup-all> [bucket-name]
+  (let [bucket (bucket bucket-name)
+        path   (str (if goog.DEBUG "dev" "prod")
+                    "/"
+                    (date-path))]
     (u/=> (firestore/cols-names>)
           (fn [cols-names]
             (backup-cols> bucket path cols-names)))))
 
 (comment
-  (let [bucket (bucket "legilo-backups")]
-    (-> (backup-all> bucket)
-        u/tap>)))
+  (-> (backup-all> "legilo-backups")
+      u/tap>))
 
-(defn bucket [bucket-name]
-  (-> ^js admin .storage (.bucket (str "gs://" bucket-name))))
 
 (defn handle-on-backup> [bucket-name ^js _req]
-  (let [bucket (bucket bucket-name)]
-    (backup-all> bucket)))
+  (backup-all> bucket-name))
 
 (defn exports [bucket-name]
   {
