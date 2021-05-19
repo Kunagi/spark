@@ -374,6 +374,14 @@
               title))
 
          ($ mui/DialogContent
+            (when goog.DEBUG
+              (when-let [data (-> form :debug-data)]
+                ($ :div
+                   {:style {:padding          "8px"
+                            :background-color "black"
+                            :color            "#6F6"
+                            :font-family      "monospace"}}
+                   (u/->edn data))))
             #_($ :pre (-> context keys str))
             ($ :div
                {:style {:width     "500px"
@@ -391,17 +399,27 @@
                (get form :content))
             ;; (ui/data form)
             )
-         ($ mui/DialogActions
-            (when-let [extra-buttons (-> form :extra-buttons)]
-              extra-buttons)
-            ($ mui/Button
-               {:onClick close}
-               "Abbrechen")
-            ($ mui/Button
-               {:onClick on-submit
-                :variant "contained"
-                :color   "primary"}
-               "Ok"))
+
+         ($ :div
+            {:style {:padding               "16px"
+                     :display               "grid"
+                     :grid-template-columns "max-content auto max-content"
+                     :grid-gap              "8px"}}
+            ($ :div (-> form :extra-buttons))
+            ($ :div)
+            ($ :div
+               {:style {:display               "grid"
+                        :grid-template-columns "max-content max-content"
+                        :grid-gap              "8px"}}
+               ($ mui/Button
+                  {:onClick close}
+                  "Abbrechen")
+               ($ mui/Button
+                  {:onClick on-submit
+                   :variant "contained"
+                   :color   "primary"}
+                  "Ok")))
+
          ($ :div
             {:style {:min-height "4px"}}
             (when (-> form :waiting?)
