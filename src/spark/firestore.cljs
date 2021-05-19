@@ -329,8 +329,9 @@
            (if transaction
              (.delete transaction (ref path))
              (.delete (ref path)))
-           (let [data (unwrap-doc tx-data)
-                 opts (clj->js {:merge true})]
+           (let [tx-data (assoc tx-data :ts-updated [:db/timestamp])
+                 data    (unwrap-doc tx-data)
+                 opts    (clj->js {:merge true})]
              (if transaction
                (.set transaction (ref path) data opts)
                (.set (ref path) data opts)))))))))
