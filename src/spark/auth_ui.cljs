@@ -22,44 +22,65 @@
                                        :status :sending-email)
                                 (auth/send-sign-in-link-to-email
                                  email (-> email-sign-in :url)))
-                              )]
-    ($ ui/Stack
-       #_(ui/data email-sign-in)
-       (when (= :waiting-for-email (-> email-sign-in :status))
-         "Öffne deine E-Mail und Klicke den Link!")
-       (when (= :sending-email (-> email-sign-in :status))
-         "E-Mail wird versendet...")
-       (when (= :input-email (-> email-sign-in :status))
-         (ui/stack-3
-          (ui/div
-           "Wir schicken einen Link, der zur Anmeldung fürht.
+                              )
+
+        CancelButton ($ ui/Button
+                        {:text     "Abbrechen"
+                         :variant  "text"
+                         :on-click #(reset! auth/EMAIL_SIGN_IN nil)})
+        ]
+    (ui/stack
+     ;; (when goog.DEBUG (ui/data email-sign-in))
+
+     (if-let [error (-> email-sign-in :error)]
+
+       (ui/stack
+        ($ ui/ErrorInfo
+           {:error error})
+        (ui/center CancelButton))
+
+       (ui/stack
+
+        (when (= :waiting-for-email (-> email-sign-in :status))
+          (ui/stack
+           (ui/div "Öffne deine E-Mail und Klicke den Link!")
+           (ui/center CancelButton)))
+
+        (when (= :sending-email (-> email-sign-in :status))
+          (ui/stack
+           (ui/div "E-Mail wird versendet...")
+           (ui/center CancelButton)))
+
+        (when (= :input-email (-> email-sign-in :status))
+          (ui/stack-3
+           (ui/div
+            "Wir schicken einen Link, der zur Anmeldung fürht.
 Bitte E-Mail Adresse eingeben.")
-          ($ :form
-             {:onSubmit (fn [^js event]
-                          (continue-with-email)
-                          (-> event .preventDefault)
-                          false)}
-             ($ mui/TextField
-                {:defaultValue email
-                 :onChange     #(set-email (-> % .-target .-value))
-                 :id           "email"
-                 :name         "email"
-                 :type         "email"
-                 :label        "E-Mail"
-                 :required     true
-                 :autoFocus    true
-                 :fullWidth    true
-                 :variant      "outlined"}))
-          (ui/flex
-           {:justify-content :flex-end}
-           ($ ui/Button
-              {:text     "Abbrechen"
-               :variant  "text"
-               :on-click #(reset! auth/EMAIL_SIGN_IN nil)})
-           ($ ui/Button
-              {:text     "Link anfordern"
-               :on-click continue-with-email}))
-          )))))
+           ($ :form
+              {:onSubmit (fn [^js event]
+                           (continue-with-email)
+                           (-> event .preventDefault)
+                           false)}
+              ($ mui/TextField
+                 {:defaultValue email
+                  :onChange     #(set-email (-> % .-target .-value))
+                  :id           "email"
+                  :name         "email"
+                  :type         "email"
+                  :label        "E-Mail"
+                  :required     true
+                  :autoFocus    true
+                  :fullWidth    true
+                  :variant      "outlined"}))
+           (ui/flex
+            {:justify-content :flex-end}
+            CancelButton
+            ($ ui/Button
+               {:text     "Link anfordern"
+                :on-click continue-with-email}))
+           ))))
+
+     )))
 
 (def-ui LoginSelector [email google microsoft facebook]
   (if (use-email-sign-in)
@@ -69,24 +90,20 @@ Bitte E-Mail Adresse eingeben.")
      ;;  "Anmeldemethode auswählen")
      (when google
        ($ ui/Button
-          {:text      "Google"
-           :onClick   auth/sign-in-with-google
-           :startIcon :login }))
+          {:text     "Google"
+           :on-click auth/sign-in-with-google}))
      (when microsoft
        ($ ui/Button
-          {:text      "Microsoft"
-           :onClick   auth/sign-in-with-microsoft
-           :startIcon :login }))
+          {:text     "Microsoft"
+           :on-click auth/sign-in-with-microsoft}))
      (when facebook
        ($ ui/Button
-          {:text      "Facebook"
-           :onClick   auth/sign-in-with-facebook
-           :startIcon :login}))
+          {:text     "Facebook"
+           :on-click auth/sign-in-with-facebook}))
      (when email
        ($ ui/Button
-          {:text      "E-Mail"
-           :onClick   auth/sign-in-with-email
-           :startIcon :login }))
+          {:text     "E-Mail"
+           :on-click auth/sign-in-with-email}))
      ($ :div))))
 
 
