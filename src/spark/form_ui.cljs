@@ -333,9 +333,11 @@
                           (set-form result))))
 
         ;; form (assoc form :update update-form)
-        close     (fn []
+        close     (fn [result]
                     (update-form assoc :open? false)
-                    (close-form-dialog form-id))
+                    (close-form-dialog form-id)
+                    (when-let [then (get form :then)]
+                      (then result)))
         on-submit (fn []
                     (let [form (form/on-submit form)]
                       (update-form (fn [_] form))
@@ -355,9 +357,8 @@
                                   p      (u/as> result)]
                               (u/=> p
                                     (fn [result]
-                                      (close)
-                                      (when-let [then (get form :then)]
-                                        (then result))))))))))]
+                                      (close result)
+                                      ))))))))]
     (r/provider
      {:context HIDE_DIALOG
       :value   close}

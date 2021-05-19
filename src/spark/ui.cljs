@@ -1010,6 +1010,8 @@
                            #(execute-command> command context then)))
         on-click     (with-progress-dialog on-click)
         on-click     (wrap-in-error-handler on-click)
+        variant      (if (keyword? variant) (name variant) variant)
+        color        (if (keyword? color) (name color) color)
         color        (or color
                          (when (-> command :inconspicuous?) "default")
                          "primary")
