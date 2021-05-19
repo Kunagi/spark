@@ -61,22 +61,27 @@ Bitte E-Mail Adresse eingeben.")
                :on-click continue-with-email}))
           )))))
 
-(def-ui LoginSelector [email google microsoft]
+(def-ui LoginSelector [email google microsoft facebook]
   (if (use-email-sign-in)
     ($ EmailProcess)
     (ui/stack
      ;; (ui/div
      ;;  "Anmeldemethode auswählen")
-     (when microsoft
-       ($ ui/Button
-          {:text      "Microsoft"
-           :onClick   auth/sign-in-with-microsoft
-           :startIcon :login }))
      (when google
        ($ ui/Button
           {:text      "Google"
            :onClick   auth/sign-in-with-google
            :startIcon :login }))
+     (when microsoft
+       ($ ui/Button
+          {:text      "Microsoft"
+           :onClick   auth/sign-in-with-microsoft
+           :startIcon :login }))
+     (when facebook
+       ($ ui/Button
+          {:text      "Facebook"
+           :onClick   auth/sign-in-with-facebook
+           :startIcon :login}))
      (when email
        ($ ui/Button
           {:text      "E-Mail"
