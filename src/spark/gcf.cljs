@@ -84,6 +84,19 @@
                        (.send (str "<h1>Error</h1>\n\n"
                                    (format-response (str %)))))))))))
 
+;; * on-schedule
+
+;; https://firebase.google.com/docs/functions/schedule-functions
+
+(defn on-schedule [schedule-pattern handler>]
+  (-> (region--europe-west1)
+      .-pubsub
+      (.schedule schedule-pattern)
+      (.onRun (fn [^js context]
+                (js/console.log "!!!!!!!!!!!!!!!!! SCHEDULED !!!!!!!!!" context)
+                (handler> context)))
+      ))
+
 ;; * on-call
 
 ;; https://firebase.google.com/docs/functions/callable
