@@ -519,20 +519,20 @@
 
 
 (defnc DocFieldCardArea [{:keys [doc doc-path field value-filter]}]
-  (let [field (if (spark/field-schema? field)
-                (spark/schema-opts field)
-                field)
+  (let [field        (if (spark/field-schema? field)
+                       (spark/schema-opts field)
+                       field)
         value-filter (or value-filter str)
-        id (form/field-id field)
-        label (get field :label)
-        value (get doc id)
-        submit #(let [changes {id (get % id)}]
-                  (if doc
-                    (repository/update-doc> doc changes)
-                    (do
-                      (u/log-deprecated "use doc, not doc-path")
-                      (fs/update-fields> doc-path changes))))
-        type (get field :type)]
+        id           (form/field-id field)
+        label        (get field :label)
+        value        (get doc id)
+        submit       #(let [changes {id (get % id)}]
+                        (if doc
+                          (repository/update-doc> doc changes)
+                          (do
+                            (u/log-deprecated "use doc, not doc-path")
+                            (fs/update-fields> doc-path changes))))
+        type         (get field :type)]
     ($ FormCardArea
        {:form {:fields [(assoc field :value value)]
                :submit submit}}
@@ -541,7 +541,9 @@
              {:label label}
              (case type
                "chips" ($ StringVectorChips {:values value})
-               (value-filter value)))))))
+               ($ :div
+                  {:style {:word-break :break-word}}
+                  (value-filter value))))))))
 
 
 (defnc DocFieldsCardAreas [{:keys [doc fields]}]
