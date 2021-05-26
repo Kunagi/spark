@@ -22,3 +22,12 @@
         (fn [message url line column error]
           (f message url line column error)
           false)))
+
+(defn play-sound [url]
+  (let [audio (js/Audio. url)]
+    (-> audio .play)))
+
+(comment
+  (js/console.log "hello")
+  (play-sound "/snd/nachricht.ogg")
+  )
