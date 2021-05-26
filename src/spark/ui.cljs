@@ -663,8 +663,8 @@
 (def use-dialogs (atom-hook DIALOGS))
 
 (defn show-dialog [dialog]
-  (let [id (or (-> dialog :id)
-               (str "dialog_" random-uuid))
+  (let [id     (or (-> dialog :id)
+                   (str "dialog_" (random-uuid)))
         dialog (assoc dialog :id id)]
     (swap! DIALOGS assoc id (assoc dialog
                                    :id id
@@ -993,21 +993,22 @@
   (when command
     (log ::Button.DEPRECATED.with-command
          {:command command}))
-  (let [context      (merge (use-spark-context)
-                            context)
-        command      (u/trampoline-if command)
-        command      (when command (-> command upgrade-legacy-command complete-command))
-        text         (or text (-> command :label) ":text missing")
-        icon         (when-let [icon (or icon (-> command :icon))]
-                       (cond
-                         (string? icon)  (d/div {:class "material-icons"} icon)
-                         (keyword? icon) (d/div {:class "material-icons"} (name icon))
-                         :else           icon))
-        on-click     (or on-click onClick)
-        on-click     (or on-click
-                         (-> command :onClick)
-                         (when command
-                           #(execute-command> command context then)))
+  (let [context  (merge (use-spark-context)
+                        context)
+        command  (u/trampoline-if command)
+        command  (when command (-> command upgrade-legacy-command complete-command))
+        text     (or text (-> command :label) ":text missing")
+        icon     (when-let [icon (or icon (-> command :icon))]
+                   (cond
+                     (string? icon)  (d/div {:class "material-icons"} icon)
+                     (keyword? icon) (d/div {:class "material-icons"} (name icon))
+                     :else           icon))
+        on-click (or on-click onClick)
+        on-click (or on-click
+                     (-> command :onClick)
+                     (when command
+                       #(execute-command> command context then)))
+
         on-click     (with-progress-dialog on-click)
         on-click     (wrap-in-error-handler on-click)
         variant      (if (keyword? variant) (name variant) variant)
