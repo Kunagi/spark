@@ -68,15 +68,15 @@
          :audio audio)
     (-> ^js audio .play)))
 
-(defonce PLAY_HACK (atom nil))
+;; (defonce PLAY_HACK (atom nil))
 
-(defn play-audio-hack [k]
-  (reset! PLAY_HACK k))
+;; (defn play-audio-hack [k]
+;;   (reset! PLAY_HACK k))
 
-(defn activate-audio-hack []
-  (js/setInterval
-   (fn []
-     (when-let [k @PLAY_HACK]
-       (reset! PLAY_HACK nil)
-       (play-audio k)))
-   1000))
+;; (defn activate-audio-hack []
+;;   (js/setInterval
+;;    (fn []
+;;      (when-let [k @PLAY_HACK]
+;;        (reset! PLAY_HACK nil)
+;;        (play-audio k)))
+;;    1000))
