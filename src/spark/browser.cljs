@@ -1,4 +1,7 @@
-(ns spark.browser)
+(ns spark.browser
+  (:require
+   [spark.logging :refer [log]]
+   [spark.utils :as u]))
 
 (def ios-platforms
   #{"iPad Simulator" "iPhone Simulator" "iPod Simulator" "iPad" "iPhone" "iPod"})
@@ -41,3 +44,26 @@
   (js/console.log "hello")
   (play-sound "/snd/nachricht.ogg")
   )
+
+(defonce AUDIOS (atom {}))
+
+(defn activate-audio [k url]
+  (log ::activate-audio :k k :url url)
+  (let [audio (js/Audio. url)]
+    (try
+      (-> audio
+          .play
+          (.then (fn []
+                   (-> audio .pause)
+                   (-> audio .-currentTime (set! 0)))))
+      (swap! AUDIOS assoc k audio)
+      (catch :default ex
+        (log ::activate-audio--failed :k k :url url :error ex))))
+  )
+
+(defn play-audio [k]
+  (when-let [audio (get @AUDIOS k)]
+    (log ::play-audio
+         :k k
+         :audio audio)
+    (-> ^js audio .play)))
