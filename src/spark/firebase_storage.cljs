@@ -2,6 +2,7 @@
   (:require
    [spark.logging :refer [log]]))
 
+;; https://firebase.google.com/docs/reference/js/firebase.storage.Reference
 
 (defn storage []
   (-> js/firebase
@@ -51,3 +52,7 @@
                 #(log ::upload-file.state :state %)
                 reject
                 resolve))))))
+
+(defn delete> [path]
+  (-> ^js (ref path)
+      .delete))

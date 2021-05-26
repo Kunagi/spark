@@ -301,6 +301,9 @@
 
 ;; * storage
 
+(defn delete-storage-file> [path]
+  (storage/delete> path))
+
 (defn use-storage-files [path]
   (let [[files set-files] (use-state [])
         reload-f          (fn []
@@ -1452,11 +1455,12 @@
       :style    {:display "none"}}))
 
 
-(defnc StorageImg [{:keys [path height style class]}]
+(defnc StorageImg [{:keys [path height width style class]}]
   (let [url (use-storage-url path)]
     ($ :img
        {:src       url
         :height    height
+        :width     width
         :className class
         :style     style})))
 
