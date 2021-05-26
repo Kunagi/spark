@@ -672,6 +672,8 @@
     id))
 
 (defn hide-dialog [id]
+  (log ::hide-dialog
+       :id id)
   (swap! DIALOGS assoc-in [id :open?] false)
   (js/setTimeout #(swap! DIALOGS dissoc id)
                  1000)
@@ -684,19 +686,22 @@
 
 (defn use-hide-dialog []
   (let [dialog-id (use-dialog-id)]
-    #(hide-dialog dialog-id)))
+    (when dialog-id
+      #(hide-dialog dialog-id))))
 
 (defnc Dialog [{:keys [dialog]}]
   {:wrap [memo]}
-  (let [class (use-app-styles-class)]
+  (let [class     (use-app-styles-class)
+        dialog-id (-> dialog :id)]
     (provider
      {:context DIALOG_ID
-      :value   (-> dialog :id)}
+      :value   dialog-id}
      ($ mui/Dialog
         {
          :open      (-> dialog :open?)
          :onClose   #(hide-dialog (-> dialog :id))
          :className class}
+        ;; (data dialog-id)
         (when-let [title (-> dialog :title)]
           ($ mui/DialogTitle title))
         ($ mui/DialogContent
@@ -739,6 +744,8 @@
 (defn with-progress-dialog [f]
   (when f
     #(eval-with-progress-dialog f)))
+
+
 
 ;;; * errors
 
@@ -982,6 +989,20 @@
 
     command))
 
+
+(defn- wrap-on-click-in-hide-dialog [f hide-dialog]
+  (if-not hide-dialog
+    f
+    (fn [event]
+      (let [result (f event)]
+        (if-not (instance? js/Promise result)
+          (hide-dialog)
+          (u/=> result
+                (fn [result]
+                  (hide-dialog)
+                  result)))))))
+
+
 (defnc Button [{:keys [text icon
                        onClick on-click to href target
                        variant color size
@@ -989,7 +1010,8 @@
                        context
                        then
                        class
-                       styles]}]
+                       styles
+                       auto-hide-dialog]}]
   (when command
     (log ::Button.DEPRECATED.with-command
          {:command command}))
@@ -1009,8 +1031,15 @@
                      (when command
                        #(execute-command> command context then)))
 
-        on-click     (with-progress-dialog on-click)
-        on-click     (wrap-in-error-handler on-click)
+        on-click (with-progress-dialog on-click)
+        on-click (wrap-in-error-handler on-click)
+
+        hide-dialog (use-hide-dialog)
+        on-click    (if auto-hide-dialog
+                      (wrap-on-click-in-hide-dialog on-click hide-dialog)
+                      on-click)
+
+
         variant      (if (keyword? variant) (name variant) variant)
         color        (if (keyword? color) (name color) color)
         color        (or color
