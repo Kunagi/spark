@@ -669,7 +669,8 @@
       (log ::activate-spa-audios
            :audios audios)
       (doseq [[k url] audios]
-        (browser/activate-audio k url)))))
+        (browser/activate-audio k url))
+      (browser/activate-audio-hack))))
 
 (comment
   (js/console.log "test")
