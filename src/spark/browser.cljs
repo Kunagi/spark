@@ -1,11 +1,21 @@
 (ns spark.browser)
 
+(def ios-platforms
+  #{"iPad Simulator" "iPhone Simulator" "iPod Simulator" "iPad" "iPhone" "iPod"})
+
+(defn apple? []
+  (js/console.log "hallo")
+  (or (ios-platforms (-> js/navigator.platform))
+      (js/navigator.userAgent.includes "Mac")
+      ))
+
+
 (defn initiate-text-download [filename text]
-  (let [a (js/document.createElement "a")
+  (let [a        (js/document.createElement "a")
         uri-data (js/encodeURIComponent text)]
     (-> a .-style .-display (set! "none"))
     (-> a ( .setAttribute "href", (str "data:text/plain;charset=utf-8,"
-                                        uri-data)))
+                                       uri-data)))
     (-> a (.setAttribute "download" filename))
     ( js/document.body.appendChild a)
     (-> a .click)
