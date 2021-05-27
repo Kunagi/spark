@@ -54,6 +54,15 @@ function echo-exec {
     echo ""
 }
 
+function exec {
+    echo-exec $1
+    if $SPAWN_TERMINALS; then
+        # gnome-terminal -t "$1" -- $1
+        alacritty --title "$1" --command $1 &
+    else
+        $1
+    fi
+}
 
 ###
 ### clean
@@ -134,12 +143,7 @@ function shadow-watch {
     mkdir -p target
     date -Iminutes > src/spa/version-time.txt
     SHADOW_CMD="clojure -M:shadow-cljs watch spa gcf"
-    echo-exec "$SHADOW_CMD"
-    if $SPAWN_TERMINALS; then
-        gnome-terminal -t "Shadow-CLJS watch" -- $SHADOW_CMD
-    else
-        $SHADOW_CMD
-    fi
+    exec "$SHADOW_CMD"
 }
 
 if [ $1 = "shadow-watch" ]
@@ -173,7 +177,7 @@ function backup-dev-data {
     DATA_DIR="./dev-data"
     if [[ -d $DATA_DIR/firestore_export ]]
     then
-        BACKUP_DIR=$DATA_DIR.backups/$(date -Iseconds)
+        BACKUP_DIR=$DATA_DIR.backups/$(($(date +%s%N)/1000000))
         mkdir -p $DATA_DIR.backups
         cp -r $DATA_DIR $BACKUP_DIR
     fi
@@ -182,6 +186,7 @@ function backup-dev-data {
 function emulators {
     echo-task "emulators"
     collect-spa-resources
+
     cd firebase
     touch functions/index.js
 
@@ -195,12 +200,8 @@ function emulators {
         EMULATORS_CMD="firebase emulators:start --export-on-exit=$DATA_DIR"
     fi
 
-    echo-exec "$EMULATORS_CMD"
-    if $SPAWN_TERMINALS; then
-        gnome-terminal -t "Firebase Emulators" -- $EMULATORS_CMD
-    else
-        $EMULATORS_CMD
-    fi
+    exec "$EMULATORS_CMD"
+
     cd ..
 }
 
