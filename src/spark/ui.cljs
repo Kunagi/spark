@@ -1433,12 +1433,12 @@
                 (update :theme styles/adapt-theme)
                 (update :styles styles/adapt-styles))]
     (reset! SPA spa)
-    (js/document.body.addEventListener "touchstart"
-                                       activate-spa-audios
-                                       false)
-    (js/document.body.addEventListener "click"
-                                       activate-spa-audios
-                                       false)
+    ;; (js/document.body.addEventListener "touchstart"
+    ;;                                    activate-spa-audios
+    ;;                                    false)
+    ;; (js/document.body.addEventListener "click"
+    ;;                                    activate-spa-audios
+    ;;                                    false)
     (rdom/render ($ (-> spa :root-component))
                  (js/document.getElementById "app"))))
 
