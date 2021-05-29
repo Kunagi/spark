@@ -18,7 +18,7 @@
    [shadow.resource :as resource]
    [cljs-bean.core :as cljs-bean]
    [camel-snake-kebab.core :as csk]
-   [helix.core]
+   [helix.core :as helix]
    [helix.dom :as d]
 
    ["react-dom" :as rdom]
@@ -802,29 +802,29 @@
 
 (defnc ErrorInfo [{:keys [error]}]
   (let [[message dat stacktrace cause] (destructure-error error)
-        theme (use-theme)]
+        theme                          (use-theme)]
     ($ Stack
        ($ :div
-          {:style {:font-size "120%"
+          {:style {:font-size   "120%"
                    :font-weight 900
-                   :color (-> theme .-palette .-primary .-main)}}
+                   :color       (-> theme .-palette .-primary .-main)}}
           (str message))
        (when (seq dat)
          ($ :div
             {:style {:max-height "200px"
-                     :overflow "auto"}}
+                     :overflow   "auto"}}
             (data dat)))
        (when stacktrace
          ($ :div
-            {:style {:max-height "200px"
-                     :overflow "auto"
-                     :font-family "monospace"
-                     :white-space "pre-wrap"
+            {:style {:max-height       "200px"
+                     :overflow         "auto"
+                     :font-family      "monospace"
+                     :white-space      "pre-wrap"
                      :background-color "#333"
-                     :color "#6ff"
-                     :padding "1rem"
-                     :border-radius "4px"
-                     :margin "1px"
+                     :color            "#6ff"
+                     :padding          "1rem"
+                     :border-radius    "4px"
+                     :margin           "1px"
                      }}
             stacktrace))
        (when cause
@@ -863,6 +863,54 @@
       (try
         (apply f args)
         (catch :default error (show-error error))))))
+
+
+;; * ErrorBoundary
+
+(helix/defcomponent ErrorBoundary
+  (constructor [this]
+               (set! (.-state this) #js {:error nil}))
+
+  ^:static
+  (getDerivedStateFromError [this error]
+                            #js {:error error})
+
+  (render [this]
+          (if-not (.. this -state -error)
+            (.. this -props -children)
+            (div
+             {:display  :grid
+              :grid-gap 16}
+             (div
+              {:font-weight :bold
+               :font-size   "200%"
+               :text-align  :center}
+              "Sorry, we messed up!")
+
+             (div
+              {:display               :grid
+               :grid-template-columns "auto max-content max-content auto"
+               :grid-gap              8}
+              (div)
+              ($ mui/Button
+                 {:onClick #(js/location.reload)
+                  :color   "primary"
+                  :variant "contained"}
+                 "RELOAD")
+              ($ mui/Button
+                 {:onClick #(-> js/location .-href (set! "/"))
+                  :color   "primary"
+                  :variant "contained"}
+                 "HOME")
+              (div)
+              )
+
+             ($ mui/Divider)
+
+             ($ ErrorInfo
+                {:error (.. this -state -error)}))
+            #_(d/pre (d/code (pr-str (.. this -state -error))))
+            )))
 
 
 ;;; links
@@ -1422,8 +1470,10 @@
        (provider
         {:context SPARK_CONTEXT
          :value   spark-context}
-        ($ AppFrame-inner {:spa spa}
-           children)))))
+        ($ ErrorBoundary
+           ($ AppFrame-inner {:spa spa}
+              children))))))
+
 
 
 (defn load-spa [spa]
