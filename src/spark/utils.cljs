@@ -117,6 +117,20 @@
 
 ;; * sequences
 
+(defn seq-contains-nil? [s]
+  (when s
+    (->> s
+         (filter nil?)
+         seq
+         boolean)))
+
+(comment
+  (seq-contains-nil? [nil])
+  (seq-contains-nil? [:a nil])
+  (seq-contains-nil? [:a])
+  (seq-contains-nil? nil)
+  (seq-contains-nil? []))
+
 (defn seq-indexed
   "Returns a lazy sequence of [index, item] pairs, where items come
   from 's' and indexes count up from zero.

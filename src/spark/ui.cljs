@@ -165,16 +165,16 @@
   ([path]
    (log ::use-doc
         :path path)
-   (let [[doc set-doc] (use-state nil #_(when DATA @DATA))
+   (let [[doc set-doc] (use-state nil)
          effect-signal (str path)
          ]
 
      (use-effect
       [effect-signal]
-      (when path
+      (when (and path
+                 (not (u/seq-contains-nil? path)))
         (log ::use-doc--subscribe
              :path path)
-        ;; (set-watching true)
         (let [ref         (firestore/ref path)
               on-snapshot (fn [doc-snapshot]
                             (let [doc (firestore/wrap-doc doc-snapshot)]
