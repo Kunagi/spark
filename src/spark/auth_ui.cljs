@@ -85,32 +85,33 @@ Bitte E-Mail Adresse eingeben.")
 (def-ui LoginSelector [email google microsoft facebook]
   (if (use-email-sign-in)
     ($ EmailProcess)
-    (ui/stack
-     ;; (ui/div
-     ;;  "Anmeldemethode auswählen")
-     (when google
-       ($ ui/Button
-          {:text     "Google"
-           :on-click auth/sign-in-with-google}))
-     (when microsoft
-       ($ ui/Button
-          {:text     "Microsoft"
-           :on-click auth/sign-in-with-microsoft}))
-     (when facebook
-       ($ ui/Button
-          {:text     "Facebook"
-           :on-click auth/sign-in-with-facebook}))
-     (when email
-       ($ ui/Button
-          {:text     "E-Mail"
-           :on-click auth/sign-in-with-email}))
-     ($ :div))))
 
+    (ui/stack-3
+     (ui/center
+      (ui/div "Wie möchtest du dich anmelden?"))
+     (ui/stack
+      (when google
+        ($ ui/Button
+           {:text     "Google"
+            :on-click auth/sign-in-with-google}))
+      (when microsoft
+        ($ ui/Button
+           {:text     "Microsoft"
+            :on-click auth/sign-in-with-microsoft}))
+      (when facebook
+        ($ ui/Button
+           {:text     "Facebook"
+            :on-click auth/sign-in-with-facebook}))
+      (when email
+        ($ ui/Button
+           {:text     "E-Mail"
+            :on-click auth/sign-in-with-email}))
+      ($ :div)))))
 
 (defn show-sign-in-selector-dialog [options]
   (log ::sign-in)
   (ui/show-dialog {:id      "sign-in"
-                   :title   "Anmeldung"
+                   :title   "Anmeldung / Registrierung"
                    :content ($ LoginSelector
                                {:email     (-> options :email)
                                 :google    (-> options :google)
