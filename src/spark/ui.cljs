@@ -589,7 +589,7 @@
 
 (defnc ValueLoadGuard [{:keys [children value padding debug-info]}]
   (let [theme   (mui-styles/useTheme)
-        padding (or padding 8)]
+        padding (or padding 2)]
     (if value
       children
       ($ :div
