@@ -451,11 +451,14 @@
 
 (defn compute-distance-text> [origin destination]
   (let [service (js/google.maps.DistanceMatrixService.)
-        config {:origins [origin]
-                :destinations [destination]
-                :travelMode "DRIVING"}]
+        config  {:origins      [origin]
+                 :destinations [destination]
+                 :travelMode   "DRIVING"}]
     (js/Promise.
      (fn [resolve reject]
+       (log ::compute-distance-text>
+            :origin origin
+            :destination destination)
        (.getDistanceMatrix service (clj->js config)
                            (fn [^js response _status]
                              (let [distance (-> response
