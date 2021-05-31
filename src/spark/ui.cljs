@@ -145,6 +145,7 @@
   (when-let [user (use-auth-user)]
     (-> user :uid)))
 
+(def sign-in auth/sign-in)
 
 ;; * page and context data
 
