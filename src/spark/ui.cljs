@@ -1117,7 +1117,9 @@
                          (when (-> command :inconspicuous?) "default")
                          "primary")
         styles-class (use-styles-class styles)
-        classes      (str/join " " [class styles-class])]
+        classes      (str/join " " [class styles-class])
+
+        size (if (keyword? size) (name size) size)]
     (if to
       ($ mui/Button
          {:to        (coerce-link-to to)
