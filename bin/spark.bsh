@@ -283,14 +283,16 @@ function assert-git-clean {
     fi
 }
 
-function release {
-    echo-task "release"
-
+function assert-no-lockfile {
     if [ -f $LOCKFILE ]
     then
         echo-error "Lock file $LOCKFILE exists. Is shadow-watch running?"
         exit 1
     fi
+}
+
+function release {
+    echo-task "release"
 
     VERSION=`cat src/spa/version.txt`
 
@@ -325,6 +327,7 @@ function release {
 
 if [ $1 = "release" ]
 then
+    assert-no-lockfile
     assert-git-clean
     assert-spark-exists
     cd $SPARK_DIR
