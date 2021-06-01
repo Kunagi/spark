@@ -38,6 +38,8 @@ SPARK_DIR=$(realpath $PWD/../spark)
 
 SPAWN_TERMINALS=false
 
+LOCKFILE=.spark.lock
+
 ###
 ### helpers
 ###
@@ -140,10 +142,14 @@ fi
 function shadow-watch {
     echo-task "shadow-watch"
 
+    touch $LOCKFILE
+
     mkdir -p target
     date -Iminutes > src/spa/version-time.txt
     SHADOW_CMD="clojure -M:shadow-cljs watch spa gcf"
     exec "$SHADOW_CMD"
+
+    rm $LOCKFILE
 }
 
 if [ $1 = "shadow-watch" ]
@@ -279,6 +285,12 @@ function assert-git-clean {
 
 function release {
     echo-task "release"
+
+    if [ -f $LOCKFILE ]
+    then
+        echo-error "Lock file $LOCKFILE exists. Is shadow-watch running?"
+        exit 1
+    fi
 
     VERSION=`cat src/spa/version.txt`
 
