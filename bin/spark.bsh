@@ -86,7 +86,7 @@ function clean {
 if [ $1 = "clean" ]
 then
     clean
-    exit 0gnome-terminal -t "Shadow-CLJS watch" --
+    exit 0
 fi
 
 
