@@ -127,18 +127,22 @@
 
     (process-sign-in-with-email-link error-handler)))
 
+(defn provider-sign-in> [^js provider]
+  (-> firebase .auth (.signInWithRedirect provider))
+  ;; (-> firebase .auth (.signInWithPopup provider))
+  )
 
 
 (defn sign-in-with-google []
   (log ::sign-in-with-google)
   (let [GoogleAuthProvider (-> firebase .-auth .-GoogleAuthProvider)
-        provider (GoogleAuthProvider.)]
+        provider           (GoogleAuthProvider.)]
     (.addScope ^js provider "openid")
     (.addScope ^js provider "profile")
     (.addScope ^js provider "email")
     (.addScope ^js provider "https://www.googleapis.com/auth/userinfo.email")
     (.addScope ^js provider "https://www.googleapis.com/auth/userinfo.profile")
-    (-> firebase .auth (.signInWithRedirect ^js provider))))
+    (provider-sign-in> provider)))
 
 
 (defn sign-in-with-microsoft []
@@ -149,9 +153,9 @@
   ;; Directory (tenant) ID: 088fc83d-8363-42a6-8b7f-02c6f326cb17
   ;; Object ID; 5275d8a6-c7de-4367-a67f-7955ff60c4d6
   (let [AuthProvider (-> firebase .-auth .-OAuthProvider)
-        provider (AuthProvider. "microsoft.com")]
-    (-> ^js provider (.setCustomParameters #js {:prompt    "login"}))
-    (-> firebase .auth (.signInWithRedirect ^js provider))))
+        provider     (AuthProvider. "microsoft.com")]
+    (-> ^js provider (.setCustomParameters #js {:prompt "login"}))
+    (provider-sign-in> provider)))
 
 
 (defn sign-in-with-facebook []
@@ -159,10 +163,9 @@
   ;; https://developers.facebook.com
   ;; https://developers.facebook.com/docs/permissions/reference
   (let [FacebookAuthProvider js/firebase.auth.FacebookAuthProvider
-        provider (FacebookAuthProvider.)]
+        provider             (FacebookAuthProvider.)]
     (-> ^js provider (.addScope "email"))
-    (-> firebase .auth
-        (.signInWithRedirect ^js provider)
+    (-> (provider-sign-in> provider)
         (.then (fn [result]
                  (js/console.log "AUTH SUCCESS" result))
                (fn [result]
