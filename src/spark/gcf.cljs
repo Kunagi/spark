@@ -90,6 +90,7 @@
 ;; * on-schedule
 
 ;; https://firebase.google.com/docs/functions/schedule-functions
+;; https://firebase.google.com/docs/reference/functions/function_configuration_.schedule
 
 (defn on-schedule [schedule-pattern handler>]
   (-> (region--europe-west1)
