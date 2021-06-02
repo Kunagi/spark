@@ -128,8 +128,8 @@
     (process-sign-in-with-email-link error-handler)))
 
 (defn provider-sign-in> [^js provider]
-  ;; (-> firebase .auth (.signInWithRedirect provider))
-  (-> firebase .auth (.signInWithPopup provider))
+  (-> firebase .auth (.signInWithRedirect provider))
+  ;; (-> firebase .auth (.signInWithPopup provider))
   )
 
 
