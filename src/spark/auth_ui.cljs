@@ -111,7 +111,7 @@ Bitte E-Mail Adresse eingeben.")
 (defn show-sign-in-selector-dialog [options]
   (log ::sign-in)
   (ui/show-dialog {:id      "sign-in"
-                   :title   "Anmeldung / Registrierung"
+                   :title   "Anmelden / Registrieren"
                    :content ($ LoginSelector
                                {:email     (-> options :email)
                                 :google    (-> options :google)
