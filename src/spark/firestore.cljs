@@ -8,7 +8,7 @@
    [clojure.string :as str]))
 
 
-;; https://firebase.google.com/docs/reference/js
+;; https://firebase.google.com/docs/reference/js/firebase.firestore
 
 (defn doc? [doc]
   (and
@@ -423,16 +423,23 @@
   (u/=> (get> ["devtest"]) u/tap>))
 
 
-(defn- set>--set-doc> [^js transaction tx-data]
+(defn- set>--set-doc> [^js transaction tx-data autocreate?]
   (let [path    (or (-> tx-data :firestore/path)
                     (-> tx-data :db/ref))
         ref     (ref path)
         tx-data (assoc tx-data :ts-updated [:db/timestamp])
-        data    (unwrap-doc tx-data)
-        opts    (clj->js {:merge true})]
-    (u/=> (if transaction
-            (.set transaction ref data opts)
-            (.set ref data opts))
+        data    (unwrap-doc tx-data)]
+    (u/=> (if autocreate?
+            (if transaction
+              (-> (.update transaction ref data)
+                  (.catch (fn [_err]
+                            (.set transaction ref data (clj->js {:merge true})))))
+              (-> (.update ref data)
+                  (.catch (fn [_err]
+                            (.set ref data (clj->js {:merge true}))))))
+            (if transaction
+              (-> (.update transaction ref data))
+              (-> (.update ref data))))
           (fn [_] tx-data))))
 
 (defn- set>--delete-doc> [^js transaction tx-data]
@@ -456,14 +463,15 @@
 (defn set>--delete-subdoc> [^js transaction tx-data db-ref]
   (set>--set-doc> transaction
                   {:firestore/path                    (first db-ref)
-                   (subdoc-prefix-from-db-ref db-ref) [:db/delete]}))
+                   (subdoc-prefix-from-db-ref db-ref) [:db/delete]}
+                  false))
 
 (defn set>--set-subdoc> [^js transaction tx-data db-ref]
   (let [doc-path (first db-ref)
         entity   (flatten-map {:firestore/path doc-path}
                               (subdoc-prefix-from-db-ref db-ref)
                               tx-data)]
-    (set>--set-doc> transaction entity)))
+    (set>--set-doc> transaction entity false)))
 
 (defn set>
   ([tx-data]
@@ -485,7 +493,7 @@
              (set>--set-subdoc> transaction tx-data db-ref))
            (if (-> tx-data :db/delete (= true))
              (set>--delete-doc> transaction tx-data)
-             (set>--set-doc> transaction tx-data))))))))
+             (set>--set-doc> transaction tx-data true))))))))
 
 (comment
   (set> {:firestore/path "devtest/dummy-1" :hello "world"})
@@ -503,6 +511,9 @@
         (fn [result]
           (js/console.log "RESULT" result))
         u/tap>)
+
+  (u/tap> (set> {:db/ref    ["devtest/dummy-1" :children "b"]
+                 :db/delete true}))
 
   (u/=> (get> "devtest/dummy-1")
         (fn [doc]
