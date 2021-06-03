@@ -96,8 +96,7 @@
   (-> (region--europe-west1)
       .-pubsub
       (.schedule schedule-pattern)
-      ;; (.timeZone "Europe/Berlin")
-      ;; (.timeZone "CEST")
+      (.timeZone "Europe/Berlin")
       (.onRun (fn [^js context]
                 (handler> context)))
       ))
