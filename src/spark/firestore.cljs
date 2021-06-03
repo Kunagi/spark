@@ -19,7 +19,8 @@
 (s/def ::doc doc?)
 (s/def ::path-element (s/or :map-path-element map?
                             :string-path-element string?))
-(s/def ::path (s/or :string string?
+(s/def ::path (s/or :keyword simple-keyword?
+                    :string string?
                     :vector (s/coll-of ::path-element)
                     :doc ::doc))
 (s/def ::opt-path (s/or :nil-path nil?
@@ -222,9 +223,10 @@
 
 (defn as-path [thing]
   (cond
-    (string? thing) (-> thing ( .split "/"))
-    (doc? thing)    (-> thing doc-path as-path)
-    :else           (do (s/assert ::path thing) thing)))
+    (string? thing)  (-> thing ( .split "/"))
+    (doc? thing)     (-> thing doc-path as-path)
+    (keyword? thing) [(name thing)]
+    :else            (do (s/assert ::path thing) thing)))
 
 
 (defn- fs-collection [source path-elem]
@@ -246,8 +248,8 @@
        :path path)
   (s/assert ::opt-path path)
   (when path
-    (loop [col nil
-           doc nil
+    (loop [col  nil
+           doc  nil
            path (as-path path)]
       (if (empty? path)
         (if doc doc col)
@@ -424,11 +426,10 @@
 
 
 (defn- set>--set-doc> [^js transaction tx-data autocreate?]
-  (let [path    (or (-> tx-data :firestore/path)
+  (let [path (or (-> tx-data :firestore/path)
                     (-> tx-data :db/ref))
-        ref     (ref path)
-        tx-data (assoc tx-data :ts-updated [:db/timestamp])
-        data    (unwrap-doc tx-data)]
+        ref  (ref path)
+        data (unwrap-doc tx-data)]
     (u/=> (if autocreate?
             (if transaction
               (-> (.update transaction ref data)
@@ -481,12 +482,13 @@
      (u/=> (u/all> (map #(set> transaction %) tx-data))
            (fn [_]
              tx-data))
-     (do
-       (log ::set>
-            :tx-data tx-data
-            :transaction transaction)
+     (if-not tx-data
+       (u/no-op>)
        (let [db-ref  (-> tx-data :db/ref)
              subdoc? (vector? db-ref)]
+         (log ::set>
+              :tx-data tx-data
+              :transaction transaction)
          (if subdoc?
            (if (-> tx-data :db/delete (= true))
              (set>--delete-subdoc> transaction tx-data db-ref)
@@ -496,6 +498,7 @@
              (set>--set-doc> transaction tx-data true))))))))
 
 (comment
+  (set> nil)
   (set> {:firestore/path "devtest/dummy-1" :hello "world"})
   (set> {:firestore/path "devtest/dummy-1" :hello [:db/delete]})
   (u/tap> (set> {:firestore/path "devtest/dummy-1" :db/delete true}))
@@ -537,6 +540,8 @@
 
 
 (comment
+  (transact> {:db/ref "devtest/dummy-2" :hello "2nd world"})
+  (transact> {:db/ref "devtest/dummy-2" :db/delete true})
   (def id "dummy-3")
   (let [transaction (fn [{:keys [get> set>]}]
                       (u/=> (get> ["devtest" id])

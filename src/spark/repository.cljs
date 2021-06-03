@@ -4,7 +4,8 @@
    [spark.logging :refer [log]]
    [spark.utils :as u]
    [spark.core :as spark]
-   [spark.firestore :as firestore]))
+   [spark.firestore :as firestore]
+   [spark.db :as db]))
 
 
 (defn doc> [path]
