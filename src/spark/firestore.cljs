@@ -70,7 +70,8 @@
 (defn remove-metadata [data]
   (let [data (dissoc data
                      :firestore/schema
-                     :firestore/doc-path)]
+                     :firestore/doc-path
+                     :db/ref)]
     (reduce (fn [data [k v]]
               (if (map? v)
                 (assoc data k (remove-metadata v))
@@ -79,7 +80,7 @@
 
 ;; * conform to schema
 
-(defn conform-js-data [^js data schema doc-path]
+(defn conform-js-data [^js data schema db-doc-ref]
   (cond
 
     (nil? data)
@@ -107,17 +108,17 @@
     (case (first schema)
       :set
       (into #{} (map (fn [[idx item]]
-                       (conform-js-data item (second schema) (conj doc-path idx)))
+                       (conform-js-data item (second schema) (conj db-doc-ref idx)))
                      (map-indexed vector data)))
 
       :vector
       (mapv (fn [[idx item]]
-              (conform-js-data item (second schema) (conj doc-path idx)))
+              (conform-js-data item (second schema) (conj db-doc-ref idx)))
             (map-indexed vector data))
 
       ;; else
       (mapv (fn [[idx item]]
-              (conform-js-data item nil (conj doc-path idx)))
+              (conform-js-data item nil (conj db-doc-ref idx)))
             (map-indexed vector data)))
 
     (vector? schema)
@@ -133,15 +134,15 @@
                       v-schema    (if (map? (second schema))
                                     (nth schema 3)
                                     (nth schema 2))
-                      k-conformed (conform-js-data k k-schema doc-path)]
+                      k-conformed (conform-js-data k k-schema db-doc-ref)]
                   (assoc m
                          k-conformed
-                         (conform-js-data v v-schema (conj doc-path
+                         (conform-js-data v v-schema (conj db-doc-ref
                                                            k-conformed)))))
               {} (js/Object.keys data))
 
       ;; else -> :map
-      (let [new-data {:firestore/doc-path doc-path}
+      (let [new-data {:db/ref db-doc-ref}
             new-data (if-let [doc-schema-id (or (-> schema second :subdoc-schema/id)
                                                 (-> schema second :doc-schema/id))]
                        (assoc new-data :firestore/schema doc-schema-id)
@@ -150,7 +151,7 @@
                   (let [k        (keyword js-key)
                         v        (gobj/get data js-key)
                         v-schema (u/malli-map-field-schema-by-id schema k)
-                        v        (conform-js-data v v-schema (conj doc-path k))]
+                        v        (conform-js-data v v-schema (conj db-doc-ref k))]
                     (if (nil? v)
                       m
                       (assoc m k v))))
@@ -166,10 +167,10 @@
 (defn reg-doc-schema [col-id doc-schema]
   (swap! DOC_SCHEMAS assoc col-id doc-schema))
 
-(defn conform-doc-data [^js data schema]
+(defn conform-doc-data [^js data schema db-doc-ref]
   (when data
     (-> data
-        (conform-js-data schema [])
+        (conform-js-data schema db-doc-ref)
         (assoc :firestore/schema (-> schema first :doc-schema/id))
         )))
 
@@ -177,15 +178,17 @@
   (get @DOC_SCHEMAS col-id))
 
 (defn wrap-doc [^js query-doc-snapshot]
-  (let [data (-> query-doc-snapshot .data)
-        path (-> query-doc-snapshot .-ref .-path)
-        col-id (.substring path 0 (.indexOf path "/"))
-        doc-schema (doc-schema col-id)]
+  (let [data       (-> query-doc-snapshot .data)
+        path       (-> query-doc-snapshot .-ref .-path)
+        col-id     (.substring path 0 (.indexOf path "/"))
+        doc-schema (doc-schema col-id)
+        db-doc-ref [path]]
     (-> data
-        (conform-doc-data doc-schema)
+        (conform-doc-data doc-schema db-doc-ref)
         (assoc :firestore/id (-> query-doc-snapshot .-id)
                :firestore/path path
-               :firestore/exists? (boolean data)))))
+               :firestore/exists? (boolean data)
+               :db/ref path))))
 
 (defn wrap-docs [^js query-snapshot]
   (mapv wrap-doc (-> query-snapshot .-docs)))
@@ -208,7 +211,8 @@
         (dissoc :firestore/id
                 :firestore/path
                 :firestore/exists?
-                :firestore/schema)
+                :firestore/schema
+                :db/ref)
         inject-FieldValues
         remove-metadata
         clj->js)))
@@ -333,15 +337,16 @@
   ([m]
    (flatten-map nil nil m))
   ([doc prefix m]
-   (reduce (fn [doc [k v]]
-             (let [k (if (keyword? k) (name k) (str k))
-                   k (if prefix
-                       (str prefix "." k)
-                       k)]
-               (if (map? v)
-                 (flatten-map doc k v)
-                 (assoc doc k v))))
-           doc m)))
+   (let [m (remove-metadata m)]
+     (reduce (fn [doc [k v]]
+               (let [k (if (keyword? k) (name k) (str k))
+                     k (if prefix
+                         (str prefix "." k)
+                         k)]
+                 (if (map? v)
+                   (flatten-map doc k v)
+                   (assoc doc k v))))
+             doc m))))
 
 (comment
   (flatten-map {:id "1"
@@ -417,33 +422,97 @@
   (u/=> (get> "devtest/dummy-1") u/tap>)
   (u/=> (get> ["devtest"]) u/tap>))
 
+
+(defn- set>--set-doc> [^js transaction tx-data]
+  (let [path    (or (-> tx-data :firestore/path)
+                    (-> tx-data :db/ref))
+        ref     (ref path)
+        tx-data (assoc tx-data :ts-updated [:db/timestamp])
+        data    (unwrap-doc tx-data)
+        opts    (clj->js {:merge true})]
+    (u/=> (if transaction
+            (.set transaction ref data opts)
+            (.set ref data opts))
+          (fn [_] tx-data))))
+
+(defn- set>--delete-doc> [^js transaction tx-data]
+  (let [path (or (-> tx-data :firestore/path)
+                 (-> tx-data :db/ref))
+        ref  (ref path)]
+    (u/=> (if transaction
+            (.delete transaction ref)
+            (.delete ref))
+          (fn [_] tx-data))))
+
+(defn subdoc-prefix-from-db-ref [db-ref]
+  (->> db-ref
+       rest
+       (map (fn [path-element]
+              (if (keyword? path-element)
+                (name path-element)
+                (str path-element))))
+       (str/join ".")))
+
+(defn set>--delete-subdoc> [^js transaction tx-data db-ref]
+  (set>--set-doc> transaction
+                  {:firestore/path                    (first db-ref)
+                   (subdoc-prefix-from-db-ref db-ref) [:db/delete]}))
+
+(defn set>--set-subdoc> [^js transaction tx-data db-ref]
+  (let [doc-path (first db-ref)
+        entity   (flatten-map {:firestore/path doc-path}
+                              (subdoc-prefix-from-db-ref db-ref)
+                              tx-data)]
+    (set>--set-doc> transaction entity)))
+
 (defn set>
   ([tx-data]
    (set> nil tx-data))
   ([^js transaction tx-data]
    (if (sequential? tx-data)
-     (u/all> (map #(set> transaction %) tx-data))
+     (u/=> (u/all> (map #(set> transaction %) tx-data))
+           (fn [_]
+             tx-data))
      (do
        (log ::set>
             :tx-data tx-data
             :transaction transaction)
-       (let [path (-> tx-data :firestore/path)]
-         (if (-> tx-data :db/delete (= true))
-           (if transaction
-             (.delete transaction (ref path))
-             (.delete (ref path)))
-           (let [tx-data (assoc tx-data :ts-updated [:db/timestamp])
-                 data    (unwrap-doc tx-data)
-                 opts    (clj->js {:merge true})]
-             (if transaction
-               (.set transaction (ref path) data opts)
-               (.set (ref path) data opts)))))))))
+       (let [db-ref  (-> tx-data :db/ref)
+             subdoc? (vector? db-ref)]
+         (if subdoc?
+           (if (-> tx-data :db/delete (= true))
+             (set>--delete-subdoc> transaction tx-data db-ref)
+             (set>--set-subdoc> transaction tx-data db-ref))
+           (if (-> tx-data :db/delete (= true))
+             (set>--delete-doc> transaction tx-data)
+             (set>--set-doc> transaction tx-data))))))))
 
 (comment
   (set> {:firestore/path "devtest/dummy-1" :hello "world"})
   (set> {:firestore/path "devtest/dummy-1" :hello [:db/delete]})
   (u/tap> (set> {:firestore/path "devtest/dummy-1" :db/delete true}))
   (u/tap> (get> "devtest/dummy-1"))
+
+  (u/=> (get> "devtest/dummy-1")
+        (fn [doc]
+          (js/console.log "LOADED" doc)
+          (set> [ {:db/ref   "devtest/dummy-1"
+                   :ts       [:db/timestamp]
+                   :children {"a" {:name "a"}
+                              "b" {:name "b"}}}]))
+        (fn [result]
+          (js/console.log "RESULT" result))
+        u/tap>)
+
+  (u/=> (get> "devtest/dummy-1")
+        (fn [doc]
+          (js/console.log "LOADED" doc)
+          (set> [ {:db/ref [ "devtest/dummy-1" :children "c"]
+                   :id     "c"
+                   :ts     [:db/timestamp]}]))
+        (fn [result]
+          (js/console.log "RESULT" result))
+        u/tap>)
   )
 
 (defn transact> [transaction>]
