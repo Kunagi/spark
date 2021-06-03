@@ -174,8 +174,8 @@
               [(spark/doc-schema-col-path Doc)
                doc-id])))
   ([path]
-   (log ::use-doc
-        :path path)
+   ;; (log ::use-doc
+   ;;      :path path)
    (let [[doc set-doc] (use-state nil)
          effect-signal (str path)
          ]
@@ -184,14 +184,14 @@
       [effect-signal]
       (when (and path
                  (not (u/seq-contains-nil? path)))
-        (log ::use-doc--subscribe
-             :path path)
+        ;; (log ::use-doc--subscribe
+        ;;      :path path)
         (let [ref         (firestore/ref path)
               on-snapshot (fn [doc-snapshot]
                             (let [doc (firestore/wrap-doc doc-snapshot)]
-                              (log ::doc-snapshot-received
-                                   :path path
-                                   :doc doc)
+                              ;; (log ::doc-snapshot-received
+                              ;;      :path path
+                              ;;      :doc doc)
                               (set-doc doc)))
               on-error    (fn [^js error]
                             (log ::doc-atom-error
@@ -212,8 +212,8 @@
 (defn use-col
   "React hook for a collection."
   [path]
-  (log ::use-col
-       :path path)
+  ;; (log ::use-col
+  ;;      :path path)
   (let [path (cond
 
                (spark/doc-schema? path)
@@ -225,25 +225,25 @@
 
                :else path)
         [docs set-docs] (use-state nil)
-        effect-signal (str path)]
+        effect-signal   (str path)]
 
     (use-effect
      [effect-signal]
      (when path
-       (log ::use-col--subscribe
-            :path path)
-       (let [col-ref (firestore/ref path)
-             on-snap (fn [^js query-col-snapshot]
-                       (log ::query-snapshot-received
-                            :collection path
-                            :count (-> query-col-snapshot .-docs count)
-                            :snapshot query-col-snapshot)
-                       (->> ^js query-col-snapshot
-                            .-docs
-                            (map firestore/wrap-doc)
-                            set-docs))
-             on-error (fn [^js error]
-                        (js/console.error "Loading collection failed" path error))
+       ;; (log ::use-col--subscribe
+       ;;      :path path)
+       (let [col-ref     (firestore/ref path)
+             on-snap     (fn [^js query-col-snapshot]
+                           ;; (log ::query-snapshot-received
+                           ;;      :collection path
+                           ;;      :count (-> query-col-snapshot .-docs count)
+                           ;;      :snapshot query-col-snapshot)
+                           (->> ^js query-col-snapshot
+                                .-docs
+                                (map firestore/wrap-doc)
+                                set-docs))
+             on-error    (fn [^js error]
+                           (js/console.error "Loading collection failed" path error))
              unsubscribe (.onSnapshot col-ref on-snap on-error)]
 
          unsubscribe)))
@@ -254,8 +254,8 @@
 (defn use-cols-union
   "React hook for a union of collections."
   [paths]
-  (log ::use-cols-union
-       :paths paths)
+  ;; (log ::use-cols-union
+  ;;      :paths paths)
   (->> paths
        (reduce (fn [ret path]
                  (let [docs (use-col path)]
@@ -267,9 +267,9 @@
 
 (defn use-query
   [query context]
-  (log ::execute-query>
-       :query query
-       :context context)
+  ;; (log ::use-query>
+  ;;      :query query
+  ;;      :context context)
 
   (let [result (cond
                  (-> query :path)
@@ -359,9 +359,9 @@
         (when-not (get cache path)
           (-> (u/=> (storage/url> path)
                     (fn [new-url]
-                      (log ::use-storage-url--received
-                           :url new-url
-                           :path path)
+                      ;; (log ::use-storage-url--received
+                      ;;      :url new-url
+                      ;;      :path path)
                       (swap! STORAGE_URLS_CACHE
                              assoc path (or new-url fallback-url))))
               (.catch #(when fallback-url (swap! STORAGE_URLS_CACHE

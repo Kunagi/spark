@@ -244,8 +244,8 @@
 
 
 (defn ^js ref [path]
-  (log ::ref
-       :path path)
+  ;; (log ::ref
+  ;;      :path path)
   (s/assert ::opt-path path)
   (when path
     (loop [col  nil

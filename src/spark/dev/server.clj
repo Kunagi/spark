@@ -22,7 +22,7 @@
     (write-dev-doc "commands" (codec/url-decode query-string "utf-8"))
 
     (do
-      (pprint req)
+      ;; (pprint req)
       {:status 201 :body "Spark Dev Server"})
     )
   )
