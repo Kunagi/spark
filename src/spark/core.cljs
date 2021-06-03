@@ -61,6 +61,8 @@
           (schema-type-of? :doc-schema [:map {:doc-schema/id "some.Doc"}]))
   (schema-type-of? :doc-schema [:map {:something :else}]))
 
+(defn assoc-to-opts [map-schema k v]
+  (assoc-in map-schema [1 k] v))
 
 ;;;
 ;;; Field

@@ -786,7 +786,9 @@
   (when f
     #(eval-with-progress-dialog f)))
 
+;;; * forms
 
+(def assoc-to-field spark/assoc-to-opts)
 
 ;;; * errors
 
@@ -1660,18 +1662,28 @@
                               (spark/field-schema-label field)))
         field-id        (when field (spark/field-schema-field-id field))
         value           (when field-id (get entity field-id))
-        value-component (when value (str value))
+        value-component (if-let [display (-> field spark/schema-opts :display)]
+                          (display value)
+                          (when value (str value)))
         on-click        (or on-click
                             #(show-entity-form-dialog> entity [field]))]
     ($ mui/CardActionArea
        {:onClick on-click}
        ($ FieldCardContent
           {:label label}
-          (when goog.DEBUG
-            (data entity))
+          ;; (when goog.DEBUG
+          ;;   (data (-> field spark/schema-opts :display)))
           (if (and value-component
                    (seq children))
             (<>
              (div value-component)
              (div children))
             (<> value-component children))))))
+
+(defnc EntityFieldsCardActionAreas [{:keys [entity fields]}]
+  (<>
+   (for [field fields]
+     ($ EntityFieldCardActionArea
+        {:key    (-> field spark/field-schema-field-id)
+         :entity entity
+         :field  field}))))
