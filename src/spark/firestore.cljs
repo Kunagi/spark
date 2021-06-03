@@ -427,20 +427,22 @@
 
 (defn- set>--set-doc> [^js transaction tx-data autocreate?]
   (let [path (or (-> tx-data :firestore/path)
-                    (-> tx-data :db/ref))
+                 (-> tx-data :db/ref))
         ref  (ref path)
         data (unwrap-doc tx-data)]
     (u/=> (if autocreate?
             (if transaction
-              (-> (.update transaction ref data)
-                  (.catch (fn [_err]
-                            (.set transaction ref data (clj->js {:merge true})))))
+              (u/=> (get> transaction path)
+                    (fn [doc]
+                      (if doc
+                        (.update transaction ref data)
+                        (.set transaction ref data (clj->js {:merge true}))     )))
               (-> (.update ref data)
                   (.catch (fn [_err]
                             (.set ref data (clj->js {:merge true}))))))
             (if transaction
-              (-> (.update transaction ref data))
-              (-> (.update ref data))))
+              (u/resolve> (.update transaction ref data))
+              (.update ref data)))
           (fn [_] tx-data))))
 
 (defn- set>--delete-doc> [^js transaction tx-data]
@@ -448,7 +450,7 @@
                  (-> tx-data :db/ref))
         ref  (ref path)]
     (u/=> (if transaction
-            (.delete transaction ref)
+            (u/resolve> (.delete transaction ref))
             (.delete ref))
           (fn [_] tx-data))))
 
@@ -553,6 +555,12 @@
     (u/=> (transact> transaction)
           u/tap>))
   )
+
+
+(comment
+  (u/tap> (transact> (fn [{:keys [set>]}]
+                       (set> {:db/ref "devtest/new"
+                              :hello  :world})))))
 
 
 (defn delete-docs> [path]

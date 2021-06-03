@@ -85,9 +85,22 @@
                        :entity entity}))))
   entity)
 
+(defn- entity--migrate-path-to-ref [entity]
+  (if (-> entity :db/ref)
+    entity
+    (if-let [path (-> entity :firestore/path)]
+      (assoc entity :db/ref
+             (if (string? path)
+               path
+               (->> path
+                    (str/join "/")))
+             )
+      entity)))
+
 (defn conform-tx-data-entity [entity]
   (when (seq (dissoc entity :db/ref))
     (-> entity
+        entity--migrate-path-to-ref
         entity--assert-ref
         entity--update-id
         (assoc :ts-updated [:db/timestamp])
@@ -100,6 +113,7 @@
   (conform-tx-data-entity {:db/ref ["devtest/dummy-1" :children "child-1"]})
   (conform-tx-data-entity {:db/ref ["devtest/dummy-1" :children "child-1"]
                            :name   "dummy"})
+  (conform-tx-data-entity {:firestore/path ["devtest" "summy-1"]})
   (str/split "hallo/welt" "/"))
 
 (defn conform-tx-data [tx-data]

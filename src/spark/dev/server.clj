@@ -6,7 +6,7 @@
 
 (defn write-dev-doc [type adoc]
   (let [path (str "dev-doc/" type ".adoc")]
-    (print "write: " path)
+    ;; (print "write: " path)
     (spit path adoc)
     {:status 201
      :body (str "written: " path)}))
