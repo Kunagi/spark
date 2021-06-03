@@ -1092,6 +1092,7 @@
                        then
                        class
                        styles
+                       id
                        auto-hide-dialog]}]
   (when command
     (log ::Button.DEPRECATED.with-command
@@ -1134,6 +1135,7 @@
       ($ mui/Button
          {:to        (coerce-link-to to)
           :component router/Link
+          :id        id
           :variant   (or variant "contained")
           :color     (or color "primary")
           :startIcon icon
@@ -1142,6 +1144,7 @@
          text)
       ($ mui/Button
          {:onClick   on-click
+          :id        id
           :href      href
           :target    target
           :variant   (or variant "contained")

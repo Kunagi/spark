@@ -82,7 +82,27 @@ Bitte E-Mail Adresse eingeben.")
 
      )))
 
-(def-ui LoginSelector [email google microsoft facebook]
+(defn initialize-telephone-sign-in []
+  (log ::initialize-telephone-sign-in)
+  (let [verifier (js/firebase.auth.RecaptchaVerifier.
+                  "recaptcha-container"
+                  (clj->js {:size     :invisible
+                            :callback (fn [^js response]
+                                        (log ::DEBUG--callback
+                                             :response response))}))]
+    (-> js/window .-recaptchaVerifier (set! verifier))))
+
+(def-ui RecaptchaContainer []
+
+  (ui/use-effect
+   :once
+   (initialize-telephone-sign-in)
+   nil)
+
+  (ui/div { :id "recaptcha-container"})
+  )
+
+(def-ui LoginSelector [email telephone google microsoft facebook]
   (if (use-email-sign-in)
     ($ EmailProcess)
 
@@ -102,6 +122,16 @@ Bitte E-Mail Adresse eingeben.")
         ($ ui/Button
            {:text     "Facebook"
             :on-click auth/sign-in-with-facebook}))
+      (when telephone
+        (ui/<>
+         ($ RecaptchaContainer)
+         ($ ui/Button
+            {:text     "Telefon / SMS"
+             :id       "telephone-sign-in-button"
+             :on-click auth/sign-in-with-telephone
+             ;; :on-click (fn [_]
+             ;;             (initialize-telephone-sign-in))
+             })))
       (when email
         ($ ui/Button
            {:text     "E-Mail"
@@ -114,6 +144,7 @@ Bitte E-Mail Adresse eingeben.")
                    :title   "Anmelden / Registrieren"
                    :content ($ LoginSelector
                                {:email     (-> options :email)
+                                :telephone (-> options :telephone)
                                 :google    (-> options :google)
                                 :microsoft (-> options :microsoft)
                                 :facebook  (-> options :facebook)})}))

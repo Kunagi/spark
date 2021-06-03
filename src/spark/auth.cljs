@@ -182,7 +182,7 @@
           (redirect-to-home)
           result)))
 
-;; * Email Sign Index
+;; * Email
 
 (defonce EMAIL_SIGN_IN (atom nil))
 
@@ -209,3 +209,12 @@
   (reset! EMAIL_SIGN_IN {:status :input-email
                          :url    (-> js/window.location.href)}))
 
+
+;; * Telephone
+;; https://firebase.google.com/docs/auth/web/phone-auth?hl=en
+
+(defn sign-in-with-telephone []
+  (log ::sign-in-with-telephone)
+  (-> firebase .auth (.signInWithPhoneNumber
+                      "+1 650-555-1234"
+                      js/window.recaptchaVerifier)))
