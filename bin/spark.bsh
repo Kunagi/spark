@@ -38,7 +38,7 @@ SPARK_DIR=$(realpath $PWD/../spark)
 
 SPAWN_TERMINALS=false
 
-LOCKFILE=.spark.lock
+LOCKFILE=.spark/lockfile
 
 ###
 ### helpers
@@ -142,6 +142,7 @@ fi
 function shadow-watch {
     echo-task "shadow-watch"
 
+    mkdir -p .spark
     touch $LOCKFILE
 
     mkdir -p target
