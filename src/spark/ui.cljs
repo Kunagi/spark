@@ -1236,6 +1236,30 @@
      ($ Field {:label label}
         children)))
 
+
+(defnc FieldCardActionArea [{:keys [on-click
+                                    label children
+                                    entity field]}]
+  (let [label           (or label
+                            (when field
+                              (spark/field-schema-label field)))
+        field-id        (when field (spark/field-schema-field-id field))
+        value           (when field-id (get entity field-id))
+        value-component (when value (str value))]
+    ($ mui/CardActionArea
+       {:onClick on-click}
+       ($ FieldCardContent
+          {:label label}
+          (when goog.DEBUG
+            (data entity))
+          (if (and value-component
+                   (seq children))
+            (<>
+             (div value-component)
+             (div children))
+            (<> value-component children)))))
+  )
+
 ;;;
 ;;; desktop
 ;;;

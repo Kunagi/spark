@@ -76,28 +76,31 @@
 
 
 (defn add-doc-child> [doc inner-path child-values]
-  (let [child-id (get child-values :id)
+  (let [child-id                (get child-values :id)
         [child-id child-values] (if child-id
                                   [child-id child-values]
                                   (let [id (str (random-uuid))]
                                     [id (assoc child-values :id id)]))
-        path (-> inner-path (conj child-id) inner-path-as-string)
-        values {path child-values}]
-    (update-doc> doc values)))
+        path                    (-> inner-path (conj child-id) inner-path-as-string)
+        values                  {path child-values}]
+    (u/=> (update-doc> doc values)
+          (fn [_] child-values))))
 
 
 (defn update-doc-child> [doc inner-path child-id child-values]
-  (let [child-values (assoc child-values
+  (let [child-values (firestore/remove-metadata child-values)
+        child-values (assoc child-values
                             :id child-id
                             :ts-updated [:db/timestamp])
-        values (reduce (fn [values [k v]]
-                         (assoc values
-                                (-> inner-path
-                                    (into [child-id k])
-                                    inner-path-as-string)
-                                v))
-                       {} child-values )]
-    (update-doc> doc values)))
+        values       (reduce (fn [values [k v]]
+                               (assoc values
+                                      (-> inner-path
+                                          (into [child-id k])
+                                          inner-path-as-string)
+                                      v))
+                             {} child-values )]
+    (u/=> (update-doc> doc values)
+          (fn [_] child-values))))
 
 
 (defn transact-doc-update> [doc-schema doc-id update-f]

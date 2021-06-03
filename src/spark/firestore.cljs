@@ -1,7 +1,7 @@
 (ns spark.firestore
   (:require
    [clojure.spec.alpha :as s]
-
+   [goog.object :as gobj]
    [cljs-bean.core :as cljs-bean]
    [spark.logging :refer [log]]
    [spark.utils :as u]
@@ -33,7 +33,7 @@
     firestore
     (throw (js/Error. "FIRESTORE atom not initialized!"))))
 
-;;; helpers
+;;; * helpers
 
 (defn ^js FieldValue []
   (if (exists? js/firebase)
@@ -67,7 +67,99 @@
                 data)))
           data data))
 
-;;; wrap docs to have access to id and path
+(defn remove-metadata [data]
+  (let [data (dissoc data
+                     :firestore/schema
+                     :firestore/doc-path)]
+    (reduce (fn [data [k v]]
+              (if (map? v)
+                (assoc data k (remove-metadata v))
+                data))
+            data data)))
+
+;; * conform to schema
+
+(defn conform-js-data [^js data schema doc-path]
+  (cond
+
+    (nil? data)
+    nil
+
+    (= :keyword schema)
+    (keyword data)
+
+    (= :string schema)
+    (str data)
+
+    (= :int schema)
+    (js/parseInt data)
+
+    (or (string? data) (number? data) (boolean? data))
+    (js->clj data)
+
+    (instance? (if (exists? js/firebase)
+                 (-> js/firebase.firestore.Timestamp)
+                 (-> (js/require "firebase-admin") .-firestore .-Timestamp))
+               data)
+    (-> data .toDate)
+
+    ^boolean (js/Array.isArray data)
+    (case (first schema)
+      :set
+      (into #{} (map (fn [[idx item]]
+                       (conform-js-data item (second schema) (conj doc-path idx)))
+                     (map-indexed vector data)))
+
+      :vector
+      (mapv (fn [[idx item]]
+              (conform-js-data item (second schema) (conj doc-path idx)))
+            (map-indexed vector data))
+
+      ;; else
+      (mapv (fn [[idx item]]
+              (conform-js-data item nil (conj doc-path idx)))
+            (map-indexed vector data)))
+
+    (vector? schema)
+    (case (first schema)
+
+      :map-of
+      (reduce (fn [m js-key]
+                (let [k           js-key
+                      v           (gobj/get data js-key)
+                      k-schema    (if (map? (second schema))
+                                    (nth schema 2)
+                                    (nth schema 1))
+                      v-schema    (if (map? (second schema))
+                                    (nth schema 3)
+                                    (nth schema 2))
+                      k-conformed (conform-js-data k k-schema doc-path)]
+                  (assoc m
+                         k-conformed
+                         (conform-js-data v v-schema (conj doc-path
+                                                           k-conformed)))))
+              {} (js/Object.keys data))
+
+      ;; else -> :map
+      (let [new-data {:firestore/doc-path doc-path}
+            new-data (if-let [doc-schema-id (or (-> schema second :subdoc-schema/id)
+                                                (-> schema second :doc-schema/id))]
+                       (assoc new-data :firestore/schema doc-schema-id)
+                       new-data)]
+        (reduce (fn [m js-key]
+                  (let [k        (keyword js-key)
+                        v        (gobj/get data js-key)
+                        v-schema (u/malli-map-field-schema-by-id schema k)
+                        v        (conform-js-data v v-schema (conj doc-path k))]
+                    (if (nil? v)
+                      m
+                      (assoc m k v))))
+                new-data (js/Object.keys data))))
+
+    :else
+    (js->clj data :keywordize-keys true)))
+
+;; * wrap docs to have access to id and path
 
 (defonce DOC_SCHEMAS (atom {}))
 
@@ -75,7 +167,11 @@
   (swap! DOC_SCHEMAS assoc col-id doc-schema))
 
 (defn conform-doc-data [^js data schema]
-  (u/conform-js-data data schema))
+  (when data
+    (-> data
+        (conform-js-data schema [])
+        (assoc :firestore/schema (-> schema first :doc-schema/id))
+        )))
 
 (defn doc-schema [col-id]
   (get @DOC_SCHEMAS col-id))
@@ -105,10 +201,17 @@
   (-> doc :firestore/exists? boolean))
 
 (defn ^js unwrap-doc [doc]
-  (-> doc
-      (dissoc :firestore/id :firestore/path :firestore/exists?)
-      inject-FieldValues
-      clj->js))
+  ;; (log ::unwrap-doc
+  ;;      :doc doc)
+  (when doc
+    (-> doc
+        (dissoc :firestore/id
+                :firestore/path
+                :firestore/exists?
+                :firestore/schema)
+        inject-FieldValues
+        remove-metadata
+        clj->js)))
 
 ;;; collection and doc references
 

@@ -5,7 +5,6 @@
    [clojure.spec.alpha :as s]
    [cljs.pprint :refer [pprint]]
 
-   [goog.object :as gobj]
 
    [malli.core :as malli]
    [malli.error :as malli-error]))
@@ -533,68 +532,3 @@
         field-schema))))
 
 
-(defn conform-js-data [^js data schema]
-  (cond
-
-    (nil? data)
-    nil
-
-    (= :keyword schema)
-    (keyword data)
-
-    (= :string schema)
-    (str data)
-
-    (= :int schema)
-    (js/parseInt data)
-
-    (or (string? data) (number? data) (boolean? data))
-    (js->clj data)
-
-    (instance? (if (exists? js/firebase)
-                 (-> js/firebase.firestore.Timestamp)
-                 (-> (js/require "firebase-admin") .-firestore .-Timestamp))
-               data)
-    (-> data .toDate)
-
-    ^boolean (js/Array.isArray data)
-    (case (first schema)
-      :set
-      (into #{} (map #(conform-js-data % (second schema)) data))
-
-      :vector
-      (mapv #(conform-js-data % (second schema)) data)
-
-      (mapv #(conform-js-data % nil) data))
-
-    (vector? schema)
-    (case (first schema)
-
-      :map-of
-      (reduce (fn [m js-key]
-                (let [k        js-key
-                      v        (gobj/get data js-key)
-                      k-schema (if (map? (second schema))
-                                 (nth schema 2)
-                                 (nth schema 1))
-                      v-schema (if (map? (second schema))
-                                 (nth schema 3)
-                                 (nth schema 2))]
-                  (assoc m
-                         (conform-js-data k k-schema)
-                         (conform-js-data v v-schema))))
-              {} (js/Object.keys data))
-
-      ;; else -> :map
-      (reduce (fn [m js-key]
-                (let [k        (keyword js-key)
-                      v        (gobj/get data js-key)
-                      v-schema (malli-map-field-schema-by-id schema k)
-                      v        (conform-js-data v v-schema)]
-                  (if (nil? v)
-                    m
-                    (assoc m k v))))
-              {} (js/Object.keys data)))
-
-    :else
-    (js->clj data :keywordize-keys true)))

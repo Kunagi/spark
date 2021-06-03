@@ -20,7 +20,6 @@
    [spark.form :as form]
    [spark.react :as react]
    [spark.repository :as repository]
-   [spark.firestore :as fs]
    ))
 
 
@@ -350,12 +349,6 @@
                           (log ::submit
                                :form form
                                :values values)
-                          #_(when-let [command (get form :command)]
-                              (-> (runtime/execute-command>
-                                   command
-                                   (assoc context
-                                          :values values))
-                                  (.then close)))
                           (when-let [submit (get form :submit)]
                             (let [result (submit values)
                                   p      (u/as> result)]
@@ -416,7 +409,7 @@
                         :grid-template-columns "max-content max-content"
                         :grid-gap              "8px"}}
                ($ mui/Button
-                  {:onClick close}
+                  {:onClick #(close nil)}
                   "Abbrechen")
                ($ mui/Button
                   {:onClick on-submit
@@ -477,15 +470,15 @@
 (defnc FieldCardArea [{:keys [entity update-f field]}]
   #_(u/log-deprecated "use CommandCardArea")
   (u/assert-malli [:map] entity)
-  (let [id (form/field-id field)
-        label (or (when (spark/field-schema? field)
-                    (-> field spark/schema-opts :label))
-                  (get field :label))
-        value (get entity id)
+  (let [id     (form/field-id field)
+        label  (or (when (spark/field-schema? field)
+                     (-> field spark/schema-opts :label))
+                   (get field :label))
+        value  (get entity id)
         submit #(let [changes {id (get % id)}]
                   (if update-f
                     (update-f changes)
-                    (fs/update-fields> entity %)))]
+                    (repository/update-doc> entity %)))]
     ($ FormCardArea
        {:form {:fields [field]
                :values {id value}
@@ -535,7 +528,7 @@
                           (repository/update-doc> doc changes)
                           (do
                             (u/log-deprecated "use doc, not doc-path")
-                            (fs/update-fields> doc-path changes))))
+                            (repository/update-doc> doc-path changes))))
         type         (get field :type)]
     ($ FormCardArea
        {:form {:fields [(assoc field :value value)]
