@@ -33,6 +33,7 @@
    [spark.react :as spark-react]
    [spark.core :as spark]
    [spark.firestore :as firestore]
+   [spark.db :as db]
    [spark.browser :as browser]
 
    [spark.firebase-storage :as storage]
@@ -286,7 +287,14 @@
     (when result
       (runtime/post-process-query-result query context result))))
 
-(def transact> firestore/transact>)
+;; * db
+
+(def db-get> db/get>)
+(def transact> db/transact>)
+(def db-update> db/update>)
+(def db-add> db/add>)
+(def db-add-child> db/add-child>)
+(def db-delete> db/delete>)
 
 ;; * Styles / Theme
 
@@ -1237,28 +1245,6 @@
         children)))
 
 
-(defnc FieldCardActionArea [{:keys [on-click
-                                    label children
-                                    entity field]}]
-  (let [label           (or label
-                            (when field
-                              (spark/field-schema-label field)))
-        field-id        (when field (spark/field-schema-field-id field))
-        value           (when field-id (get entity field-id))
-        value-component (when value (str value))]
-    ($ mui/CardActionArea
-       {:onClick on-click}
-       ($ FieldCardContent
-          {:label label}
-          (when goog.DEBUG
-            (data entity))
-          (if (and value-component
-                   (seq children))
-            (<>
-             (div value-component)
-             (div children))
-            (<> value-component children)))))
-  )
 
 ;;;
 ;;; desktop
@@ -1627,7 +1613,7 @@
                {:class "MuiButtonBase-root MuiButton-root MuiButton-contained"}
                (or upload-text "Bild auswählen..."))))))))
 
-;;; dialogs
+;; * misc dialogs
 
 
 (defnc SelectionList [{:keys [items on-select]}]
@@ -1652,3 +1638,40 @@
                              :id dialog-id
                              :content SelectionList)]
     (show-dialog dialog)))
+
+;; * db dialogs
+
+(defn show-entity-form-dialog> [entity fields]
+  (show-form-dialog>
+   {:fields fields
+    :values (select-keys entity
+                         (map spark/field-schema-field-id fields))
+    :submit (fn [values]
+              (when values
+                (db-update> entity values)))}))
+
+;; * db components
+
+(defnc EntityFieldCardActionArea [{:keys [on-click
+                                          label children
+                                          entity field]}]
+  (let [label           (or label
+                            (when field
+                              (spark/field-schema-label field)))
+        field-id        (when field (spark/field-schema-field-id field))
+        value           (when field-id (get entity field-id))
+        value-component (when value (str value))
+        on-click        (or on-click
+                            #(show-entity-form-dialog> entity [field]))]
+    ($ mui/CardActionArea
+       {:onClick on-click}
+       ($ FieldCardContent
+          {:label label}
+          (when goog.DEBUG
+            (data entity))
+          (if (and value-component
+                   (seq children))
+            (<>
+             (div value-component)
+             (div children))
+            (<> value-component children))))))

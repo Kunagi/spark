@@ -441,17 +441,19 @@
 
 (defnc FieldLabel [{:keys [text]}]
   (d/div
-   {:style {:color "grey"}}
+   {:class "FieldLabel"
+    :style {:color "grey"}}
    text))
 
 (defnc Field [{:keys [label children]}]
   ($ :div
      {:spacing 0.5
-      :class "EditableField"}
+      :class   "Field EditableField"}
      ($ FieldLabel
         {:text label})
      (d/div
-      {:style {:min-height "15px"}}
+      {:class "FieldValue"
+       :style {:min-height "15px"}}
       children)))
 
 
