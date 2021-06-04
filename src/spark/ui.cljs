@@ -1680,7 +1680,7 @@
              (div children))
             (<> value-component children))))))
 
-(defnc EntityFieldsCardActionAreas [{:keys [entity fields]}]
+(defnc EntityFieldsCardActionAreas [{:keys [entity fields children]}]
   (<>
    (for [field fields]
      ($ EntityFieldCardActionArea
