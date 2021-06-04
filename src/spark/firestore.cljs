@@ -109,12 +109,18 @@
     (case (first schema)
       :set
       (into #{} (map (fn [[idx item]]
-                       (conform-js-data item (second schema) (conj db-doc-ref idx)))
+                       (let [item-schema (if (map? (second schema))
+                                           (nth schema 2)
+                                           (nth schema 1))]
+                         (conform-js-data item item-schema (conj db-doc-ref idx))))
                      (map-indexed vector data)))
 
       :vector
       (mapv (fn [[idx item]]
-              (conform-js-data item (second schema) (conj db-doc-ref idx)))
+              (let [item-schema (if (map? (second schema))
+                                  (nth schema 2)
+                                  (nth schema 1))]
+                (conform-js-data item item-schema (conj db-doc-ref idx))))
             (map-indexed vector data))
 
       ;; else
