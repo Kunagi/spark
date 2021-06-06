@@ -83,7 +83,9 @@
 
 (defn field-schema-field-id [Field]
   (assert-field-schema Field)
-  ( -> (schema-opts Field) :id))
+  (let [opts (schema-opts Field)]
+    (or (-> opts :field-id)
+        (-> opts :id))))
 
 (defn field-schema-label [Field]
   (assert-field-schema Field)

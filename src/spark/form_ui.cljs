@@ -68,6 +68,13 @@
 (defmethod create-input "text" [field]
   ($ :div
      ;; ($ :pre (str field))
+     ;; (when goog.DEBUG
+     ;;   ($ :div
+     ;;      {:style {:padding          "8px"
+     ;;               :background-color "black"
+     ;;               :color            "#6F6"
+     ;;               :font-family      "monospace"}}
+     ;;      (u/->edn (:value field))))
      ($ mui/TextField
         {
          :id              (-> field :id name)
@@ -379,6 +386,13 @@
                             :color            "#6F6"
                             :font-family      "monospace"}}
                    (u/->edn data))))
+            ;; (when goog.DEBUG
+            ;;   ($ :div
+            ;;      {:style {:padding          "8px"
+            ;;               :background-color "black"
+            ;;               :color            "#6F6"
+            ;;               :font-family      "monospace"}}
+            ;;      (u/->edn (-> form :values))))
             #_($ :pre (-> context keys str))
             ($ :div
                {:style {:width     "500px"

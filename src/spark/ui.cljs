@@ -1680,6 +1680,8 @@
                             #(show-entity-form-dialog> entity [field]))]
     ($ mui/CardActionArea
        {:onClick on-click}
+       ;; (data {:field-id field-id
+       ;;        :value    value})
        ($ FieldCardContent
           {:label label}
           ;; (when goog.DEBUG
@@ -1691,7 +1693,7 @@
              (div children))
             (<> value-component children))))))
 
-(defnc EntityFieldsCardActionAreas [{:keys [entity fields children]}]
+(defnc EntityFieldsCardActionAreas [{:keys [entity fields]}]
   (<>
    (for [field fields]
      ($ EntityFieldCardActionArea

@@ -24,7 +24,8 @@
 (defn field-id [field]
   (if (spark/field-schema? field)
     (-> field spark/schema-opts :id)
-    (or (-> field :id)
+    (or (-> field :field-id)
+        (-> field :id)
         (-> field :attr/key))))
 
 
@@ -59,6 +60,7 @@
                               (name id)
                               (str id))))]
     (assoc field
+           :id id
            :auto-focus? (= 0 idx)
            :name field-name
            :label (or (-> field :label)
@@ -91,31 +93,31 @@
 
 (defn initialize [form]
   (s/assert ::form form)
-  (log ::initialize
-       :form form)
+  ;; (log ::initialize
+  ;;      :form form)
   (let [fields (into []
                      (map-indexed
                       (partial initialize-field form)
                       (->> form
                            :fields
                            (remove nil?))))
-        form (assoc form :fields fields)
-        form (assoc form :values
-                    (reduce (fn [values field]
-                              (let [field-id (-> field field-id)
-                                    value (or (-> values (get field-id))
-                                              (-> field :value)
-                                              (-> field :default-value))
-                                    value (prepare-field-value value field)]
-                                (assoc values field-id value)))
-                            (or (-> form :values) {}) (-> form :fields)))
-        form (update form :fields
-                     (fn [fields]
-                       (mapv (fn [field]
-                               (assoc field :value (get-in form [:values (:id field)])))
-                             fields)))]
-    ;; (log ::initialized
-    ;;      :form form)
+        form   (assoc form :fields fields)
+        form   (assoc form :values
+                      (reduce (fn [values field]
+                                (let [field-id (-> field field-id)
+                                      value    (or (-> values (get field-id))
+                                                   (-> field :value)
+                                                   (-> field :default-value))
+                                      value    (prepare-field-value value field)]
+                                  (assoc values field-id value)))
+                              (or (-> form :values) {}) (-> form :fields)))
+        form   (update form :fields
+                       (fn [fields]
+                         (mapv (fn [field]
+                                 (assoc field :value (get-in form [:values (:id field)])))
+                               fields)))]
+    (log ::initialized
+         :form form)
     form))
 
 
