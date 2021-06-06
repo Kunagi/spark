@@ -174,7 +174,7 @@
 (defn delete> [thing]
   (transact> (delete-tx thing)))
 
-(defn add-child-tx [thing path values]
+(defn add-child-tx [parent-thing path values]
   ;; (when-not (vector? path)
   ;;   (throw (ex-info "add-child-tx: path must be a vector"
   ;;                   {:thing thing
@@ -182,7 +182,7 @@
   ;;                    :values  values})))
   (let [id  (or (-> values :id)
                 (str (random-uuid)))
-        ref (let [ref (->ref thing)]
+        ref (let [ref (->ref parent-thing)]
               (-> (if (string? ref) [ref] ref)
                   (into (if (vector? path) path [path]))
                   (conj id)))]
@@ -194,8 +194,8 @@
   (add-child-tx "devtest/db-1" :children {:some "child"})
   (add-child-tx ["devtest/db-1" :group "g1"] :children {:some "child"}))
 
-(defn add-child> [thing path values]
-  (transact> (add-child-tx thing path values)))
+(defn add-child> [parent-thing path values]
+  (transact> (add-child-tx parent-thing path values)))
 
 
 (comment

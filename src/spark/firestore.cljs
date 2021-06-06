@@ -79,6 +79,29 @@
                 data))
             data data)))
 
+(defn encode-field-key [k]
+  (cond
+    (qualified-keyword? k) (str (namespace k) ":" (name k))
+    (simple-keyword? k)    (name k)
+    :else                  k))
+
+(defn decode-field-key [s]
+  (let [parts (str/split s ":")]
+    (if (-> parts count (> 1))
+      (keyword (first parts) (->> parts rest (str/join ":")))
+      (keyword (first parts)))))
+
+(defn- entity--encode-keys [data]
+  (reduce (fn [data [k v]]
+            (let [new-k (encode-field-key k)
+                  new-v (if (map? v)
+                          (entity--encode-keys v)
+                          v)]
+              ;; (log ::DEBUG
+              ;;      :k k :new-k new-k)
+              (assoc data new-k new-v)))
+          data data))
+
 ;; * conform to schema
 
 (defn conform-js-data [^js data schema db-doc-ref]
@@ -155,7 +178,7 @@
                        (assoc new-data :firestore/schema doc-schema-id)
                        new-data)]
         (reduce (fn [m js-key]
-                  (let [k        (keyword js-key)
+                  (let [k        (decode-field-key js-key)
                         v        (gobj/get data js-key)
                         v-schema (u/malli-map-field-schema-by-id schema k)
                         v        (conform-js-data v v-schema (conj db-doc-ref k))]
@@ -222,6 +245,7 @@
                 :db/ref)
         inject-FieldValues
         remove-metadata
+        entity--encode-keys
         clj->js)))
 
 ;;; collection and doc references
@@ -341,31 +365,31 @@
       (.update (unwrap-doc fields))))
 
 
-(defn- flatten-map
+(defn- flatten-entity-map
   ([m]
-   (flatten-map nil nil m))
+   (flatten-entity-map nil nil m))
   ([doc prefix m]
    (let [m (remove-metadata m)]
      (reduce (fn [doc [k v]]
-               (let [k (if (keyword? k) (name k) (str k))
+               (let [k (encode-field-key k)
                      k (if prefix
                          (str prefix "." k)
                          k)]
                  (if (map? v)
-                   (flatten-map doc k v)
+                   (flatten-entity-map doc k v)
                    (assoc doc k v))))
              doc m))))
 
 (comment
-  (flatten-map {:id "1"
-                :name "witek"
-                :skills {"java" {:id "java"
-                                 :name "Java"}
-                         "clojure" {:id "clojure"
-                                    :name "Clojure"}}}))
+  (flatten-entity-map {:id     "1"
+                       :name   "witek"
+                       :skills {"java"    {:id   "java"
+                                           :name "Java"}
+                                "clojure" {:id   "clojure"
+                                           :name "Clojure"}}}))
 
 (defn update-child-fields> [doc child-path child-id child-changes]
-  (let [changes (flatten-map {} (str child-path "." child-id) child-changes)]
+  (let [changes (flatten-entity-map {} (str child-path "." child-id) child-changes)]
     (update-fields> doc changes)))
 
 
@@ -432,6 +456,8 @@
 
 
 (defn- set>--set-doc> [^js transaction tx-data autocreate?]
+  (log ::set>--set-doc>
+       :tx-data tx-data)
   (let [path (or (-> tx-data :firestore/path)
                  (-> tx-data :db/ref))
         ref  (ref path)
@@ -477,9 +503,9 @@
 
 (defn set>--set-subdoc> [^js transaction tx-data db-ref]
   (let [doc-path (first db-ref)
-        entity   (flatten-map {:firestore/path doc-path}
-                              (subdoc-prefix-from-db-ref db-ref)
-                              tx-data)]
+        entity   (flatten-entity-map {:firestore/path doc-path}
+                                     (subdoc-prefix-from-db-ref db-ref)
+                                     tx-data)]
     (set>--set-doc> transaction entity false)))
 
 (defn set>
