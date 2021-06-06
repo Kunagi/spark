@@ -178,7 +178,7 @@
   (when data
     (-> data
         (conform-js-data schema db-doc-ref)
-        (assoc :firestore/schema (-> schema first :doc-schema/id))
+        (assoc :firestore/schema (-> schema second :doc-schema/id))
         )))
 
 (defn doc-schema [col-id]
