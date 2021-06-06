@@ -134,6 +134,14 @@
      nil))
   ($ :div))
 
+(defonce HISTORY (atom nil))
+
+(defn redirect [to]
+  (let [to (if (vector? to)
+             (str/join "/" to)
+             (str to))]
+    (-> ^js @HISTORY (.push to))))
+
 ;; * auth
 
 (def sign-out> auth/sign-out>)
@@ -1380,8 +1388,10 @@
         [docs context] (if sign-in-request?
                          [nil context]
                          (load-docs+context context spa page params))
-
+        history        (use-history)
         ]
+
+    (reset! HISTORY history)
 
     (provider
      {:context SPARK_CONTEXT :value context}
@@ -1493,6 +1503,7 @@
                             :uid        uid}
         update-app-context (-> spa :update-app-context)
         spark-context      (u/safe-apply update-app-context [spark-context])]
+
     ($ mui/ThemeProvider
        {:theme (-> spa :theme)}
        (provider

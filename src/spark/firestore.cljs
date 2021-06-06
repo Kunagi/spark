@@ -456,8 +456,8 @@
 
 
 (defn- set>--set-doc> [^js transaction tx-data autocreate?]
-  (log ::set>--set-doc>
-       :tx-data tx-data)
+  ;; (log ::set>--set-doc>
+  ;;      :tx-data tx-data)
   (let [path (or (-> tx-data :firestore/path)
                  (-> tx-data :db/ref))
         ref  (ref path)
