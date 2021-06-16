@@ -1,19 +1,22 @@
 {:paths ["src" "resources"]
  :deps  {
-         org.clojure/clojurescript {:mvn/version "1.10.758"}
-         org.clojure/spec.alpha {:mvn/version "0.2.187"}
+         org.clojure/clojurescript {:mvn/version "RELEASE"}
+         org.clojure/spec.alpha    {:mvn/version "RELEASE"}
 
-         lilactown/helix {:mvn/version "0.0.15"}
-         cljs-bean/cljs-bean {:mvn/version "1.6.0"}
-         tick/tick {:mvn/version "0.4.30-alpha"}
-         metosin/malli {:mvn/version "0.4.0"}
+         expectations/clojure-test   {:mvn/version "RELEASE"}
+         pjstadig/humane-test-output {:mvn/version "0.11.0"}
+
+         lilactown/helix                     {:mvn/version "0.0.15"}
+         cljs-bean/cljs-bean                 {:mvn/version "1.6.0"}
+         tick/tick                           {:mvn/version "0.4.30-alpha"}
+         metosin/malli                       {:mvn/version "0.4.0"}
          camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}
          }
 
  :aliases {
            :test
            {:extra-paths ["test"]
-            :extra-deps  {expectations/clojure-test {:mvn/version "RELEASE"}}}
+            :extra-deps  {}}
 
            :shadow-cljs
            {:extra-paths ["dev" "test"]
@@ -24,4 +27,4 @@
 
            :build-release
            {:extra-deps {thheller/shadow-cljs {:mvn/version "RELEASE"}}
-            :main-opts ["-m" "shadow.cljs.devtools.cli" "release" "spa" "gcf"]}}}
+            :main-opts  ["-m" "shadow.cljs.devtools.cli" "release" "spa" "gcf"]}}}

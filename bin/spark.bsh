@@ -147,7 +147,7 @@ function shadow-watch {
 
     mkdir -p target
     date -Iminutes > src/spa/version-time.txt
-    SHADOW_CMD="clojure -M:shadow-cljs watch spa gcf"
+    SHADOW_CMD="clojure -M:shadow-cljs watch spa gcf gcf-test"
     exec "$SHADOW_CMD"
 
     #rm $LOCKFILE

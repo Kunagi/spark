@@ -138,7 +138,7 @@
 
 (defn redirect [to]
   (let [to (if (vector? to)
-             (str/join "/" to)
+             (str "/ui/" (str/join "/" to))
              (str to))]
     (-> ^js @HISTORY (.push to))))
 
