@@ -30,4 +30,8 @@
                         .-data
                         (js->clj :keywordize-keys true)
                         resolve)))
-           (.catch reject))))))
+           (.catch (fn [error]
+                     (reject (ex-info (str "Call to " gcf-name " failed")
+                                      {:gcf-name gcf-name
+                                       :data     data}
+                                      error)))))))))
