@@ -35,6 +35,7 @@
    [spark.firestore :as firestore]
    [spark.db :as db]
    [spark.browser :as browser]
+   [spark.firebase-functions :as firebase-functions]
 
    [spark.firebase-storage :as storage]
    [spark.runtime :as runtime]
@@ -141,6 +142,10 @@
              (str "/ui/" (str/join "/" to))
              (str to))]
     (-> ^js @HISTORY (.push to))))
+
+;; * firebase
+
+(def call-server> firebase-functions/call>)
 
 ;; * auth
 
@@ -890,7 +895,14 @@
   (when f
     (fn [& args]
       (try
-        (apply f args)
+        (let [result (apply f args)]
+          (if (instance? js/Promise result)
+            (-> result
+                (.catch (fn [error]
+                          (show-error error)
+                          error)))
+            result)
+          result)
         (catch :default error (show-error error))))))
 
 
