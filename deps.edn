@@ -3,8 +3,8 @@
          org.clojure/clojurescript {:mvn/version "RELEASE"}
          org.clojure/spec.alpha    {:mvn/version "RELEASE"}
 
-         expectations/clojure-test   {:mvn/version "RELEASE"}
-         pjstadig/humane-test-output {:mvn/version "0.11.0"}
+         ;; com.github.seancorfield/expectations {:mvn/version "2.0.0-alpha2"}
+         ;; pjstadig/humane-test-output          {:mvn/version "0.11.0"}
 
          lilactown/helix                     {:mvn/version "0.0.15"}
          cljs-bean/cljs-bean                 {:mvn/version "1.6.0"}
@@ -27,4 +27,6 @@
 
            :build-release
            {:extra-deps {thheller/shadow-cljs {:mvn/version "RELEASE"}}
-            :main-opts  ["-m" "shadow.cljs.devtools.cli" "release" "spa" "gcf"]}}}
+            :main-opts  ["-m" "shadow.cljs.devtools.cli" "release" "spa" "gcf"]}
+
+           }}
