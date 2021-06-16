@@ -109,9 +109,12 @@
 (defn handle-on-call-result [result]
   (if (instance? js/Promise result)
     (js/Promise.
-     (fn [resolve _reject]
+     (fn [resolve reject]
        (-> result
-           (.then #(resolve (handle-on-call-result %))))))
+           (.then #(resolve (handle-on-call-result %)))
+           (.catch (fn [error]
+                     (js/console.error error)
+                     (reject error))))))
     (clj->js result)))
 
 (defn on-call [handler]
