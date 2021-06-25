@@ -12,6 +12,7 @@
    [spark.firestore :as firestore]))
 
 ;; * config
+;; https://firebase.google.com/docs/functions/config-env
 
 (defn config
   ([path]
