@@ -79,7 +79,8 @@
         className (or class className)
         remote?   (and (string? to)
                        (or (-> to (.startsWith "https:"))
-                           (-> to (.startsWith "http:"))))]
+                           (-> to (.startsWith "http:"))
+                           (-> to (.startsWith "mailto:"))))]
     (if (or remote? (nil? to))
       ($ :a
          {:href      to
