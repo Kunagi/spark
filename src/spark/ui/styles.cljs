@@ -7,6 +7,7 @@
 (defn app-styles [theme]
   {
    :.center {:display :grid :place-items "center"}
+   :.center-text {:text-align "center"}
 
    :.grid-0 {:display :grid}
    :.grid-1 {:display :grid :grid-gap (-> theme (.spacing 1))}

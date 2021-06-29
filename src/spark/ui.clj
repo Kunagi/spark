@@ -139,6 +139,9 @@
 (defmacro center-div [& style-and-children]
   (html-element :div style-and-children "center" nil))
 
+(defmacro center-text [& style-and-children]
+  (html-element :div style-and-children "center-text" nil))
+
 (defmacro icon [icon-name & style-and-children]
   (let [icon-name (if (keyword? icon-name)
                     (name icon-name)
