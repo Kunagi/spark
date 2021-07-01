@@ -773,6 +773,22 @@
 (def show-form-dialog> form-ui/show-form-dialog>)
 (def use-hide-form-dialog form-ui/use-hide-form-dialog)
 
+(def-ui MessageDialogContent [message options]
+  (let [hide (use-hide-dialog)]
+    (stack-3
+     message
+     (center ($ mui/Button
+                {:onClick hide}
+                "OK")))))
+
+(defn show-message-dialog
+  ([message]
+   (show-message-dialog message {}))
+  ([message options]
+   (show-dialog {:title (-> options :title)
+                 :content ($ MessageDialogContent {:message message
+                                                   :options options})})))
+
 ;; ** PromiseProgress
 
 (def-ui PromiseProgress [promise]
