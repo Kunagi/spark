@@ -10,6 +10,8 @@
 
    [clojure.string :as str]))
 
+(def use-auth-user (ui/atom-hook auth/AUTH_USER))
+
 (def use-email-sign-in (ui/atom-hook auth/EMAIL_SIGN_IN))
 
 (def-ui EmailProcess []

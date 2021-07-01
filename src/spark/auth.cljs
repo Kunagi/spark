@@ -84,6 +84,8 @@
          user)))))
 
 (defn- import-user [^js u]
+  (log ::import-user
+       :user u)
   (when u
     {:display-name (-> u .-displayName)
      :email (-> u .-email)
