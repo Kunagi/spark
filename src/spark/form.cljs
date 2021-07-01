@@ -149,10 +149,26 @@
       :type
       (or "text")))
 
+(defn default-number-validator [form field]
+  (fn [value form]
+    (let [min-value (-> field :min)
+          max-value (-> field :max)]
+      (when value
+        (cond
+          (and min-value (< value min-value)) (str "Minimum: " min-value)
+          (and max-value (> value max-value)) (str "Maximum: " max-value))))))
+
+(defn default-field-validator [form field-id]
+  (let [field (field-by-id form field-id)]
+    (case (-> field :type)
+      :number (default-number-validator form field)
+      nil)))
+
 (defn field-validator [form field-id]
-  (-> form
-      (field-by-id field-id)
-      :validator))
+  (or (-> form
+          (field-by-id field-id)
+          :validator)
+      (default-field-validator form field-id)))
 
 (defn field-coercer [form field-id]
   (-> form

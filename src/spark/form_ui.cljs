@@ -66,42 +66,78 @@
                            "text")))
 
 (defmethod create-input "text" [field]
-  ($ :div
-     ;; ($ :pre (str field))
-     ;; (when goog.DEBUG
-     ;;   ($ :div
-     ;;      {:style {:padding          "8px"
-     ;;               :background-color "black"
-     ;;               :color            "#6F6"
-     ;;               :font-family      "monospace"}}
-     ;;      (u/->edn (:value field))))
-     ($ mui/TextField
-        {
-         :id              (-> field :id name)
-         :name            (-> field :name)
-         :autoComplete    (-> field :auto-complete)
-         :value           (or (-> field :value) "")
-         :required        (-> field :required?)
-         :error           (boolean (-> field :error))
-         :helperText      (-> field :error)
-         :onChange        #((:on-change field)
-                            (-> % .-target .-value))
-         :onKeyPress      (when-not (-> field :multiline?)
-                            #(when (= "Enter" (-> ^js % .-nativeEvent .-code))
-                               ((:on-submit field))))
-         :label           (-> field :label)
-         :type            (-> field :input-type)
-         :multiline       (get field :multiline?)
-         :rows            (get field :rows (when (get field :multiline?) 5))
-         :autoFocus       (-> field :auto-focus?)
-         :inputProps      (if-let [props (-> field :input-props)]
-                            (clj->js props)
-                            (clj->js {}))
-         :InputLabelProps #js {:shrink true}
-         :margin          "dense"
-         ;; :variant "filled"
-         :variant         "outlined"
-         :fullWidth       true})))
+  (let [inc-dec (fn [amount]
+                  (let [value (-> field :value)
+                        new-value (+ value amount)
+                        min-value (-> field :min)
+                        max-value (-> field :max)]
+                    (when (and (or (nil? min-value)
+                                   (> new-value value)
+                                   (>= new-value min-value))
+                               (or (nil? max-value)
+                                   (< new-value value)
+                                   (<= new-value max-value)))
+                      ((:on-change field) new-value))))
+        start-adornment (or (-> field :start-adornment)
+                            (when (-> field :plusminus-adronments)
+                              ($ mui/Button
+                                 {:onClick #(inc-dec -1)
+                                  :variant "contained"
+                                  :size "small"
+                                  :className "FormPlusMinusAdornmentButton"}
+                                 "-")))
+        start-adornment (when start-adornment
+                          ($ :div
+                             {:style {:margin-right "8px"}}
+                             start-adornment))
+        end-adornment (or (-> field :start-adornment)
+                          (when (-> field :plusminus-adronments)
+                            ($ mui/Button
+                               {:onClick #(inc-dec 1)
+                                :variant "contained"
+                                :size "small"
+                                :className "FormPlusMinusAdornmentButton"}
+                               "+")))
+        input-props (or (-> field :input-props)
+                        {})
+        InputProps  {:startAdornment start-adornment
+                     :endAdornment end-adornment}
+        ]
+    ($ :div
+       ;; ($ :pre (str field))
+       ;; (when goog.DEBUG
+       ;;   ($ :div
+       ;;      {:style {:padding          "8px"
+       ;;               :background-color "black"
+       ;;               :color            "#6F6"
+       ;;               :font-family      "monospace"}}
+       ;;      (u/->edn (:value field))))
+       ($ mui/TextField
+          {
+           :id              (-> field :id name)
+           :name            (-> field :name)
+           :autoComplete    (-> field :auto-complete)
+           :value           (or (-> field :value) "")
+           :required        (-> field :required?)
+           :error           (boolean (-> field :error))
+           :helperText      (-> field :error)
+           :onChange        #((:on-change field)
+                              (-> % .-target .-value))
+           :onKeyPress      (when-not (-> field :multiline?)
+                              #(when (= "Enter" (-> ^js % .-nativeEvent .-code))
+                                 ((:on-submit field))))
+           :label           (-> field :label)
+           :type            (-> field :input-type)
+           :multiline       (get field :multiline?)
+           :rows            (get field :rows (when (get field :multiline?) 5))
+           :autoFocus       (-> field :auto-focus?)
+           :inputProps      (clj->js input-props)
+           :InputProps      (clj->js InputProps)
+           :InputLabelProps #js {:shrink true}
+           :margin          "dense"
+           ;; :variant "filled"
+           :variant         "outlined"
+           :fullWidth       true}))))
 
 
 (defmethod create-input "tel" [field]
