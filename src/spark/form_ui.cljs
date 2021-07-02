@@ -79,25 +79,39 @@
                                    (<= new-value max-value)))
                       ((:on-change field) new-value))))
         start-adornment (or (-> field :start-adornment)
-                            (when (-> field :plusminus-adronments)
-                              ($ mui/Button
-                                 {:onClick #(inc-dec -1)
-                                  :variant "contained"
-                                  :size "small"
-                                  :className "FormPlusMinusAdornmentButton"}
-                                 "-")))
+                            #_(when (-> field :plusminus-adronments)
+                                ($ mui/Button
+                                   {:onClick #(inc-dec -1)
+                                    :variant "contained"
+                                    :size "small"
+                                    :className "FormPlusMinusAdornmentButton"}
+                                   "-")))
         start-adornment (when start-adornment
                           ($ :div
                              {:style {:margin-right "8px"}}
                              start-adornment))
-        end-adornment (or (-> field :start-adornment)
+        end-adornment (or (-> field :end-adornment)
                           (when (-> field :plusminus-adronments)
-                            ($ mui/Button
-                               {:onClick #(inc-dec 1)
-                                :variant "contained"
-                                :size "small"
-                                :className "FormPlusMinusAdornmentButton"}
-                               "+")))
+                            ($ :div
+                               {:style {:display "grid"
+                                        :grid-template-columns "max-content max-content"
+                                        :grid-gap "8px"}}
+                               ($ mui/Button
+                                  {:onClick #(inc-dec -1)
+                                   :variant "contained"
+                                   :size "small"
+                                   :className "FormPlusMinusAdornmentButton"}
+                                  "-")
+                               ($ mui/Button
+                                  {:onClick #(inc-dec 1)
+                                   :variant "contained"
+                                   :size "small"
+                                   :className "FormPlusMinusAdornmentButton"}
+                                  "+"))))
+        end-adornment (when end-adornment
+                        ($ :div
+                           {:style {:margin-left "8px"}}
+                           end-adornment))
         input-props (or (-> field :input-props)
                         {})
         InputProps  {:startAdornment start-adornment
