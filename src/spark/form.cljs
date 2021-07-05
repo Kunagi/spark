@@ -28,7 +28,6 @@
         (-> field :id)
         (-> field :attr/key))))
 
-
 (defn- initialize-field [form idx field]
   (let [field         (if (spark/field-schema? field)
                         (spark/field-schema-as-form-field field)
@@ -71,8 +70,22 @@
                            (-> field :rows boolean))
            :auto-complete (get field :auto-complete "off"))))
 
+(def ^js eur-number-format
+  (-> js/Intl (.NumberFormat "de-DE"
+                             (clj->js {:style    "currency"
+                                       :currency "EUR"}))))
+
+(defn- format-eur [value]
+  (when value
+    (-> eur-number-format
+        (.format value)
+        (.replace "€" "")
+        .trim)))
+
 (defn- prepare-field-value [value field]
   (case (-> field :type)
+
+    :eur (format-eur value)
 
     :checkboxes
     (->> field :options (map :value) (into #{}) (set/intersection value))
@@ -158,10 +171,15 @@
           (and min-value (< value min-value)) (str "Minimum: " min-value)
           (and max-value (> value max-value)) (str "Maximum: " max-value))))))
 
+(defn default-eur-validator [form field]
+  (fn [value form]
+    (when value)))
+
 (defn default-field-validator [form field-id]
   (let [field (field-by-id form field-id)]
     (case (-> field :type)
       :number (default-number-validator form field)
+      :eur (default-eur-validator form field)
       nil)))
 
 (defn field-validator [form field-id]
@@ -197,6 +215,7 @@
       nil
       (let [value   (case field-type
                       :number (js/parseInt value)
+                      :eur (-> value (.replace "," "."))
                       value)
             coercer (field-coercer form field-id)
             value   (if-not coercer

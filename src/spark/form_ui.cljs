@@ -154,6 +154,12 @@
            :fullWidth       true}))))
 
 
+(defmethod create-input "eur" [field]
+  (create-input (assoc field
+                       :type "text"
+                       :input-type "text"
+                       :end-adornment "€")))
+
 (defmethod create-input "tel" [field]
   (create-input (assoc field
                        :type "text"
