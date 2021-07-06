@@ -220,9 +220,32 @@
 (defn sign-in-with-telephone []
   (log ::sign-in-with-telephone)
   (reset! TELEPHONE_SIGN_IN {:status :input-telephone
-                             :url    (-> js/window.location.href)})
-  ;; (-> firebase .auth (.signInWithPhoneNumber
-  ;;                     ;; "+1 650-555-1234"
-  ;;                     "+4915774737908"
-  ;;                     js/window.recaptchaVerifier))
+                             :telephone (when goog.DEBUG "+16505551234")
+                             :url    (-> js/window.location.href)}))
+
+(defn send-sign-in-code-to-telephone [telephone]
+  (-> firebase
+      .auth
+      (.signInWithPhoneNumber telephone js/window.recaptchaVerifier)
+      (.then (fn [^js result]
+               (log ::sign-in-code-sent-to-telephone
+                    :result result)
+               (swap! TELEPHONE_SIGN_IN assoc
+                      :status :input-code
+                      :confirmation-result result
+                      :code (when goog.DEBUG "123456"))))
+      (.catch (fn [^js error]
+                ;; FIXME: reset recaptcha
+                (swap! TELEPHONE_SIGN_IN assoc :error error)))))
+
+(defn sign-in-with-telephone-code [code]
+  (let [confirmation-result (:confirmation-result @TELEPHONE_SIGN_IN)]
+    (-> ^js confirmation-result
+        (.confirm code)
+        (.then (fn [^js result]
+                 (log ::signed-in-with-telephone-code
+                      :result result)
+                 (js/window.location.reload)))
+        (.catch (fn [^js error]
+                  (swap! TELEPHONE_SIGN_IN assoc :error error)))))
   )

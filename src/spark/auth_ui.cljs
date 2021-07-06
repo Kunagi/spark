@@ -94,23 +94,42 @@ Bitte E-Mail Adresse eingeben.")
                   "recaptcha-container"
                   (clj->js {:size     :invisible
                             :callback (fn [^js response]
-                                        (log ::DEBUG--callback
+                                        (log ::recaptcha-verivier-initialized
                                              :response response))}))]
     (-> js/window .-recaptchaVerifier (set! verifier))))
 
 (def use-telephone-sign-in (ui/atom-hook auth/TELEPHONE_SIGN_IN))
 
+(def-ui RecaptchaContainer []
+
+  (ui/use-effect
+   :once
+   (initialize-telephone-sign-in)
+   nil)
+
+  (ui/div { :id "recaptcha-container"})
+  )
+
 (def-ui TelephoneProcess []
   (let [status (use-telephone-sign-in)
         [telephone set-telephone] (ui/use-state (-> status :telephone))
+        [code set-code] (ui/use-state (-> status :code))
         continue-with-telephone (fn []
                                   (when-not (str/blank? telephone )
                                     (swap! auth/TELEPHONE_SIGN_IN assoc
                                            :telephone telephone
-                                           :status :sending-email)
-                                    (auth/send-sign-in-link-to-email
-                                     telephone (-> status :url)))
+                                           :status :sending-sms)
+                                    (auth/send-sign-in-code-to-telephone
+                                     telephone))
                                   )
+
+        continue-with-code (fn []
+                             (when-not (str/blank? code)
+                               (swap! auth/TELEPHONE_SIGN_IN assoc
+                                      :code code
+                                      :status :checking-code)
+                               (auth/sign-in-with-telephone-code code))
+                             )
 
         CancelButton ($ ui/Button
                         {:text     "Abbrechen"
@@ -118,7 +137,8 @@ Bitte E-Mail Adresse eingeben.")
                          :on-click #(reset! auth/TELEPHONE_SIGN_IN nil)})
         ]
     (ui/stack
-     ;; (when goog.DEBUG (ui/data email-sign-in))
+     ($ RecaptchaContainer)
+     (when goog.DEBUG (ui/data status))
 
      (if-let [error (-> status :error)]
 
@@ -128,11 +148,6 @@ Bitte E-Mail Adresse eingeben.")
         (ui/center CancelButton))
 
        (ui/stack
-
-        (when (= :waiting-for-sms (-> status :status))
-          (ui/stack
-           (ui/div "Öffne deine SMS und merke dir den Sicherheitscode!")
-           (ui/center CancelButton)))
 
         (when (= :sending-sms (-> status :status))
           (ui/stack
@@ -164,21 +179,42 @@ Bitte mobile Telefonnummer eingeben.")
             {:justify-content :flex-end}
             CancelButton
             ($ ui/Button
-               {:text     "Link anfordern"
+               {:text     "SMS anfordern"
                 :on-click continue-with-telephone}))
+           ))
+
+        (when (= :input-code (-> status :status))
+          (ui/stack-3
+           (ui/div
+            "Wir haben dir einen Sicherheitscode per SMS geschickt.
+Bitte gib hier den empfangenen Code ein.")
+           ($ :form
+              {:onSubmit (fn [^js event]
+                           (continue-with-telephone)
+                           (-> event .preventDefault)
+                           false)}
+              ($ mui/TextField
+                 {:defaultValue code
+                  :onChange     #(set-code (-> % .-target .-value))
+                  :id           "code"
+                  :name         "code"
+                  :type         "code"
+                  :label        "Sicherheitscode"
+                  :required     true
+                  :autoFocus    true
+                  :fullWidth    true
+                  :variant      "outlined"}))
+           (ui/flex
+            {:justify-content :flex-end}
+            CancelButton
+            ($ ui/Button
+               {:text     "Anmelden"
+                :on-click continue-with-code}))
            ))))
 
      )))
 
-(def-ui RecaptchaContainer []
 
-  (ui/use-effect
-   :once
-   (initialize-telephone-sign-in)
-   nil)
-
-  (ui/div { :id "recaptcha-container"})
-  )
 
 ;; * Selector
 
@@ -211,13 +247,10 @@ Bitte mobile Telefonnummer eingeben.")
               :on-click auth/sign-in-with-facebook}))
         (when telephone
           (ui/<>
-           ($ RecaptchaContainer)
            ($ ui/Button
               {:text     "Telefon / SMS"
                :id       "telephone-sign-in-button"
                :on-click auth/sign-in-with-telephone
-               ;; :on-click (fn [_]
-               ;;             (initialize-telephone-sign-in))
                })))
         (when email
           ($ ui/Button
