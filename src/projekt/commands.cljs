@@ -44,6 +44,7 @@
                            story/Voraussetzungen
                            story/Klaerungsbedarf
                            story/Feature-id story/Sprint-id
+                           story/Aufwandschaetzung
                            story/Aufwand]
                           [story/Klaerungsbedarf])]
              {:fields fields

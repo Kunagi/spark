@@ -59,11 +59,19 @@
                      ($ :span {:className "b"}
                         "Voraussetzungen: ")
                      (-> voraussetzungen)))
-                (when-let [aufwand (-> story :aufwand)]
-                  ($ :div
-                     {:style {:text-align "right"
-                              :color "grey"}}
-                     aufwand " Std"))
+                ($ :div
+                   {:style {:display "grid"
+                            :grid-gap "8px"
+                            :grid-template-columns "1fr 1fr"
+                            :text-align "right"
+                            :color "grey"}}
+                   ($ :div
+                      (when-let [aufwand (-> story :aufwand)]
+                        ($ :span aufwand " Std geleistet")))
+                   ($ :div
+                      (when-let [aufwand (-> story :aufwandschaetzung)]
+                        ($ :span
+                           aufwand " Std geschätzt"))))
                 (when-let [klaerungsbedarf (-> story :klaerungsbedarf)]
                   ($ :div
                      {:style {:color (-> ^js theme .-palette .-primary .-main)}}
