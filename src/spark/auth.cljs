@@ -215,8 +215,14 @@
 ;; * Telephone
 ;; https://firebase.google.com/docs/auth/web/phone-auth?hl=en
 
+(defonce TELEPHONE_SIGN_IN (atom nil))
+
 (defn sign-in-with-telephone []
   (log ::sign-in-with-telephone)
-  (-> firebase .auth (.signInWithPhoneNumber
-                      "+1 650-555-1234"
-                      js/window.recaptchaVerifier)))
+  (reset! TELEPHONE_SIGN_IN {:status :input-telephone
+                             :url    (-> js/window.location.href)})
+  ;; (-> firebase .auth (.signInWithPhoneNumber
+  ;;                     ;; "+1 650-555-1234"
+  ;;                     "+4915774737908"
+  ;;                     js/window.recaptchaVerifier))
+  )
