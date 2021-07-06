@@ -66,12 +66,13 @@
                             :text-align "right"
                             :color "grey"}}
                    ($ :div
-                      (when-let [aufwand (-> story :aufwand)]
-                        ($ :span aufwand " Std geleistet")))
-                   ($ :div
                       (when-let [aufwand (-> story :aufwandschaetzung)]
                         ($ :span
-                           aufwand " Std geschätzt"))))
+                           aufwand " Std geschätzt")))
+                   ($ :div
+                      (when-let [aufwand (-> story :aufwand)]
+                        ($ :span aufwand " Std geleistet")))
+                   )
                 (when-let [klaerungsbedarf (-> story :klaerungsbedarf)]
                   ($ :div
                      {:style {:color (-> ^js theme .-palette .-primary .-main)}}
@@ -91,15 +92,22 @@
 (defn sprint-card [sprint projekt storys uid expand]
   (let [sprint-id (-> sprint :id)
 
-        stunden (reduce (fn [aufwand story]
-                          (when aufwand
-                            (if (= sprint-id (-> story :sprint-id))
-                              (if-let [story-aufwand (-> story :aufwand)]
-                                (+ aufwand story-aufwand)
-                                nil)
-                              aufwand)))
-                        0 storys)
-]
+        stunden-geschaetzt (reduce (fn [aufwand story]
+                                     (when aufwand
+                                       (if (= sprint-id (-> story :sprint-id))
+                                         (let [story-aufwand (-> story :aufwandschaetzung)]
+                                           (+ aufwand story-aufwand))
+                                         aufwand)))
+                                   0 storys)
+
+        stunden-geleistet (reduce (fn [aufwand story]
+                                    (when aufwand
+                                      (if (= sprint-id (-> story :sprint-id))
+                                        (let [story-aufwand (-> story :aufwand)]
+                                          (+ aufwand story-aufwand))
+                                        aufwand)))
+                                  0 storys)
+        ]
     ($ mui/Card
        {:className "StoryMap-SprintCard"}
        (ui/div
@@ -109,7 +117,7 @@
            {:padding "8px 0"}
            "Noch nicht eingeplant")
           (ui/grid
-           "repeat(8, minmax(min-content, max-content))"
+           "repeat(9, minmax(min-content, max-content))"
            {:align-items "center"
             :grid-gap "32px"}
            (when expand
@@ -120,11 +128,18 @@
            (ui/div "Sprint #" sprint-id)
            (when-let [entwickler (-> sprint :entwickler)]
              (ui/div entwickler))
-           (when (> stunden 0)
+           (when (> stunden-geschaetzt 0)
              (ui/div
               {:font-weight "normal"
                :color "#eee"}
-              stunden " Stunden / " (/ stunden 8) " Tage"))
+              (ui/span {:font-weight 900} "Schätzung: ")
+              stunden-geschaetzt " Stunden / " (/ stunden-geschaetzt 8) " Tage"))
+           (when (> stunden-geleistet 0)
+             (ui/div
+              {:font-weight "normal"
+               :color "#eee"}
+              (ui/span {:font-weight 900} "Leistung: ")
+              stunden-geleistet " Stunden / " (/ stunden-geleistet 8) " Tage"))
            (when-let [datum (-> sprint sprint/datum-abgeschlossen)]
              (ui/div
               {:font-weight "normal"
