@@ -110,18 +110,41 @@ Bitte E-Mail Adresse eingeben.")
   (ui/div { :id "recaptcha-container"})
   )
 
+
+
+(defn coerce-telephone [s]
+  (let [s (str/replace s " " "")
+        s (if (-> s (.startsWith "00"))
+            (str/replace s "00" "+")
+            s)
+        s (if (-> s (.startsWith "0"))
+            (str "+49" (-> s (.substring 1)))
+            s)]
+    s))
+
+(defn validate-telephone [s]
+  (let [s (coerce-telephone s)]
+    (when (or (-> s count (< 7))
+              (not (re-matches #"\+[0-9]*" s)))
+      "Ungültige Telefonnummer")))
+
 (def-ui TelephoneProcess []
   (let [status (use-telephone-sign-in)
         [telephone set-telephone] (ui/use-state (-> status :telephone))
         [code set-code] (ui/use-state (-> status :code))
+        [input-error set-input-error] (ui/use-state nil)
         continue-with-telephone (fn []
-                                  (when-not (str/blank? telephone )
-                                    (swap! auth/TELEPHONE_SIGN_IN assoc
-                                           :telephone telephone
-                                           :status :sending-sms)
-                                    (auth/send-sign-in-code-to-telephone
-                                     telephone))
-                                  )
+                                  (when-not (str/blank? telephone)
+                                    (let [error (validate-telephone telephone)]
+                                      (if error
+                                        (set-input-error error)
+                                        (do
+                                          (set-input-error nil)
+                                          (swap! auth/TELEPHONE_SIGN_IN assoc
+                                                 :telephone telephone
+                                                 :status :sending-sms)
+                                          (auth/send-sign-in-code-to-telephone
+                                           (coerce-telephone telephone)))))))
 
         continue-with-code (fn []
                              (when-not (str/blank? code)
@@ -169,8 +192,10 @@ Bitte mobile Telefonnummer eingeben.")
                   :onChange     #(set-telephone (-> % .-target .-value))
                   :id           "telephone"
                   :name         "telephone"
-                  :type         "telephone"
                   :label        "Telefonnummer mobil"
+                  :auto-complete "tel"
+                  :error        (boolean input-error)
+                  :helperText   input-error
                   :required     true
                   :autoFocus    true
                   :fullWidth    true
@@ -198,8 +223,9 @@ Bitte gib hier den empfangenen Code ein.")
                   :onChange     #(set-code (-> % .-target .-value))
                   :id           "code"
                   :name         "code"
-                  :type         "code"
+                  :type         "number"
                   :label        "Sicherheitscode"
+                  :inputProps   (clj->js {:pattern "[0-9]*"})
                   :required     true
                   :autoFocus    true
                   :fullWidth    true
