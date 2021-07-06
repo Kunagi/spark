@@ -22,7 +22,7 @@
                    story/Tasks
                    story/Voraussetzungen
                    story/Feature-id story/Sprint-id
-                   story/Aufwand]}
+                   story/Aufwandschaetzung]}
 
    :f (fn [{:keys [projekt values]}]
         (let [story (-> values
