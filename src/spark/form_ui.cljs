@@ -611,7 +611,7 @@
              (case type
                "chips" ($ StringVectorChips {:values value})
                ($ :div
-                  {:style {:word-break :break-word}}
+                  {:style {:word-break "break-word"}}
                   (value-filter value))))))))
 
 
