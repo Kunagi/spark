@@ -34,7 +34,8 @@
 (def-field Aufwand
   [:string   {:label "Aufwand (in Stunden)"
               :type "number"
-              :input-props {:min 0 :step 4}}])
+              :input-props {:min 0 :step 1}
+              :plusminus-adronments true}])
 
 (def-field Aufwandschaetzung
   [:string   {:label "Aufwandschätzung (in Stunden)"
