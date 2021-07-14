@@ -758,7 +758,17 @@
          :className class}
         ;; (data dialog-id)
         (when-let [title (-> dialog :title)]
-          ($ mui/DialogTitle title))
+          (div
+           (when (-> dialog :title-close-button)
+             (div
+              {:position :absolute
+               :right 0
+               :top 0}
+              ($ mui/IconButton
+                 {:onClick #(hide-dialog (-> dialog :id))}
+                 (div {:class "material-icons"} "close")))
+             )
+           ($ mui/DialogTitle title)))
         ($ mui/DialogContent
            (-> dialog :content))))))
 
@@ -1222,10 +1232,16 @@
         icon     (when-let [icon (or icon
                                      (-> command :icon)
                                      "play_arrow")]
-                   (if (string? icon)
+                   (cond
+                     (keyword? icon)
+                     (d/div {:class (str "material-icons" (when theme (str "-" theme)))}
+                            (name icon))
+
+                     (string? icon)
                      (d/div {:class (str "material-icons" (when theme (str "-" theme)))}
                             icon)
-                     icon))]
+
+                     :else icon))]
     ($ mui/IconButton
        {:className className
         :onClick   on-click
