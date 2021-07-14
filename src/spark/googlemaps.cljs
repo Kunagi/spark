@@ -95,7 +95,7 @@
 
 
 ;; * MapWithPosition
-
+;; https://developers.google.com/maps/documentation/javascript/adding-a-google-map
 
 (defn init-default-map
   ""
@@ -108,7 +108,6 @@
                                  {:featureType "poi"
                                   :stylers     [{:visibility "off"}]}
                                  ]}))
-
 
 
 (def-ui MapWithPosition
