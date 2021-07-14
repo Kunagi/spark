@@ -122,6 +122,11 @@
   (let [position                          (if (map? position)
                                             (clj->js position)
                                             position)
+
+        position-marker {:title "Du bist hier"
+                         :label "Du"
+                         :position position}
+
         fetch-google-markers
         (ui/use-memo
          [] (throttle
@@ -159,7 +164,9 @@
                          (set-all-markers (doall
                                            (map
                                             (partial create-marker gmap)
-                                            (concat google-markers markers))))))))
+                                            (concat google-markers
+                                                    markers
+                                                    [position-marker]))))))))
 
     ($ :div
        {:id    map-element-id
