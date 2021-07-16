@@ -163,6 +163,9 @@
   (when (seq values)
     (assoc values :db/ref (->ref thing))))
 
+(comment
+  (update-tx {:db/ref "some/entity"} {:change "this"}))
+
 (defn update> [thing values]
   (transact> (update-tx thing values)))
 
