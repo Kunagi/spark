@@ -131,8 +131,9 @@
 (defnc Redirect [{:keys [to]}]
   (let [history (use-history)]
     (use-effect
-     :once
-     (-> ^js history (.push (coerce-link-to to)))
+     [to]
+     (when to
+       (-> ^js history (.push (coerce-link-to to))))
      nil))
   ($ :div))
 
