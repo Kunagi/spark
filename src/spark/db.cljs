@@ -126,7 +126,9 @@
 
 
 (defn transact> [tx-data]
-  (firestore/transact> (conform-tx-data tx-data)))
+  (firestore/transact> (if (fn? tx-data)
+                         tx-data
+                         (conform-tx-data tx-data))))
 
 
 (defn ->ref [thing]
