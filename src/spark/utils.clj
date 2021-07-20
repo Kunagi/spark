@@ -11,10 +11,11 @@
         ]
     `(let [result# ~assertion]
        (when-not result#
-         (throw (ex-info (str "Assertion failed.\n"
-                              ~message
-                              ~assertion-formated "\n"
-                              "in " ~in-function "(" ~in-file ":" ~in-line ")")
+         (throw (ex-info (str
+                          (when ~message (str  ~message "\n"))
+                          "Assertion failed.\n"
+                          ~assertion-formated
+                          "in " ~in-function " (" ~in-file ":" ~in-line ")")
                          (assoc ~data
                                 :value result#
                                 :form '~assertion
