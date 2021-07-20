@@ -25,13 +25,14 @@
 
 (defn console-writer [^js console event-namespace event-name event-data]
   (try
-    (.log
-     console
-     (str "%c" event-namespace " %c" event-name)
-     "background-color: #5472d3; color: white; padding: 3px;"
-     "background-color: #002171; color: white; padding: 3px;"
-     "\n"
-     (format-event-data event-data))
+    (let [event-s (str "%cLOG" " %c" event-namespace " %c" event-name)
+          col-1 "background-color: blue; color: white; padding: 3px;"
+          col-2 "background-color: #5472d3; color: white; padding: 3px;"
+          col-3 "background-color: #002171; color: white; padding: 3px;"
+          data-s (when event-data (format-event-data event-data))]
+      (if event-data
+        (.log console event-s col-1 col-2 col-3 "\n" data-s)
+        (.log console event-s col-1 col-2 col-3)))
     (catch :default _ex
       (console-writer console event-namespace event-name (format-clojure-value event-data)))))
 
@@ -68,6 +69,7 @@
        :param-1 "witek"
        :context {:this 1
                  :and "and that" :more [1 2 3 4 5] :asdlfjkasldfkj "asöldj aslödkj asöldkfj asöldfj "})
+  (log :simple)
   (log ::auth-state-changed
        :user nil)
   (log ::test
