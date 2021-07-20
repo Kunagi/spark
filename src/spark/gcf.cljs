@@ -9,6 +9,8 @@
 
    ["firebase-functions" :as functions]
 
+   [spark.logging :refer [log]]
+   [spark.utils :as u]
    [spark.firestore :as firestore]))
 
 ;; * config
@@ -47,9 +49,8 @@
     (or (string? val) (number? val))
     (wrap-in-html (str val))
 
-    ;; :else (str val)
-    :else (js/JSON.stringify val)
-    ;; :else (str val)
+    :else (str val)
+    ;; :else (js/JSON.stringify val)
     ))
 
 
@@ -75,18 +76,28 @@
 
 (defn on-request--format-output> [handler>]
   (on-request
-   (fn [req res]
-     (-> (handler> req)
-         (.then #(-> res
-                     (.set "Access-Control-Allow-Origin" "*")
-                     (.status 200)
-                     (.send (format-response %)))
-                (when (-> req .-query .-debug)
-                  #(-> res
+   (fn [^js req ^js res]
+     (try
+       (-> (u/as> (handler> req))
+           (.then #(-> res
                        (.set "Access-Control-Allow-Origin" "*")
-                       (.status 500)
-                       (.send (str "<h1>Error</h1>\n\n"
-                                   (format-response (str %)))))))))))
+                       (.status 200)
+                       (.send (format-response %)))
+                  (when (-> req .-query .-debug)
+                    #(-> res
+                         (.set "Access-Control-Allow-Origin" "*")
+                         (.status 500)
+                         (.send (str "<h1>Error</h1>\n\n"
+                                     (format-response (str %))))))))
+       (catch :default ex
+         (log ::request-hander-failed
+              ex)
+         (-> res
+             (.set "Access-Control-Allow-Origin" "*")
+             (.status 500)
+             (.send (str "<h1>Error</h1>\n\n"
+                         (format-response (str ex)))))
+         )))))
 
 ;; * on-schedule
 

@@ -397,8 +397,19 @@
     (instance? js/Promise thing)
     thing
 
+    (fn? thing)
+    (promise> (fn [resolve _reject]
+                (resolve (thing))))
+
     :else
     (resolve> thing)))
+
+(comment
+  (tap> (as> :boo))
+  (tap> (as> (fn [] "executed")))
+  (-> (as> (fn [] "executed"))
+      (.then (fn [result]
+               (prn "result:" result)))))
 
 (defn all> [& promises-or-lists-of-promises]
   (-> (js/Promise.all
