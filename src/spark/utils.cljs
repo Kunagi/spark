@@ -1,6 +1,7 @@
 ;; * ns
 (ns spark.utils
-  (:refer-clojure :exclude [pos? zero? min max tap>])
+  (:refer-clojure :exclude [assert pos? zero? min max tap>])
+  (:require-macros [spark.utils :refer [assert]])
   (:require
    [clojure.spec.alpha :as s]
    [cljs.pprint :refer [pprint]]
@@ -27,6 +28,15 @@
   (tap> "hello world")
   (tap> {:name "Witek"})
   (tap> (js/Promise.resolve {:name "Witek"})))
+
+;; * assert
+;;  assert.clj
+
+(defn asserti [])
+
+(comment
+  (pprint [:a :b])
+  (macroexpand '(assert :x)))
 
 ;; * fetch
 
