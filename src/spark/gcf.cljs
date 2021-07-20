@@ -83,12 +83,11 @@
                        (.set "Access-Control-Allow-Origin" "*")
                        (.status 200)
                        (.send (format-response %)))
-                  (when (-> req .-query .-debug)
-                    #(-> res
-                         (.set "Access-Control-Allow-Origin" "*")
-                         (.status 500)
-                         (.send (str "<h1>Error</h1>\n\n"
-                                     (format-response (str %))))))))
+                  #(-> res
+                       (.set "Access-Control-Allow-Origin" "*")
+                       (.status 500)
+                       (.send (str "<h1>Error</h1>\n\n"
+                                   (format-response (str %)))))))
        (catch :default ex
          (log ::request-hander-failed
               ex)
@@ -125,7 +124,7 @@
        (-> result
            (.then #(resolve (handle-on-call-result %)))
            (.catch (fn [error]
-                     (js/console.error error)
+                     (log ::call-handler-failed error)
                      (reject error))))))
     (clj->js result)))
 
