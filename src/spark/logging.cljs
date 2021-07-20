@@ -14,9 +14,13 @@
 (defn format-event-data [data]
   (when data
     (if (and ^boolean js/goog.DEBUG
-             (exists? js/window))
+             (exists? js/window)
+             )
       data
-      (clj->js data))))
+      ;; (clj->js data)
+      (with-out-str (pprint data))
+      ;; (str data)
+      )))
 
 
 (defn console-writer [^js console event-namespace event-name event-data]
@@ -26,10 +30,10 @@
      (str "%c" event-namespace " %c" event-name)
      "background-color: #5472d3; color: white; padding: 3px;"
      "background-color: #002171; color: white; padding: 3px;"
+     "\n"
      (format-event-data event-data))
     (catch :default _ex
       (console-writer console event-namespace event-name (format-clojure-value event-data)))))
-
 
 (defonce WRITER (atom (partial console-writer js/console)))
 
@@ -60,6 +64,10 @@
     (@WRITER event-namespace event-name event-data)))
 
 (comment
+  (log ::dummy-with-data
+       :param-1 "witek"
+       :context {:this 1
+                 :and "and that" :more [1 2 3 4 5] :asdlfjkasldfkj "asöldj aslödkj asöldkfj asöldfj "})
   (log ::auth-state-changed
        :user nil)
   (log ::test
