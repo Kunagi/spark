@@ -71,12 +71,16 @@
        :bucket bucket
        :path path
        :col col-name)
-  (u/=> (firestore/col> [col-name])
-        (fn [docs]
-          (write-col> bucket path col-name docs)
-          #_(write-next-doc> bucket path docs [])
-          #_(u/all> (map (partial write-doc> bucket path) docs))
-          )))
+  (let [date-start (js/Date.)]
+    (u/=> (firestore/col> [col-name])
+          (fn [docs]
+            (log ::backup-col>--loaded
+                 :runtime (- (-> js/Date. .getTime) (-> date-start .getTime))
+                 :docs (count docs))
+            (write-col> bucket path col-name docs)
+            #_(write-next-doc> bucket path docs [])
+            #_(u/all> (map (partial write-doc> bucket path) docs))
+            ))))
 
 (defn- backup-next-col> [bucket path cols-names results]
   (if-let [col-name (first cols-names)]
