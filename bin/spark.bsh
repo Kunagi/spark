@@ -306,11 +306,13 @@ function release {
 
     bump-version
 
+    echo-task "backup"
     if [ -f "./bin/backup.bsh" ]
     then
         ./bin/backup.bsh
     fi
 
+    echo-task "deploy"
     if [ -f "./bin/deploy.bsh" ]
     then
         ./bin/deploy.bsh
