@@ -58,6 +58,14 @@
     (u/as> results))
   )
 
+(defn write-col> [bucket path col-name docs]
+  (let [path (str path "/" col-name ".edn")
+        colmap (reduce (fn [m doc]
+                         (assoc m (:id doc) doc))
+                       {} docs)
+        s    (u/->edn colmap)]
+    (write-string> bucket path s)))
+
 (defn backup-col> [bucket path col-name]
   (log ::backup-col>
        :bucket bucket
@@ -65,7 +73,8 @@
        :col col-name)
   (u/=> (firestore/col> [col-name])
         (fn [docs]
-          (write-next-doc> bucket path docs [])
+          (write-col> bucket path col-name docs)
+          #_(write-next-doc> bucket path docs [])
           #_(u/all> (map (partial write-doc> bucket path) docs))
           )))
 
