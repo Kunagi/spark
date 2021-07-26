@@ -415,6 +415,7 @@
                           (when-let [submit (get form :submit)]
                             (let [result (submit values)
                                   p      (u/as> result)]
+                              (set-waiting true)
                               (u/=> p
                                     (fn [result]
                                       (close result)
@@ -472,7 +473,9 @@
                      :display               "grid"
                      :grid-template-columns "max-content auto max-content"
                      :grid-gap              "8px"}}
-            ($ :div (-> form :extra-buttons))
+            ($ :div
+               (when-not (-> form form/waiting?)
+                 (-> form :extra-buttons)))
             ($ :div)
             ($ :div
                {:style {:display               "grid"
@@ -484,7 +487,8 @@
                ($ mui/Button
                   {:onClick on-submit
                    :variant "contained"
-                   :color   "primary"}
+                   :color   "primary"
+                   :disabled (-> form form/waiting?)}
                   "Ok")))
 
          ($ :div

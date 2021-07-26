@@ -290,3 +290,6 @@
 
 (defn set-waiting [form value]
   (assoc form :waiting? (boolean value)))
+
+(defn waiting? [form]
+  (-> form :waiting?))
