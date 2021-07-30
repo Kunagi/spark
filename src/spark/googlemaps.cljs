@@ -297,59 +297,71 @@
 (defn render-google-option
   "Renders the Dropdown Options containing the google places"
   [option]
-  (let [option
-        (js->clj option :keywordize-keys true)                                    
-        matches   (get-in option
-                          [:structured_formatting
-                           :main_text_matched_substrings])
-        main-text (get-in option [:structured_formatting
-                                  :main_text])
-        parts     (js->clj
-                   (parse main-text
-                          (clj->js
-                           (map
-                            (fn [{:keys [offset length]}]
-                              [offset (+ length offset)])
-                            matches))) :keywordize-keys true)]
-    ($ mui/Grid
-       {:container  true
-        :alignItems "center"}
-       ($ mui/Grid
-          {:item true
-           :xs   2}
-          (ui/icon "location_on"))
-       ($ mui/Grid
-          {:item true
-           :xs   10}
-          (map-indexed (fn [i {:keys [text highlight]}]
-                         ($ :span
-                            {:key   i
-                             :style {:fontWeight (if highlight 700 400)}} text)) parts)
-          ($ mui/Typography
-             {:variant "body2" :color "textSecondary"}
-             (get-in option 
-                     [:structured_formatting
-                      :secondary_text])))))) 
+  (if (= option "powered-by-google")
+    (ui/div
+     {:display :flex
+      :place-content :center
+      :place-items :center
+      :padding 4
+      :width "100%"}
+     ($ :img
+        {:src "/img/google/powered_by_google_on_white.png"})
+     )
+    (let [option
+          (js->clj option :keywordize-keys true)
+          matches   (get-in option
+                            [:structured_formatting
+                             :main_text_matched_substrings])
+          main-text (get-in option [:structured_formatting
+                                    :main_text])
+          parts     (js->clj
+                     (parse main-text
+                            (clj->js
+                             (map
+                              (fn [{:keys [offset length]}]
+                                [offset (+ length offset)])
+                              matches))) :keywordize-keys true)]
+      ($ mui/Grid
+         {:container  true
+          :alignItems "center"}
+         ($ mui/Grid
+            {:item true
+             :xs   2}
+            (ui/icon "location_on"))
+         ($ mui/Grid
+            {:item true
+             :xs   10}
+            (map-indexed (fn [i {:keys [text highlight]}]
+                           ($ :span
+                              {:key   i
+                               :style {:fontWeight (if highlight 700 400)}} text)) parts)
+            ($ mui/Typography
+               {:variant "body2" :color "textSecondary"}
+               (get-in option
+                       [:structured_formatting
+                        :secondary_text])))))))
 
 
 (def-ui PositionInput [on-place-selected label placeholder auto-focus]
   (let [[input-value set-input-value] (ui/use-state "")
-        [options set-options]         (ui/use-state [])]
+        [options set-options]         (ui/use-state [])
+        update-input-value (fn [value]
+                             (set-input-value (when-not (= value "powered-by-google")
+                                                value)))]
 
     ($ mui-lab/Autocomplete
        {:getOptionLabel     #(if (string? %) % (.-description %))
-        :options            (clj->js options) ; warum manuell?
+        :options            (clj->js (conj options "powered-by-google")) ; warum manuell?
         :autoComplete       true
         :includeInputInList true
         :getOptionSelected  #(= (get %1 "place_id")
                                 (get %2 "place_id"))
         :value              input-value
         :onChange           (fn [^js event ^js new-value]
-                              (when (and
-                                     new-value
-                                     (.hasOwnProperty new-value "description")
-                                     (-> new-value .-description))
-                                (set-input-value (.-description new-value))
+                              (when (and new-value
+                                         (.hasOwnProperty new-value "description")
+                                         (-> new-value .-description))
+                                (update-input-value (.-description new-value))
                                 (when on-place-selected
                                   (on-place-selected
                                    {:place_id    (-> new-value .-place_id)
@@ -357,7 +369,7 @@
                                     }))
                                 ))
         :onInputChange      (fn [^js _event new-input-value]
-                              (set-input-value new-input-value)
+                              (update-input-value new-input-value)
                               (when-not (-> new-input-value str/blank?)
                                 (get-place-predictions-throtteled
                                  new-input-value set-options)))
