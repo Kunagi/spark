@@ -1,5 +1,5 @@
 (ns spark.money
-  (:refer-clojure :exclude [pos? zero? min max])
+  (:refer-clojure :exclude [pos? zero? min max +])
   (:require
 
    ["dinero.js" :as dinero]))
@@ -121,6 +121,16 @@
 
 (comment
   (->str (sum [2 "3.20" nil])))
+
+(defn + [& vals]
+  (reduce (fn [ret val]
+            (if val
+              (-> ret (.add (money val)))
+              ret))
+          (money 0) vals))
+
+(comment
+  (->str (+ 2 "3.20" nil)))
 
 (defn min [vals]
   (->> vals
