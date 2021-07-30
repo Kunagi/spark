@@ -7,6 +7,8 @@
 
    ))
 
+;; https://firebase.google.com/docs/auth/
+;; https://firebase.google.com/docs/reference/js/firebase.auth.Auth
 
 (defonce SIGN_IN-F (atom nil))
 (defonce AUTH_COMPLETED (atom false))
@@ -103,8 +105,10 @@
   (let [auth (-> firebase .auth)]
     (-> auth (.useDeviceLanguage))
     (-> auth
+        ;; https://firebase.google.com/docs/reference/js/firebase.auth.Auth#onauthstatechanged
         (.onAuthStateChanged
          (fn [^js google-js-user]
+           (js/console.log "AUTH" google-js-user)
            (let [user (import-user google-js-user)]
              (log ::auth-state-changed
                   :user user)
