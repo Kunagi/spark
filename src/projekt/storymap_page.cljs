@@ -115,7 +115,7 @@
         (if (> sprint-id 9999)
           (ui/div
            {:padding "8px 0"}
-           "Noch nicht eingeplant")
+           (str "Sprint #" sprint-id " - Noch nicht eingeplant"))
           (ui/grid
            "repeat(9, minmax(min-content, max-content))"
            {:align-items "center"
@@ -188,6 +188,7 @@
     (ui/stack
      ;; (ui/data uid)
      ;; (ui/data (-> projekt :developers))
+     ;; (ui/data {:sprints-ids sprints-ids})
      ($ :table
 
         ($ :thead)

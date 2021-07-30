@@ -8,9 +8,12 @@
   (get story :feature-id "zzzzz"))
 
 
-
 (defn storymap [projekt storys]
-  (let [sprints-ids (->> storys (map story-sprint-id) (into #{}) sort)
+  (let [sprints-ids (->> storys
+                         (map story-sprint-id)
+                         (into #{})
+                         (sort (fn [a b]
+                                 (compare (js/parseInt a) (js/parseInt b)))))
         features (->> storys (map story-feature-id) (into #{}) sort)
         storys-by-sprint-and-feature (reduce (fn [m story]
                                                (update m [(-> story story-sprint-id)
