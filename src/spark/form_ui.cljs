@@ -306,26 +306,27 @@
 (defmethod create-input "checkboxes" [field]
   (log ::create-input
        :field field)
-  ($ mui/FormControl
-     {:component "fieldset"}
-     ($ mui/FormGroup
-        ($ mui/FormLabel
-           {:component "legend"}
-           (-> field :label))
-        (for [option (-> field :options)]
-          ($ mui/FormControlLabel
-             {:key     (-> option :value)
-              :label   (or (-> option :label)
-                           (-> option :value str))
-              :control ($ mui/Checkbox
-                          {:name     (-> option :value str)
-                           :checked  (-> field :value (contains? (-> option :value)))
-                           :onChange #(let [checked? (-> % .-target .-checked)
-                                            value    (-> field :value)
-                                            value    (if checked?
-                                                       (conj value (-> option :value))
-                                                       (disj value (-> option :value)))]
-                                        ((-> field :on-change) value))})})))))
+  (let [value (into #{} (-> field :value))]
+    ($ mui/FormControl
+       {:component "fieldset"}
+       ($ mui/FormGroup
+          ($ mui/FormLabel
+             {:component "legend"}
+             (-> field :label))
+          (for [option (-> field :options)]
+            ($ mui/FormControlLabel
+               {:key     (-> option :value)
+                :label   (or (-> option :label)
+                             (-> option :value str))
+                :control ($ mui/Checkbox
+                            {:name     (-> option :value str)
+                             :checked  (boolean (value (-> option :value)))
+                             :onChange #(let [checked? (-> % .-target .-checked)
+                                              value    (into #{} (-> field :value))
+                                              value    (if checked?
+                                                         (conj value (-> option :value))
+                                                         (disj value (-> option :value)))]
+                                          ((-> field :on-change) value))})}))))))
 
 (defmethod create-input "ui" [field]
   ($ :div
