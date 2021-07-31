@@ -310,9 +310,12 @@
     ($ mui/FormControl
        {:component "fieldset"}
        ($ mui/FormGroup
+          ($ :div {:style {:margin-top "8px"}})
           ($ mui/FormLabel
              {:component "legend"}
-             (-> field :label))
+             ($ :div
+                {:style {:font-size "16px"}}
+                (-> field :label)))
           (for [option (-> field :options)]
             ($ mui/FormControlLabel
                {:key     (-> option :value)
