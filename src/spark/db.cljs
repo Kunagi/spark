@@ -43,6 +43,8 @@
 
 ;; * write
 
+(def set> firestore/set>)
+
 (defn- entity--update-id [entity]
   (if (-> entity :id)
     entity
