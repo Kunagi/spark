@@ -32,8 +32,6 @@
 ;; * assert
 ;;  assert.clj
 
-(defn asserti [])
-
 (comment
   (pprint [:a :b])
   (macroexpand '(assert :x)))
