@@ -75,7 +75,7 @@
     (u/=> (firestore/col> [col-name])
           (fn [docs]
             (log ::backup-col>--loaded
-                 :runtime (- (-> js/Date. .getTime) (-> date-start .getTime))
+                 :runtime (- (-> (js/Date.) .getTime) (-> date-start .getTime))
                  :docs (count docs))
             (write-col> bucket path col-name docs)
             #_(write-next-doc> bucket path docs [])
