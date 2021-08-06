@@ -79,9 +79,11 @@
         className (or class className)
         remote?   (and (string? to)
                        (or (-> to (.startsWith "https:"))
-                           (-> to (.startsWith "http:"))
-                           (-> to (.startsWith "mailto:"))))]
-    (if (or remote? (nil? to))
+                           (-> to (.startsWith "http:"))))
+        applink? (and (string? to)
+                      (or (-> to (.startsWith "mailto:"))
+                          (-> to (.startsWith "tel:"))))]
+    (if (or remote? applink? (nil? to))
       ($ :a
          {:href      to
           :onClick   on-click
