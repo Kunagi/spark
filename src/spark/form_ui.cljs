@@ -417,13 +417,17 @@
                                :form form
                                :values values)
                           (when-let [submit (get form :submit)]
-                            (let [result (submit values)
-                                  p      (u/as> result)]
-                              (set-waiting true)
-                              (u/=> p
-                                    (fn [result]
-                                      (close result)
-                                      ))))))))]
+                            (set-waiting true)
+                            (let [p (u/promise> (fn [resolve]
+                                                  (resolve
+                                                   (submit values))))]
+                              (-> p
+                                  (.then (fn [result]
+                                           (close result)
+                                           ))
+                                  (.catch (fn [error]
+                                            (update-form (fn [_]
+                                                           (form/set-error form error))))))))))))]
     (r/provider
      {:context HIDE_DIALOG
       :value   close}
@@ -471,6 +475,16 @@
                (get form :content))
             ;; (ui/data form)
             )
+
+         (when-let [error (-> form form/error)]
+           ($ :div
+              {:style {:margin "16px"
+                       :padding "16px"
+                       :background-color "red"
+                       :color "white"
+                       :font-weight 900
+                       :border-radius "8px"}}
+              (str error)))
 
          ($ :div
             {:style {:padding               "16px"

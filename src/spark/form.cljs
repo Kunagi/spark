@@ -272,21 +272,34 @@
       (set-field-value field-id new-value)))
 
 
-(defn contains-errors? [form]
-  (-> form :errors seq boolean))
-
-
 (defn field-error [form field-id]
   (get-in form [:errors field-id]))
 
+(defn error [form]
+  (-> form :error))
+
+(defn set-error [form error]
+  (assoc form :error error))
+
+(defn contains-errors? [form]
+  (boolean
+   (or (-> form error)
+       (-> form :errors seq))))
 
 (defn on-submit [form]
   (s/assert ::form form)
   ;; (log ::on-submit
   ;;      :form form)
-  (->> form :fields (map :id)
-       (reduce validate-field form)
-       coerce-values))
+  (let [form (assoc form :error nil)]
+    (->> form
+         :fields
+         (map :id)
+         (reduce validate-field form)
+         coerce-values)))
+
+(comment
+  (on-submit {:fields [{:id :f1}]
+              :submit (fn [])}))
 
 (defn set-waiting [form value]
   (assoc form :waiting? (boolean value)))
