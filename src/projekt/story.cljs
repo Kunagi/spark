@@ -17,7 +17,7 @@
 
 (def-field Tasks
   [:string   {:label "ToDo's"
-           :rows 4}])
+              :rows 8}])
 
 (def-field Klaerungsbedarf
   [:string   {:label "Klärungsbedarf (für Product Owner)"
