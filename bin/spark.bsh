@@ -299,7 +299,10 @@ function release {
 
     sed -i -e "s/main\.js/main\.v${VERSION}\.js/g" firebase/public/index.html
     sed -i -e "s/index\.js/index\.js\?v${VERSION}/g" firebase/public/index.html
-    sed -i -e "s/main\.js/main\.v${VERSION}\.js/g" firebase/public/index.js
+    if [ -f "./bin/backup.bsh" ]
+    then
+        sed -i -e "s/main\.js/main\.v${VERSION}\.js/g" firebase/public/index.js
+    fi
 
     date -Iminutes > src/spa/version-time.txt
 
