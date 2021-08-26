@@ -6,6 +6,13 @@
    [spark.firestore :as firestore]
    [spark.gcf :as gcf]))
 
+(defn assert-arg [arg-key arg-def arg-value]
+  (u/assert arg-value (str "Missing arg: " arg-key)))
+
+(defn assert-args [command args]
+  (doseq [[arg-key arg-def] (-> command :args)]
+    (assert-arg arg-key arg-def (get args arg-key))))
+
 (defn execute-command> [commands-map command-key args]
   (log ::execute-command>
        :command command-key
@@ -15,7 +22,8 @@
         f> (get command :f>)
         _ (u/assert (fn? f>))
         uid (-> args :uid)
-        _ (u/assert (or uid (-> command :public)) "Permission denied")]
+        _ (u/assert (or uid (-> command :public)) "Permission denied")
+        _ (assert-args command args)]
     (f> args command)))
 
 (defn handle-cmd-request> [commands-map ^js req]
