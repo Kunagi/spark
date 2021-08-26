@@ -37,6 +37,18 @@
       (execute-command> commands-map command-key command-args)))
   )
 
+(defn handle-cmd-call> [commands-map data ^js context]
+  (let [uid (when-let [auth (-> context .-auth)]
+              (-> ^js auth .-uid))]
+    (log ::hande-cmd-call>
+         :data data
+         :uid uid)
+    (let [command-key (-> data :cmd keyword)
+          command-args (-> data
+                           (dissoc :cmd)
+                           (assoc :uid uid))]
+      (execute-command> commands-map command-key command-args))))
+
 (def default-commands-map
   {:dummy {:public true
            :f> (fn [args command]
@@ -53,5 +65,8 @@
 
      :cmdRequest
      (gcf/on-request--format-output> (partial handle-cmd-request> commands-map))
+
+     :cmdCall
+     (gcf/on-call (partial handle-cmd-call> commands-map))
 
      }))
