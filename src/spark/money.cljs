@@ -2,7 +2,9 @@
   (:refer-clojure :exclude [pos? zero? min max +])
   (:require
 
-   ["dinero.js" :as dinero]))
+   ["dinero.js" :as dinero]
+   [spark.utils :as u]
+   ))
 
 ;; https://dinerojs.com/
 
@@ -29,7 +31,7 @@
       (money {:amount (* v 100)})
 
       (string? v)
-      (money {:amount (-> (js/parseFloat v) (* 100) int)})
+      (money {:amount (-> (u/parse-float v) (* 100) int)})
 
       (map? v)
       (let [amount   (or (-> v :amount) 0)
@@ -45,11 +47,27 @@
       (throw (ex-info (str "Unsupported money value: " v)
                       {:v v})))))
 
+
+
 (comment
   (.toObject (money {:amount 2200}))
   (.toObject (money 0))
   (.toObject (money "22.11"))
-  (.toObject (money (money "22.11"))))
+  (.toObject (money (money "22.11")))
+  (.toObject (money "22.22x"))
+  (.toObject (money "c22.22x")))
+
+(defn money? [v]
+  (and v
+       (try
+         (boolean (money v))
+         (catch :default _ex
+           false))))
+
+(comment
+  (money? "22")
+  (money? "22c")
+  (money? "c22c"))
 
 (defn zero? [m]
   (if m

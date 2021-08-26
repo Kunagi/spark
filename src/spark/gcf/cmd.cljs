@@ -3,12 +3,21 @@
    [tick.locale-en-us]
    [spark.logging :refer [log]]
    [spark.utils :as u]
+   [spark.money :as money]
    [spark.firestore :as firestore]
    [spark.db :as db]
    [spark.gcf :as gcf]))
 
 (defn assert-arg [arg-key arg-def arg-value]
-  (u/assert arg-value (str "Missing arg: " arg-key)))
+  (u/assert arg-value (str "Missing arg: " arg-key))
+
+  (case (-> arg-def :type)
+    :money (u/assert (money/money? arg-value)
+                     (str "type :money expected: " arg-value) )
+    :eur (u/assert (money/money? arg-value)
+                   (str "type :eur expected: " arg-value) )
+    nil)
+  )
 
 (defn assert-args [command args]
   (doseq [[arg-key arg-def] (-> command :args)]

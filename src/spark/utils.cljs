@@ -55,6 +55,20 @@
        (.then (fn [^js json]
                 (js->clj json :keywordize-keys true))))))
 
+;; * numbers
+
+(defn parse-float [v]
+  (when v
+    (let [f (js/parseFloat v)]
+      (when (js/isNaN f) (throw (ex-info (str "NaN: " v)
+                                         {:value v})))
+      f)))
+
+(comment
+  (parse-float "22.2")
+  (parse-float "22.2x")
+  (parse-float "c22.2"))
+
 ;; * maps
 
 (defn deep-merge
