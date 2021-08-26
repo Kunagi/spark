@@ -17,9 +17,10 @@
 (defn load-args> [args command]
   (u/=> (u/all> (map (fn [[k v]]
                        (if-let [doc-col-name (get-in command [:args k :get-doc])]
-                         (do
-                           (u/=> (db/get> (str doc-col-name "/" v))
+                         (let [path (str doc-col-name "/" v)]
+                           (u/=> (db/get> path)
                                  (fn [doc]
+                                   (u/assert doc (str "Missing doc: " path))
                                    [k doc])))
                          [k v]))
                      args))
