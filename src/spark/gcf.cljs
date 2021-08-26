@@ -41,8 +41,21 @@
 </html>")
   )
 
+(defn exception-text [ex]
+  (when ex
+    (str (ex-message ex)
+         (when-let [data (ex-data ex)]
+           (str "\n\n  data:\n\n"
+                (u/->edn (ex-data ex))))
+         (when-let [cause (ex-cause ex)]
+           (str "\n\n  caused by:\n\n" (exception-text cause))))))
+
 (defn- format-response [val]
+  (js/console.log "!!!" (instance? cljs.core.ExceptionInfo val))
   (cond
+    (instance? cljs.core.ExceptionInfo val)
+    (wrap-in-html (exception-text val))
+
     (or (nil? val) (sequential? val) (map? val) (vector? val) (list? val))
     (wrap-in-html (with-out-str (pprint val)))
 
@@ -95,7 +108,7 @@
              (.set "Access-Control-Allow-Origin" "*")
              (.status 500)
              (.send (str "<h1>Error</h1>\n\n"
-                         (format-response (str ex)))))
+                         (format-response ex))))
          )))))
 
 ;; * on-schedule
