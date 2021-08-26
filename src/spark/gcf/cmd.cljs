@@ -4,6 +4,7 @@
    [spark.logging :refer [log]]
    [spark.utils :as u]
    [spark.firestore :as firestore]
+   [spark.db :as db]
    [spark.gcf :as gcf]))
 
 (defn assert-arg [arg-key arg-def arg-value]
@@ -12,6 +13,20 @@
 (defn assert-args [command args]
   (doseq [[arg-key arg-def] (-> command :args)]
     (assert-arg arg-key arg-def (get args arg-key))))
+
+(defn load-args> [args command]
+  (u/=> (u/all> (map (fn [[k v]]
+                       (if-let [doc-col-name (get-in command [:args k :get-doc])]
+                         (do
+                           (u/=> (db/get> (str doc-col-name "/" v))
+                                 (fn [doc]
+                                   [k doc])))
+                         [k v]))
+                     args))
+        (fn [args-as-kvs]
+          (reduce (fn [m [k v]]
+                    (assoc m k v))
+                  {} args-as-kvs))))
 
 (defn execute-command> [commands-map command-key args]
   (log ::execute-command>
@@ -24,7 +39,9 @@
         uid (-> args :uid)
         _ (u/assert (or uid (-> command :public)) "Permission denied")
         _ (assert-args command args)]
-    (f> args command)))
+    (u/=> (load-args> args command)
+          (fn [args]
+            (f> args command)))))
 
 (defn handle-cmd-request> [commands-map ^js req]
   (let [params (->> req
