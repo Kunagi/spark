@@ -9,7 +9,8 @@
    [spark.gcf :as gcf]))
 
 (defn assert-arg [arg-key arg-def arg-value]
-  (u/assert arg-value (str "Missing arg: " arg-key))
+  (when-not (-> arg-def :optional)
+    (u/assert arg-value (str "Missing arg: " arg-key)))
 
   (case (-> arg-def :type)
     :money (u/assert (money/money? arg-value)
@@ -25,13 +26,18 @@
 
 (defn load-args> [args command]
   (u/=> (u/all> (map (fn [[k v]]
-                       (if-let [doc-col-name (get-in command [:args k :get-doc])]
-                         (let [path (str doc-col-name "/" v)]
-                           (u/=> (db/get> path)
-                                 (fn [doc]
-                                   (u/assert doc (str "Missing doc: " path))
-                                   [k doc])))
-                         [k v]))
+                       (if-not v
+                         [k v]
+                         (let [arg-def (get-in command [:args k])
+                               optional? (-> arg-def :optional boolean)]
+                           (if-let [doc-col-name (-> arg-def :get-doc)]
+                             (let [path (str doc-col-name "/" v)]
+                               (u/=> (db/get> path)
+                                     (fn [doc]
+                                       (when-not optional?
+                                         (u/assert doc (str "Missing doc: " path)))
+                                       [k doc])))
+                             [k v]))))
                      args))
         (fn [args-as-kvs]
           (reduce (fn [m [k v]]

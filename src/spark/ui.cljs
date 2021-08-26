@@ -151,6 +151,9 @@
 
 (def call-server> firebase-functions/call>)
 
+(defn server-cmd> [cmd args]
+  (call-server> "cmdCall" (assoc args :cmd cmd)))
+
 ;; * auth
 
 (def sign-out> auth/sign-out>)
