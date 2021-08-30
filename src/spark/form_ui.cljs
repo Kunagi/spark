@@ -190,19 +190,26 @@
                         (assoc :id html-id)
                         (assoc :name (-> field :name)))
         value       (-> field :value)
-        required?   (-> field :required?)]
+        required?   (-> field :required?)
+        label-id (str "select_" (-> field :id) "_label")]
     ($ :div
-       ;; ($ :pre (str field))
        ($ mui/FormControl
-          {:fullWidth true}
+          {:fullWidth true
+           :variant      "outlined"
+           :margin       "dense"
+           }
           ($ mui/InputLabel
              {:htmlFor html-id
-              :shrink  true}
+              :shrink  true
+              :id label-id
+              }
              (-> field :label))
           ($ mui/Select
              {
+              :label (-> field :label)
               :native       true
               :id           (-> field :id name)
+              :labelId label-id
               :name         (-> field :name)
               :defaultValue value
               :inputProps   (clj->js input-props)
@@ -210,9 +217,6 @@
               :onChange     #((:on-change field)
                               (-> % .-target .-value))
               :autoFocus    (-> field :auto-focus?)
-              :margin       "dense"
-              :variant      "filled"
-              :fullWidth    true
               }
              (when (or (nil? value) (not required?))
                ($ :option {:value nil} ""))
@@ -221,30 +225,7 @@
                   {:key   (-> option :value)
                    :value (-> option :value)}
                   (-> option :label)))))
-       #_($ mui/TextField
-            {
-             :id           (-> field :id name)
-             :name         (-> field :name)
-             :autoComplete (-> field :auto-complete)
-             :defaultValue (-> field :value)
-             :required     (-> field :required?)
-             :error        (boolean (-> field :error))
-             :helperText   (-> field :error)
-             :onChange     #((:on-change field)
-                             (-> % .-target .-value))
-             :onKeyPress   (when-not (-> field :multiline?)
-                             #(when (= "Enter" (-> ^js % .-nativeEvent .-code))
-                                ((:on-submit field))))
-             :label        (-> field :label)
-             :type         (-> field :input-type)
-             :multiline    (get field :multiline?)
-             :rows         (get field :rows (when (get field :multiline?) 5))
-             :autoFocus    (-> field :auto-focus?)
-             :inputProps   (if-let [props (-> field :input-props)]
-                             (clj->js props)
-                             (clj->js {}))
-             :margin       "dense"
-             :fullWidth    true}))))
+       )))
 
 
 (defmethod create-input "chips" [field]
