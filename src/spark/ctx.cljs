@@ -37,3 +37,11 @@
   (-> (new-ctx)
       (assoc :hello :world)
       (assert-key :hello #(= % :world))))
+
+(defn => [ctx & fns]
+  (reduce (fn [ctx-promise f]
+            (-> ctx-promise
+                (.then (fn [ctx]
+                         (assert-ctx ctx)
+                         (u/as> (f ctx))))))
+          (u/as> ctx) fns))
