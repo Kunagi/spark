@@ -3,8 +3,9 @@
 
    ["@material-ui/core" :as mui]
 
+   [spark.logging :refer [log]]
    [spark.utils :as u]
-    
+
    [spark.ui :as ui :refer [def-page def-ui $ <>]]
 
    [projekt.core :as core]
@@ -29,6 +30,9 @@
 
 
 (def-ui StoryCard [story]
+  {:wrap-memo-props [story]}
+  (log ::StoryCard--render
+       :story (-> story story/num))
   (let [theme (ui/use-theme)]
     ($ mui/Card
        ($ ui/CommandCardArea
@@ -186,6 +190,9 @@
         [expanded-sprint-ids set-expended-sprint-ids] (ui/use-state #{})
         expand #(set-expended-sprint-ids (conj expanded-sprint-ids %))]
     (ui/stack
+     ;; (ui/data (macroexpand-1 '(def-ui Hello []
+     ;;                            {:wrap-memo-props [story]}
+     ;;                            nil)))
      ;; (ui/data uid)
      ;; (ui/data (-> projekt :developers))
      ;; (ui/data {:sprints-ids sprints-ids})

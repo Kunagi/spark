@@ -47,6 +47,19 @@
                          lets syms))
                lets)
 
+        opts (if-let [wrap-memo-props (get opts :wrap-memo-props)]
+               (let [a (symbol "a")
+                     b (symbol "b")
+                     wrap-memo-props (mapv #(if (symbol? %)
+                                              (keyword (name %))
+                                              %)
+                                           wrap-memo-props)]
+                 (update opts :wrap conj `(r/memo
+                                           (fn [~a ~b]
+                                             (= (select-keys ~a ~wrap-memo-props)
+                                                (select-keys ~b ~wrap-memo-props))))))
+               opts)
+
         body (if (seq lets)
                `((let [~@lets]
                    ~@body))
