@@ -5,8 +5,10 @@
 ;; https://firebase.google.com/docs/reference/js/firebase.storage.Reference
 
 (defn storage []
-  (-> js/firebase
-      .storage))
+  (let [storage (-> js/firebase .storage)]
+    (when goog.DEBUG
+      (-> ^js storage (.useEmulator "localhost" 9199)))
+    storage))
 
 
 (defn storage-ref []
@@ -42,14 +44,16 @@
 
 
 (defn upload-file> [file path]
-  (log ::upload-photo-file-selected
-       :file file)
+  (log ::upload-file>
+       :file file
+       :path path)
   (js/Promise.
    (fn [resolve reject]
      (let [upload-task (-> ^js (ref path) (.put file))]
        (-> ^js upload-task
            (.on "state_changed"
-                #(log ::upload-file.state :state %)
+                #(log ::upload-file>--state_changed
+                      :state %)
                 reject
                 resolve))))))
 
