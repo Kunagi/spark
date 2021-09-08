@@ -194,6 +194,16 @@
                      (let [doc (-> doc firestore/wrap-doc)]
                        (handler> doc context)))))))
 
+;; * storage
+
+(defn on-storage-object-finalize [handler>]
+  (-> (region--europe-west1)
+      .-storage
+      .object
+      (.onFinalize (fn [^js object]
+                     (u/as> (handler> object)))))
+  )
+
 
 ;; * errors
 
