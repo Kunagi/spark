@@ -1,4 +1,5 @@
 (ns spark.utils
+  (:refer-clojure :exclude [assert])
   (:require
    [clojure.pprint :refer [pprint]]
    ))
