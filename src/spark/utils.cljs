@@ -6,9 +6,14 @@
    [clojure.spec.alpha :as s]
    [cljs.pprint :refer [pprint]]
 
+   [hyperfiddle.rcf :refer [tests]]
+
+   [tick.alpha.api :as tick]
+   [tick.format :as tick.format]
 
    [malli.core :as malli]
-   [malli.error :as malli-error]))
+   [malli.error :as malli-error]
+   ))
 
 
 ;; http://weavejester.github.io/medley/medley.core.html
@@ -264,6 +269,61 @@
   (with-out-str (pprint data)))
 
 ;; * date and time
+
+;; https://www.juxt.land/tick/docs/index.html
+
+(defn ->instant
+  "Coerces `v` to `tick/instant`."
+  [v]
+  (when v
+    (cond
+      (tick/instant? v) v
+      (instance? js/Date v) (-> v tick/instant)
+      (string? v) (tick/instant v)
+      (number? v) (-> v tick/instant)
+      )))
+
+(tests
+ "js.Date" (->instant (js/Date. "2020-01-01")) := (tick/instant (js/Date. "2020-01-01"))
+ "millis" (->instant 1577870520000) := (tick/instant 1577870520000)
+ "string" (->instant "2020-01-01T10:00:00") := (tick/instant "2020-01-01T10:00:00")
+ )
+
+(defn ->date
+  "Coerces `v` to `tick/date`."
+  [v]
+  (when v
+    (cond
+      (tick/date? v) v
+      (string? v) (tick/date v)
+      :else (-> v ->instant tick/date)
+      )))
+
+(tests
+ "nil" (->date nil) := nil
+ "tick/date" (->date (tick/date "2020-01-01")) := (tick/date "2020-01-01")
+ "js.Date" (->date (js/Date. "2020-01-01")) := (tick/date "2020-01-01")
+ "millis" (->date 1577870520000) := (tick/date "2020-01-01")
+ "string" (->date "2020-01-01") := (tick/date "2020-01-01")
+ )
+
+(defn ->time
+  "Coerces `v` to `tick/time`."
+  [v]
+  (when v
+    (cond
+      (tick/time? v) v
+      (string? v) (tick/time v)
+      :else (-> v ->instant tick/time)
+      )))
+
+(tests
+ "nil" (->time nil) := nil
+ "tick/time " (->time (tick/time "12:23")) := (tick/time "12:23")
+ "js.Date" (->time (js/Date. "2020-01-01T12:23")) := (tick/time "12:23")
+ "millis" (->time 1577870520000) := (tick/time "10:22")
+ "string" (->time "12:23") := (tick/time "12:23")
+ )
 
 (defn millis [thing]
   (cond
