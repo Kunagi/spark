@@ -223,6 +223,50 @@
 
      doc)))
 
+(defn use-docs
+  "React hook for multiple documents."
+  ([collection-id docs-ids]
+   ;; (log ::use-doc
+   ;;      :path path)
+   (let [docs-ids (into #{} docs-ids)
+         [docs set-docs] (use-state [])
+         effect-signal (str collection-id (->> docs-ids str))
+         ]
+
+     (use-effect
+      [effect-signal]
+      (when (and collection-id
+                 docs-ids)
+        ;; (log ::use-doc--subscribe
+        ;;      :path path)
+        (let [DOCS (atom [])
+              unsubscribes (->> docs-ids
+                                (map (fn [doc-id]
+                                       (let [path (str collection-id "/" doc-id)
+                                             ref         (firestore/ref path)
+                                             on-snapshot (fn [doc-snapshot]
+                                                           (let [doc (firestore/wrap-doc doc-snapshot)]
+                                                             ;; (log ::use-docs--doc-snapshot-received
+                                                             ;;      :path path
+                                                             ;;      :doc doc
+                                                             ;;      :docs docs)
+                                                             (swap! DOCS conj doc)
+                                                             (when (= (count docs-ids) (count @DOCS))
+                                                               (set-docs @DOCS))))
+                                             on-error    (fn [^js error]
+                                                           (log ::doc-atom-error
+                                                                :path path
+                                                                :exception error))
+                                             unsubscribe (.onSnapshot ref on-snapshot on-error)]
+
+                                         unsubscribe)))
+                                doall)]
+          #(doseq [unsubscribe unsubscribes]
+             (unsubscribe)))))
+
+     docs
+     )))
+
 
 (defn use-singleton-doc
   [Doc]
