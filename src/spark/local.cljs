@@ -1,10 +1,10 @@
 (ns spark.local
   (:require
    [clojure.string :as str]
-   [hyperfiddle.rcf :refer [tests]]
    [tick.alpha.api :as tick]
    [tick.format :as tick.format]
 
+   [spark.rct :refer [tests]]
    [spark.utils :as u]
    ))
 

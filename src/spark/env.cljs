@@ -1,6 +1,6 @@
 (ns spark.env
   (:require
-   [hyperfiddle.rcf :refer [tests]]
+   [spark.rct :refer [tests]]
    [spark.local :as local]
    ))
 

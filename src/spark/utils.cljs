@@ -6,13 +6,13 @@
    [clojure.spec.alpha :as s]
    [cljs.pprint :refer [pprint]]
 
-   [hyperfiddle.rcf :refer [tests]]
-
    [tick.alpha.api :as tick]
    [tick.format :as tick.format]
 
    [malli.core :as malli]
    [malli.error :as malli-error]
+
+   [spark.rct :refer [tests]]
    ))
 
 
