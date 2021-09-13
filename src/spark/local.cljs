@@ -6,6 +6,7 @@
 
    [spark.rct :refer [tests]]
    [spark.utils :as u]
+   [spark.money :as money]
    ))
 
 (defonce LANG (atom :de))
@@ -27,7 +28,10 @@
         (.NumberFormat (->js-locale-string lang)
                        (clj->js {:style    "currency"
                                  :currency currency}))
-        (.format v))))
+        (.format (cond
+                   (number? v) v
+                   (money/money? v) (money/->number v)
+                   :else v)))))
 
 (defn format-eur
   ([v]
@@ -39,6 +43,7 @@
  "integer" (format-eur :de 20) := "20,00 €"
  "decimal" (format-eur :de 20.2) := "20,20 €"
  "string" (format-eur :de "20.2") := "20,20 €"
+ "money" (format-eur (money/money 200))
  )
 
 ;; * time

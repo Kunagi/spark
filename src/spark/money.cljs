@@ -55,7 +55,10 @@
   (.toObject (money "22.11"))
   (.toObject (money (money "22.11")))
   (.toObject (money "22.22x"))
-  (.toObject (money "c22.22x")))
+  (.toObject (money "c22.22x"))
+
+  (-> (money "23.42") .getAmount (/ 100) type)
+  )
 
 (defn money? [v]
   (and v
@@ -96,7 +99,7 @@
     (string? m)
     m
 
-    m
+    :else
     (let [s (-> ^js m .toUnit str)
           dot-idx (-> s (.indexOf "."))]
       (if (>= dot-idx 0)
@@ -110,6 +113,21 @@
   (-> (money "2.1")  ->str)
   (-> (money "2.12")  ->str))
 
+(defn ->number [m]
+  (cond
+    (nil? m)
+    nil
+
+    (money? m)
+    (-> (money m) .getAmount (/ 100))
+
+    :else
+    (->number (money m))
+
+    ))
+
+(comment
+  (->number "23.42"))
 
 (defn multiply [m factor]
   (when m
