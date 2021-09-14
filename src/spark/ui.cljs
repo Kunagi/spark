@@ -520,8 +520,10 @@
 
 (defn colored-data-block [label background-color color data]
   (d/div
-   {:style {:white-space      "pre-wrap"
-            :font-family      :monospace
+   {:class "data"
+    :style {:white-space      "pre-wrap"
+            :word-break "break-all"
+            :font-family      "monospace"
             :overflow         "auto"
             :width            "100%"
             :background-color background-color
