@@ -36,6 +36,8 @@
    [spark.db :as db]
    [spark.browser :as browser]
    [spark.firebase-functions :as firebase-functions]
+   [spark.env :as env]
+   [spark.money :as money]
 
    [spark.firebase-storage :as storage]
    [spark.runtime :as runtime]
@@ -1800,3 +1802,116 @@
         {:key    (-> field spark/field-schema-field-id)
          :entity entity
          :field  field}))))
+
+;; * DataTable
+
+
+(def-ui DataTable [table records]
+  (let [record-id-getter (or (-> table :record-id-getter)
+                             :id)
+        record-on-click (-> table :record-on-click)
+        footers-count (reduce (fn [c col]
+                                (max c (-> col :footers count))
+                                )
+                              0 (-> table :cols))
+
+        ;; prepare cols
+        cols (->> table
+                  :cols
+                  (map (fn [col]
+                         (let [type (-> col :type)
+                               align (or (-> col :align)
+                                         (case type
+                                           :eur :right
+                                           :boolean :center
+                                           :x-on-true :center
+                                           :left))
+                               format (or (when-let [format (-> col :format)]
+                                            (if (fn? format)
+                                              format
+                                              (env/formatter-from-env format)))
+                                          (env/formatter-from-env type))
+                               record-key (or (-> col :record-key)
+                                              (-> col :id))
+                               ]
+                           (assoc col
+                                  :align align
+                                  :format format
+                                  :record-key record-key)))))
+
+        ]
+    ($ mui/TableContainer
+       {:component mui/Paper}
+       ($ mui/Table
+          {
+           ;; :size "small"
+           }
+
+          ($ mui/TableHead
+             ;; (ui/data footers-count)
+             ($ mui/TableRow
+                (for [col cols]
+                  ($ mui/TableCell
+                     {:key (or (-> col :id) (-> col :label))}
+                     (div
+                      {:font-weight 900
+                       :text-align (-> col :align)}
+                      (-> col :label))))))
+
+          ($ mui/TableBody
+             (for [[idx record] (map-indexed vector records)]
+               (let [key (or (record-id-getter record)
+                             (keyword "record-index" (str idx)))
+                     on-click (when record-on-click
+                                #(record-on-click record))]
+                 ($ mui/TableRow
+                    {:key key
+                     :hover true
+                     :onClick on-click
+                     }
+                    (for [col cols]
+                      (let [record-key (-> col :record-key)
+                            value (get record record-key)]
+                        ($ mui/TableCell
+                           {:key (or (-> col :id) (-> col :label))}
+                           (div
+                            {:text-align (-> col :align)}
+                            ((-> col :format) value)))))))))
+
+          ($ mui/TableHead
+             (for [footer-idx (range footers-count)]
+               ($ mui/TableRow
+                  {:key footer-idx}
+                  (for [col cols]
+                    (let [footer (-> col :footers (get footer-idx))
+                          type (-> col :type)
+                          value (-> footer :value)
+                          value (cond
+                                  (fn? value)
+                                  (value records)
+
+                                  (-> footer :type (= :sum))
+                                  (let [record-key (-> col :record-key)
+                                        aggregator (cond
+
+                                                     (= type :eur)
+                                                     money/+
+
+                                                     :else str)
+                                        format (-> col :format)]
+                                    (format (reduce (fn [result record]
+                                                      (let [value (get record record-key)
+                                                            ]
+                                                        (aggregator result value)))
+                                                    nil records)))
+
+                                  )]
+                      ($ mui/TableCell
+                         {:key (or (-> col :id) (-> col :label))}
+                         (div
+                          {:font-weight 900
+                           :text-align (-> col :align)}
+                          value)))))))
+
+          )))
+  )
