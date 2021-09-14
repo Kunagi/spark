@@ -1840,78 +1840,81 @@
                                   :record-key record-key)))))
 
         ]
-    ($ mui/TableContainer
-       {:component mui/Paper}
-       ($ mui/Table
-          {
-           ;; :size "small"
-           }
+    (div
+     {:class "DataTable"}
+     ($ mui/TableContainer
+        {:component mui/Paper}
+        ($ mui/Table
+           {
+            :stickyHeader true
+            :size "small"
+            }
 
-          ($ mui/TableHead
-             ;; (ui/data footers-count)
-             ($ mui/TableRow
-                (for [col cols]
-                  ($ mui/TableCell
-                     {:key (or (-> col :id) (-> col :label))}
-                     (div
-                      {:font-weight 900
-                       :text-align (-> col :align)}
-                      (-> col :label))))))
+           ($ mui/TableHead
+              ;; (ui/data footers-count)
+              ($ mui/TableRow
+                 (for [col cols]
+                   ($ mui/TableCell
+                      {:key (or (-> col :id) (-> col :label))}
+                      (div
+                       {:font-weight 900
+                        :text-align (-> col :align)}
+                       (-> col :label))))))
 
-          ($ mui/TableBody
-             (for [[idx record] (map-indexed vector records)]
-               (let [key (or (record-id-getter record)
-                             (keyword "record-index" (str idx)))
-                     on-click (when record-on-click
-                                #(record-on-click record))]
-                 ($ mui/TableRow
-                    {:key key
-                     :hover true
-                     :onClick on-click
-                     }
-                    (for [col cols]
-                      (let [record-key (-> col :record-key)
-                            value (get record record-key)]
-                        ($ mui/TableCell
-                           {:key (or (-> col :id) (-> col :label))}
-                           (div
-                            {:text-align (-> col :align)}
-                            ((-> col :format) value)))))))))
+           ($ mui/TableBody
+              (for [[idx record] (map-indexed vector records)]
+                (let [key (or (record-id-getter record)
+                              (keyword "record-index" (str idx)))
+                      on-click (when record-on-click
+                                 #(record-on-click record))]
+                  ($ mui/TableRow
+                     {:key key
+                      :hover true
+                      :onClick on-click
+                      }
+                     (for [col cols]
+                       (let [record-key (-> col :record-key)
+                             value (get record record-key)]
+                         ($ mui/TableCell
+                            {:key (or (-> col :id) (-> col :label))}
+                            (div
+                             {:text-align (-> col :align)}
+                             ((-> col :format) value)))))))))
 
-          ($ mui/TableHead
-             (for [footer-idx (range footers-count)]
-               ($ mui/TableRow
-                  {:key footer-idx}
-                  (for [col cols]
-                    (let [footer (-> col :footers (get footer-idx))
-                          type (-> col :type)
-                          value (-> footer :value)
-                          value (cond
-                                  (fn? value)
-                                  (value records)
+           ($ mui/TableHead
+              (for [footer-idx (range footers-count)]
+                ($ mui/TableRow
+                   {:key footer-idx}
+                   (for [col cols]
+                     (let [footer (-> col :footers (get footer-idx))
+                           type (-> col :type)
+                           value (-> footer :value)
+                           value (cond
+                                   (fn? value)
+                                   (value records)
 
-                                  (-> footer :type (= :sum))
-                                  (let [record-key (-> col :record-key)
-                                        aggregator (cond
+                                   (-> footer :type (= :sum))
+                                   (let [record-key (-> col :record-key)
+                                         aggregator (cond
 
-                                                     (= type :eur)
-                                                     money/+
+                                                      (= type :eur)
+                                                      money/+
 
-                                                     :else str)
-                                        format (-> col :format)]
-                                    (format (reduce (fn [result record]
-                                                      (let [value (get record record-key)
-                                                            ]
-                                                        (aggregator result value)))
-                                                    nil records)))
+                                                      :else str)
+                                         format (-> col :format)]
+                                     (format (reduce (fn [result record]
+                                                       (let [value (get record record-key)
+                                                             ]
+                                                         (aggregator result value)))
+                                                     nil records)))
 
-                                  )]
-                      ($ mui/TableCell
-                         {:key (or (-> col :id) (-> col :label))}
-                         (div
-                          {:font-weight 900
-                           :text-align (-> col :align)}
-                          value)))))))
+                                   )]
+                       ($ mui/TableCell
+                          {:key (or (-> col :id) (-> col :label))}
+                          (div
+                           {:font-weight 900
+                            :text-align (-> col :align)}
+                           value)))))))
 
-          )))
+           ))))
   )
