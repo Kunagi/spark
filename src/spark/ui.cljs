@@ -1820,26 +1820,56 @@
         cols (->> table
                   :cols
                   (map (fn [col]
-                         (let [type (-> col :type)
-                               align (or (-> col :align)
-                                         (case type
-                                           :eur :right
-                                           :boolean :center
-                                           :x-on-true :center
-                                           :left))
-                               format (or (when-let [format (-> col :format)]
-                                            (if (fn? format)
-                                              format
-                                              (env/formatter-from-env format)))
-                                          (env/formatter-from-env type))
-                               record-key (or (-> col :record-key)
-                                              (-> col :id))
-                               ]
-                           (assoc col
-                                  :align align
-                                  :format format
-                                  :record-key record-key)))))
-
+                         (if (map? col)
+                           (let [type (-> col :type)
+                                 align (or (-> col :align)
+                                           (case type
+                                             :eur :right
+                                             :boolean :center
+                                             :x-on-true :center
+                                             :left))
+                                 format (or (when-let [format (-> col :format)]
+                                              (if (fn? format)
+                                                format
+                                                (env/formatter-from-env format)))
+                                            (env/formatter-from-env type))
+                                 record-key (or (-> col :record-key)
+                                                (-> col :id))
+                                 ]
+                             (assoc col
+                                    :align align
+                                    :format format
+                                    :record-key record-key))
+                           {:label col
+                            :format str
+                            :record-key col}))))
+        CsvDownloadButton (when (seq records)
+                            ($ Button
+                               {:text "Download CSV"
+                                :on-click #(browser/initiate-text-download
+                                            (or csv-filename "data.csv")
+                                            (let [header-row (map (fn [col]
+                                                                    (if (map? col)
+                                                                      (-> col :label)
+                                                                      (str col)))
+                                                                  cols)
+                                                  rows (into [header-row]
+                                                             (map (fn [record]
+                                                                    (map (fn [[col-idx col]]
+                                                                           (let [record-key (-> col :record-key)
+                                                                                 value (cond
+                                                                                         (map? record) (get record record-key)
+                                                                                         (vector? record) (get record col-idx)
+                                                                                         :else record)]
+                                                                             ((-> col :format) value)))
+                                                                         (map-indexed vector cols))
+                                                                    )
+                                                                  records)
+                                                             )]
+                                              (u/csv-table rows)))
+                                :size :small
+                                :variant :text
+                                :color :default}))
         ]
     (div
      {:class "DataTable"}
@@ -1865,24 +1895,25 @@
                                (-> col :label))))))
 
                    ($ mui/TableBody
-                      (for [[idx record] (map-indexed vector records)]
-                        (let [key (or (record-id-getter record)
-                                      (keyword "record-index" (str idx)))
-                              on-click (when record-on-click
-                                         #(record-on-click record))]
-                          ($ mui/TableRow
-                             {:key key
-                              :hover true
-                              :onClick on-click
-                              }
-                             (for [col cols]
-                               (let [record-key (-> col :record-key)
-                                     value (get record record-key)]
-                                 ($ mui/TableCell
-                                    {:key (or (-> col :id) (-> col :label))}
-                                    (div
-                                     {:text-align (-> col :align)}
-                                     ((-> col :format) value)))))))))
+                      (for [[row-idx record] (map-indexed vector records)]
+                        ($ mui/TableRow
+                           {:key (or (record-id-getter record)
+                                     (keyword "record-index" (str row-idx)))
+                            :hover true
+                            :onClick (when record-on-click
+                                       #(record-on-click record))
+                            }
+                           (for [[col-idx col] (map-indexed vector cols)]
+                             (let [record-key (-> col :record-key)
+                                   value (cond
+                                           (map? record) (get record record-key)
+                                           (vector? record) (get record col-idx)
+                                           :else record)]
+                               ($ mui/TableCell
+                                  {:key (or (-> col :id) (-> col :label))}
+                                  (div
+                                   {:text-align (-> col :align)}
+                                   ((-> col :format) value))))))))
 
                    ($ mui/TableHead
                       (for [footer-idx (range footers-count)]
@@ -1921,29 +1952,10 @@
 
                    ))
 
-             (div
-              {:padding "8px 16px"}
-              ($ Button
-                 {:text "Download CSV"
-                  :on-click #(browser/initiate-text-download
-                              (or csv-filename "data.csv")
-                              (let [header-row (map (fn [col]
-                                                      (-> col :label))
-                                                    cols)
-                                    rows (into [header-row]
-                                               (map (fn [record]
-                                                      (map (fn [col]
-                                                             (let [record-key (-> col :record-key)
-                                                                   value (get record record-key)]
-                                                               ((-> col :format) value)))
-                                                           cols)
-                                                      )
-                                                    records)
-                                               )]
-                                (u/csv-table rows)))
-                  :size :small
-                  :variant :text
-                  :color :default}))
+             (when CsvDownloadButton
+               (div
+                {:padding "8px 16px"}
+                CsvDownloadButton))
              )
 
 
