@@ -4,6 +4,7 @@
   (:require-macros [spark.utils :refer [assert]])
   (:require
    [clojure.spec.alpha :as s]
+   [clojure.string :as str]
    [cljs.pprint :refer [pprint]]
 
    [tick.alpha.api :as tick]
@@ -589,6 +590,28 @@
 (defn log-deprecated [info]
   (js/console.error "DEPRECATED" (js/Error info)))
 
+;; * CSV
+
+(defn csv-field [v]
+  (if v
+    (str "\""
+         (-> v
+             str
+             (.replace "\\" "\\\\")
+             (.replace "\"" "\\\""))
+         "\"")
+    "")
+  )
+
+(defn csv-record [fields]
+  (->> fields
+       (map csv-field)
+       (str/join ", ")))
+
+(defn csv-table [records]
+  (->> records
+       (map csv-record)
+       (str/join "\n")))
 
 ;; * malli
 
