@@ -80,3 +80,11 @@
 ;;        (reset! PLAY_HACK nil)
 ;;        (play-audio k)))
 ;;    1000))
+
+(defn get-url-parameter [k]
+  (let [k (cond
+            (keyword? k) (name k)
+            :else (str k))]
+    (-> js/window.location.search
+        js/URLSearchParams.
+        (.get k))))

@@ -4,6 +4,7 @@
    [spark.logging :refer [log]]
    [spark.utils :as u]
    [spark.repository :as repository]
+   [spark.browser :as browser]
 
    ))
 
@@ -33,6 +34,18 @@
 (defn redirect-to-home []
   (redirect "/"))
 
+
+(defn process-sign-in-with-custom-token-from-url [error-handler]
+  (let [custom-token (browser/get-url-parameter "customAuthToken")]
+    (when custom-token
+      (log ::process-sign-in-with-custom-token-from-url
+           :custom-token custom-token)
+      (-> ^js (-> firebase .auth)
+          (.signInWithCustomToken custom-token)
+          (.catch (fn [^js error]
+                    (log ::sign-in-with-redirect-failed
+                         :error error)
+                    (when error-handler (error-handler error))))))))
 
 (defn process-sign-in-with-redirect [error-handler]
   (let [auth (-> firebase .auth)]
@@ -128,6 +141,8 @@
                    (set-user user)))
                (when-not auth-completed?
                  (reset! AUTH_COMPLETED true)))))))
+
+    (process-sign-in-with-custom-token-from-url error-handler)
 
     (process-sign-in-with-redirect error-handler)
 
