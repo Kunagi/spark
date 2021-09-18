@@ -413,87 +413,96 @@
      {:context HIDE_DIALOG
       :value   close}
      (d/div
-      ($ mui/Dialog
-         {:open      (-> form :open? boolean)
-          :className @DIALOG-CLASS
-          ;; :onClose close
-          }
+      (let [max-width (or (-> form :max-width)
+                          :md)
+            max-width (if (keyword? max-width)
+                        (name max-width)
+                        max-width)]
+        ($ mui/Dialog
+           {:open      (-> form :open? boolean)
+            :className @DIALOG-CLASS
+            :fullWidth true
+            :maxWidth max-width
+            ;; :onClose close
+            }
 
-         (when-let [title (-> form :title)]
-           ($ mui/DialogTitle
-              title))
+           (when-let [title (-> form :title)]
+             ($ mui/DialogTitle
+                title))
 
-         ($ mui/DialogContent
-            (when goog.DEBUG
-              (when-let [data (-> form :debug-data)]
-                ($ :div
-                   {:style {:padding          "8px"
-                            :background-color "black"
-                            :color            "#6F6"
-                            :font-family      "monospace"}}
-                   (u/->edn data))))
-            ;; (when goog.DEBUG
-            ;;   ($ :div
-            ;;      {:style {:padding          "8px"
-            ;;               :background-color "black"
-            ;;               :color            "#6F6"
-            ;;               :font-family      "monospace"}}
-            ;;      (u/->edn (-> form :values))))
-            #_($ :pre (-> context keys str))
-            ($ :div
-               {:style {:width     "500px"
-                        :max-width "100%"}}
+           ($ mui/DialogContent
+              (when goog.DEBUG
+                (when-let [data (-> form :debug-data)]
+                  ($ :div
+                     {:style {:padding          "8px"
+                              :background-color "black"
+                              :color            "#6F6"
+                              :font-family      "monospace"}}
+                     (u/->edn data))))
+              ;; (when goog.DEBUG
+              ;;   ($ :div
+              ;;      {:style {:padding          "8px"
+              ;;               :background-color "black"
+              ;;               :color            "#6F6"
+              ;;               :font-family      "monospace"}}
+              ;;      (u/->edn (-> form :values))))
+              #_($ :pre (-> context keys str))
+              ($ :div
+                 {:style {
+                          ;; :width     "500px"
+                          ;; :max-width "100%"
+                          }}
 
-               (for [field (get form :fields)]
-                 ($ FormField
-                    {:key         (-> field :id)
-                     :field       field
-                     :form        form
-                     :on-submit   on-submit
-                     :update-form update-form}))
+                 (for [field (get form :fields)]
+                   ($ FormField
+                      {:key         (-> field :id)
+                       :field       field
+                       :form        form
+                       :on-submit   on-submit
+                       :update-form update-form}))
 
 
-               (get form :content))
-            ;; (ui/data form)
-            )
+                 (get form :content))
+              ;; (ui/data form)
+              )
 
-         (when-let [error (-> form form/error)]
+           (when-let [error (-> form form/error)]
+             ($ :div
+                {:style {:margin "16px"
+                         :padding "16px"
+                         :background-color "red"
+                         :color "white"
+                         :font-weight 900
+                         :border-radius "8px"}}
+                (str error)))
+
            ($ :div
-              {:style {:margin "16px"
-                       :padding "16px"
-                       :background-color "red"
-                       :color "white"
-                       :font-weight 900
-                       :border-radius "8px"}}
-              (str error)))
+              {:style {:padding               "16px"
+                       :display               "grid"
+                       :grid-template-columns "max-content auto max-content"
+                       :grid-gap              "8px"}}
+              ($ :div
+                 (when-not (-> form form/waiting?)
+                   (-> form :extra-buttons)))
+              ($ :div)
+              ($ :div
+                 {:style {:display               "grid"
+                          :grid-template-columns "max-content max-content"
+                          :grid-gap              "8px"}}
+                 ($ mui/Button
+                    {:onClick #(close nil)}
+                    "Abbrechen")
+                 ($ mui/Button
+                    {:onClick on-submit
+                     :variant "contained"
+                     :color   "primary"
+                     :disabled (-> form form/waiting?)}
+                    "Ok")))
 
-         ($ :div
-            {:style {:padding               "16px"
-                     :display               "grid"
-                     :grid-template-columns "max-content auto max-content"
-                     :grid-gap              "8px"}}
-            ($ :div
-               (when-not (-> form form/waiting?)
-                 (-> form :extra-buttons)))
-            ($ :div)
-            ($ :div
-               {:style {:display               "grid"
-                        :grid-template-columns "max-content max-content"
-                        :grid-gap              "8px"}}
-               ($ mui/Button
-                  {:onClick #(close nil)}
-                  "Abbrechen")
-               ($ mui/Button
-                  {:onClick on-submit
-                   :variant "contained"
-                   :color   "primary"
-                   :disabled (-> form form/waiting?)}
-                  "Ok")))
-
-         ($ :div
-            {:style {:min-height "4px"}}
-            (when (-> form :waiting?)
-              ($ mui/LinearProgress))))))))
+           ($ :div
+              {:style {:min-height "4px"}}
+              (when (-> form :waiting?)
+                ($ mui/LinearProgress)))))))))
 
 
 (defnc FormDialogsContainer []
