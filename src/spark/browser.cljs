@@ -38,7 +38,9 @@
         (fn [state title url]
           (let [replace-state (.bind replace-state js/history)]
             (replace-state state title url)
-            (reset! URL_PARAMS (url-params))))))
+            (reset! URL_PARAMS (url-params)))))
+  (js/window.addEventListener "popstate" #(reset! URL_PARAMS (url-params)))
+  )
 
 ;;
 
