@@ -520,11 +520,6 @@
    :background-position-y "top"
    :background-size       "contain"})
 
-;; * devcards
-
-(defn reg-devcard [devcard]
-  (spark/reg-test devcard))
-
 
 ;; * common ui functions
 

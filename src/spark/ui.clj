@@ -73,25 +73,6 @@
        ~@body)))
 
 
-(defmacro def-ui-test [[sym & requires] & examples]
-  (when (= :dev (:shadow.build/mode &env))
-    (let [symbol-name (-> sym name )
-          calling-namespace-name (name (ns-name *ns*))
-          examples examples
-          devcard {:id (str calling-namespace-name "/" symbol-name)
-                   :namespace calling-namespace-name
-                   :symbol symbol-name}
-          examples (mapv (fn [example]
-                           {:code (with-out-str (pprint example))
-                            :f `(fn []
-                                  ~example)})
-                         examples)]
-      `(reg-devcard
-        (assoc ~devcard
-               :type :ui
-               :examples ~examples)))))
-
-
 (defmacro def-ui-showcase [id-keyword component]
   (when (= :dev (:shadow.build/mode &env))
     `(spark.ui.showcase/reg-showcase ~id-keyword
