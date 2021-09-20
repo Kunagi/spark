@@ -8,14 +8,14 @@
 (defonce LOADED_SCRIPTS (atom #{}))
 
 (defn load-script> [src]
-  (if (contains? @LOADED_SCRIPTS src)
-    (u/resolve> src)
-    (do
-      (swap! LOADED_SCRIPTS conj src)
-      (log ::load-script
-           :src src)
-      (u/promise>
-       (fn [resolve _reject]
+  (u/promise>
+   (fn [resolve _reject]
+     (if (contains? @LOADED_SCRIPTS src)
+       (resolve src)
+       (do
+         (swap! LOADED_SCRIPTS conj src)
+         (log ::load-script
+              :src src)
          (let [script (js/document.createElement "script")]
            (set! (.-src script) src)
            (set! (.-onreadystatechange script) #(resolve src))
