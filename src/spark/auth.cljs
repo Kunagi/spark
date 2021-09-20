@@ -36,7 +36,7 @@
 
 
 (defn process-sign-in-with-custom-token-from-url [error-handler]
-  (let [custom-token (browser/get-url-parameter "customAuthToken")]
+  (let [custom-token (browser/url-param "customAuthToken")]
     (when custom-token
       (log ::process-sign-in-with-custom-token-from-url
            :custom-token custom-token)

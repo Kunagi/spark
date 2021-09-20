@@ -3,6 +3,27 @@
    [spark.logging :refer [log]]
    [spark.utils :as u]))
 
+;; * Loading Scripts
+
+(defonce LOADED_SCRIPTS (atom #{}))
+
+(defn load-script> [src]
+  (if (contains? @LOADED_SCRIPTS src)
+    (u/resolve> src)
+    (do
+      (swap! LOADED_SCRIPTS conj src)
+      (log ::load-script
+           :src src)
+      (u/promise>
+       (fn [resolve _reject]
+         (let [script (js/document.createElement "script")]
+           (set! (.-src script) src)
+           (set! (.-onreadystatechange script) #(resolve src))
+           (set! (.-onload script) #(resolve src))
+           (-> js/document .-head (.appendChild script))))))))
+
+;; * URL search params
+
 (defn url-params []
   (let [params (-> js/window.location.search js/URLSearchParams.)]
     (->> ^js params
@@ -42,7 +63,7 @@
   (js/window.addEventListener "popstate" #(reset! URL_PARAMS (url-params)))
   )
 
-;;
+;; * Platforms
 
 (def ios-platforms
   #{"iPad Simulator" "iPhone Simulator" "iPod Simulator" "iPad" "iPhone" "iPod"})
@@ -53,6 +74,7 @@
       (js/navigator.userAgent.includes "Mac")
       ))
 
+;; * Downloads
 
 (defn initiate-text-download [filename text]
   (let [a        (js/document.createElement "a")
@@ -65,6 +87,16 @@
     (-> a .click)
     (js/document.body.removeChild a)))
 
+(defn initiate-bloburl-download [filename blob-url]
+  (let [a        (js/document.createElement "a")]
+    (-> a .-style .-display (set! "none"))
+    (-> a ( .setAttribute "href", blob-url))
+    (-> a (.setAttribute "download" filename))
+    ( js/document.body.appendChild a)
+    (-> a .click)
+    (js/document.body.removeChild a)))
+
+;; * Misc
 
 (defn send-text-to-url-via-img [url text]
   (let [img      (js/Image.)
@@ -76,6 +108,8 @@
         (fn [message url line column error]
           (f message url line column error)
           false)))
+
+;; * Sound
 
 (defn play-sound [url]
   (let [audio (js/Audio. url)]
@@ -122,10 +156,3 @@
 ;;        (play-audio k)))
 ;;    1000))
 
-(defn get-url-parameter [k]
-  (let [k (cond
-            (keyword? k) (name k)
-            :else (str k))]
-    (-> js/window.location.search
-        js/URLSearchParams.
-        (.get k))))
