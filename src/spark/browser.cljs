@@ -96,6 +96,16 @@
     (-> a .click)
     (js/document.body.removeChild a)))
 
+(defn initiate-pdf-bloburl-download [filename blob-url]
+  (let [a        (js/document.createElement "a")]
+    (-> a .-style .-display (set! "none"))
+    (-> a ( .setAttribute "href", blob-url))
+    (-> a (.setAttribute "type" "application/pdf"))
+    (-> a (.setAttribute "download" filename))
+    ( js/document.body.appendChild a)
+    (-> a .click)
+    (js/document.body.removeChild a)))
+
 ;; * Misc
 
 (defn send-text-to-url-via-img [url text]
