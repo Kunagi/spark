@@ -45,10 +45,12 @@
    [spark.auth :as auth]
 
    [spark.ui.styles :as styles]
+   [spark.ui.showcase :as showcase]
    ))
 
-
 ;; * Misc
+
+(def reg-showcase showcase/reg-showcase)
 
 (def StringVectorChips form-ui/StringVectorChips)
 (def FormCardArea form-ui/FormCardArea)
@@ -618,7 +620,7 @@
 (defn tdiv-green [] (tdiv "#2e7d32"))
 (defn tdiv-yellow [] (tdiv "#f9a825"))
 
-(def-ui-showcase :grid
+(def-ui-showcase ::grid
   (stack
    (grid [:auto :auto] (tdiv-red) (tdiv-blue))
    (grid-0 [:auto :auto] (tdiv-red) (tdiv-blue))
@@ -1624,7 +1626,6 @@
         ($ ErrorBoundary
            ($ AppFrame-inner {:spa spa}
               children))))))
-
 
 
 (defn load-spa [spa]

@@ -75,10 +75,10 @@
 
 (defmacro def-ui-showcase [id-keyword component]
   (when (= :dev (:shadow.build/mode &env))
-    `(spark.ui.showcase/reg-showcase ~id-keyword
-                                     {:component (fn [] ~component)
-                                      :code '~component
-                                      })))
+    `(reg-showcase ~id-keyword
+                   {:component (fn [] ~component)
+                    :code '~component
+                    })))
 
 (defn- conform-style-value [v]
   (cond
