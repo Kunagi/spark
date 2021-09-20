@@ -1,6 +1,6 @@
 ;; * ns
 (ns spark.ui
-  (:require-macros [spark.ui :refer [<> def-ui def-ui-test
+  (:require-macros [spark.ui :refer [<> def-ui def-ui-showcase
                                      map$
                                      create-context use-context provider
                                      div center icon imgdiv
@@ -623,17 +623,18 @@
 (defn tdiv-green [] (tdiv "#2e7d32"))
 (defn tdiv-yellow [] (tdiv "#f9a825"))
 
-(def-ui-test [grid]
-  (grid [:auto :auto] (tdiv-red) (tdiv-blue))
-  (grid-0 [:auto :auto] (tdiv-red) (tdiv-blue))
-  (grid-3 [:auto :auto] (tdiv-red) (tdiv-blue))
-  (grid [:auto :auto] {:grid-gap 10} (tdiv-red) (tdiv-blue))
-  (grid [:auto "200px" :auto] (tdiv-red) (tdiv-yellow) (tdiv-blue))
-  (div
-   {:width "200px"}
-   (grid ["repeat(auto-fit, minmax(64px, 1fr))"]
-         (tdiv-red) (tdiv-yellow) (tdiv-blue) (tdiv-green)
-         (tdiv-red) (tdiv-yellow) (tdiv-blue) (tdiv-green))))
+(def-ui-showcase :grid
+  (stack
+   (grid [:auto :auto] (tdiv-red) (tdiv-blue))
+   (grid-0 [:auto :auto] (tdiv-red) (tdiv-blue))
+   (grid-3 [:auto :auto] (tdiv-red) (tdiv-blue))
+   (grid [:auto :auto] {:grid-gap 10} (tdiv-red) (tdiv-blue))
+   (grid [:auto "200px" :auto] (tdiv-red) (tdiv-yellow) (tdiv-blue))
+   (div
+    {:width "200px"}
+    (grid ["repeat(auto-fit, minmax(64px, 1fr))"]
+          (tdiv-red) (tdiv-yellow) (tdiv-blue) (tdiv-green)
+          (tdiv-red) (tdiv-yellow) (tdiv-blue) (tdiv-green)))))
 
 
 (defn unsplash [width id]
@@ -645,24 +646,25 @@
 ;;; def-cmp
 ;;;
 
-(def-ui-test [def-ui]
-  (do (def-ui TestComponent-1 []
-        "hello world")
-      ($ TestComponent-1))
+(def-ui-showcase ::def-ui
+  (stack
+   (do (def-ui TestComponent-1 []
+         "hello world")
+       ($ TestComponent-1))
 
-  (do (def-ui TestComponent-2 [{:keys [uid greeting]}]
-        {:from-context [uid]}
-        (str greeting " " uid "!"))
-      ($ TestComponent-2 {:greeting "hello"}))
+   (do (def-ui TestComponent-2 [{:keys [uid greeting]}]
+         {:from-context [uid]}
+         (str greeting " " uid "!"))
+       ($ TestComponent-2 {:greeting "hello"}))
 
-  (do (def-ui TestComponent-3 [uid greeting]
-        {:from-context [uid]}
-        (str greeting " " uid "!"))
-      (stack
-       ($ TestComponent-3 {:greeting "hello"})
-       (data (macroexpand-1 '(def-ui TestComponent-3 [uid greeting]
-                               {:from-context [uid]}
-                               (str greeting " " uid "!")))))))
+   (do (def-ui TestComponent-3 [uid greeting]
+         {:from-context [uid]}
+         (str greeting " " uid "!"))
+       (stack
+        ($ TestComponent-3 {:greeting "hello"})
+        (data (macroexpand-1 '(def-ui TestComponent-3 [uid greeting]
+                                {:from-context [uid]}
+                                (str greeting " " uid "!"))))))))
 
 ;;;
 ;;; common components
@@ -955,15 +957,16 @@
        (when cause
          ($ ErrorInfo {:error cause})))))
 
-(def-ui-test [ErrorInfo]
-  ($ ErrorInfo {:error "Just Text"})
-  ($ ErrorInfo {:error (ex-info "Clojure Exception with Data"
-                                {:with "data"
-                                 :and :info})})
-  ($ ErrorInfo {:error (ex-info "Clojure Exception with Cause"
-                                {}
-                                (ex-info "Root Cause" {}))})
-  ($ ErrorInfo {:error (js/Error. "JavaScript Error")}))
+(def-ui-showcase ::ErrorInfo
+  (stack
+   ($ ErrorInfo {:error "Just Text"})
+   ($ ErrorInfo {:error (ex-info "Clojure Exception with Data"
+                                 {:with "data"
+                                  :and :info})})
+   ($ ErrorInfo {:error (ex-info "Clojure Exception with Cause"
+                                 {}
+                                 (ex-info "Root Cause" {}))})
+   ($ ErrorInfo {:error (js/Error. "JavaScript Error")})))
 
 (defnc ErrorDialog []
   (let [error (use-error)]
@@ -1149,17 +1152,18 @@
          (or text
              (spark/cmd-label command))))))
 
-(def-ui-test [CommandButton]
-  ($ CommandButton {:command {:label "default" :f (fn [_] [])}})
-  ($ CommandButton {:command {:label "inconspicuous" :f (fn [_] [])
-                              :inconspicuous? true}})
-  ($ CommandButton {:command {:label "with icon" :f (fn [_] [])
-                              :icon "thumb_up"}})
-  ($ CommandButton {:command {:label "only icon" :f (fn [_] [])
-                              :icon "thumb_up"}
-                    :as-icon? true})
-  ($ CommandButton {:command {:label "color: secondary" :f (fn [_] [])}
-                    :color "secondary"}))
+(def-ui-showcase ::CommandButton
+  (stack
+   ($ CommandButton {:command {:label "default" :f (fn [_] [])}})
+   ($ CommandButton {:command {:label "inconspicuous" :f (fn [_] [])
+                               :inconspicuous? true}})
+   ($ CommandButton {:command {:label "with icon" :f (fn [_] [])
+                               :icon "thumb_up"}})
+   ($ CommandButton {:command {:label "only icon" :f (fn [_] [])
+                               :icon "thumb_up"}
+                     :as-icon? true})
+   ($ CommandButton {:command {:label "color: secondary" :f (fn [_] [])}
+                     :color "secondary"})))
 
 
 (defnc CommandCardArea [{:keys [command children context then]}]
@@ -1344,7 +1348,7 @@
          :else
          Content))))
 
-(def-ui-test [SimpleCard]
+(def-ui-showcase ::SimpleCard
   ($ SimpleCard
      {:title "example title"}
      "Example content."))
@@ -1561,32 +1565,36 @@
 
 
 
-(def-ui-test [stack]
-  (stack (tdiv-red) (tdiv-blue) (tdiv-green))
-  (stack-0 (tdiv-red) (tdiv-blue) (tdiv-green))
-  (stack-1 (tdiv-red) (tdiv-blue) (tdiv-green))
-  (stack-2 (tdiv-red) (tdiv-blue) (tdiv-green)))
+(def-ui-showcase ::stack
+  (stack
+   (stack (tdiv-red) (tdiv-blue) (tdiv-green))
+   (stack-0 (tdiv-red) (tdiv-blue) (tdiv-green))
+   (stack-1 (tdiv-red) (tdiv-blue) (tdiv-green))
+   (stack-2 (tdiv-red) (tdiv-blue) (tdiv-green))))
 
-(def-ui-test [flex]
-  (flex (tdiv-red) (tdiv-blue) (tdiv-green))
-  (flex-0 (tdiv-red) (tdiv-blue) (tdiv-green))
-  (flex-1 (tdiv-red) (tdiv-blue) (tdiv-green))
-  (flex-2 (tdiv-red) (tdiv-blue) (tdiv-green)))
+(def-ui-showcase ::flex
+  (stack
+   (flex (tdiv-red) (tdiv-blue) (tdiv-green))
+   (flex-0 (tdiv-red) (tdiv-blue) (tdiv-green))
+   (flex-1 (tdiv-red) (tdiv-blue) (tdiv-green))
+   (flex-2 (tdiv-red) (tdiv-blue) (tdiv-green))))
 
-(def-ui-test [center]
-  (center {:width 200 :height 200}
-          ":-)")
-  (div {:width 200}
-       (center ":-)")))
+(def-ui-showcase ::center
+  (stack
+   (center {:width 200 :height 200}
+           ":-)")
+   (div {:width 200}
+        (center ":-)"))))
 
-(def-ui-test [map$]
-  (map$ Button :text (range 6))
-  (->> (range 6)
-       (map$ Button :text)
-       flex)
-  (->> (range 6)
-       (map$ Button :text)
-       (grid ["1fr" "2fr" "1fr"])))
+(def-ui-showcase ::map$
+  (stack
+   (map$ Button :text (range 6))
+   (->> (range 6)
+        (map$ Button :text)
+        flex)
+   (->> (range 6)
+        (map$ Button :text)
+        (grid ["1fr" "2fr" "1fr"]))))
 
 (defnc AppFrame-inner [{:keys [children spa]}]
   (let [class (use-app-styles-class)]

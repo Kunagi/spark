@@ -9,7 +9,7 @@
    [spark.logging :refer [log]]
    [spark.utils :as u]
 
-   [spark.ui :as ui :refer [defnc $ def-ui def-ui-test]]
+   [spark.ui :as ui :refer [defnc $ def-ui def-ui-showcase]]
 
    [clojure.string :as str]))
 
@@ -171,7 +171,7 @@
        {:id    map-element-id
         :style {:height (or height "40vh")}})))
 
-(def-ui-test [MapWithPosition]
+(def-ui-showcase ::MapWithPosition
   ($ :div {:style {:width "400px"}}
      ($ MapWithPosition
         {:id           "test-MapWithPosition"
@@ -397,13 +397,13 @@
         :renderOption render-google-option})))
 
  
-(def-ui-test [PositionInput] ;TODO: Write Proper test?
+(def-ui-showcase ::PositionInput ;TODO: Write Proper test?
   ($ PositionInput {:set-position js/alert}))
 
 
 ;; * Map
 
-(def-ui-test [PositionInput]
+(def-ui-showcase ::PositionInput
   ($ PositionInput {:set-position js/alert}))
 
 
@@ -451,20 +451,21 @@
           :lokationen   lokationen
           :google-types google-types}))))
 
-(def-ui-test [Map]
-  ($ :div {:style {:width "300px"}}
-     ($ Map
-        {:id "test-Map1"
-         :height "200px"
-         :markers [{:title "A Title" :label "A Label"
-                    :position {:lat 52.1875305 :lng 9.0788149}}]}))
-  ($ :div {:style {:width "300px"}}
-     ($ Map
-        {:id "test-Map2"
-         :height "200px"
-         :force-position-input? true
-         :markers [{:title "A Title" :label "A Label"
-                    :position {:lat 52.1875305 :lng 9.0788149}}]})))
+(def-ui-showcase ::Map
+  (ui/stack
+   ($ :div {:style {:width "300px"}}
+      ($ Map
+         {:id "test-Map1"
+          :height "200px"
+          :markers [{:title "A Title" :label "A Label"
+                     :position {:lat 52.1875305 :lng 9.0788149}}]}))
+   ($ :div {:style {:width "300px"}}
+      ($ Map
+         {:id "test-Map2"
+          :height "200px"
+          :force-position-input? true
+          :markers [{:title "A Title" :label "A Label"
+                     :position {:lat 52.1875305 :lng 9.0788149}}]}))))
 
 
 (defn compute-distance-text> [origin destination]
