@@ -63,6 +63,16 @@
 (def atom-hook spark-react/atom-hook)
 (def memo spark-react/memo)
 
+(def use-url-params (atom-hook browser/URL_PARAMS))
+
+(defn use-url-param [k]
+  (get (use-url-params)
+       (cond
+         (nil? k) nil
+         (keyword k) k
+         (string? k) (keyword k)
+         :else (str k))))
+
 (defn coerce-link-to [to]
   (when to
     (cond
