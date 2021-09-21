@@ -106,6 +106,37 @@
     (-> a .click)
     (js/document.body.removeChild a)))
 
+(defn download-image-to-data-url> [image-url]
+  (u/promise>
+   (fn [resolve _reject]
+     (let [image (js/Image.)]
+       (set! (.-crossOrigin image) "anonymous")
+       (set! (.-onload image)
+             #(let [canvas (js/document.createElement "canvas")]
+                (-> canvas
+                    (.getContext "2d")
+                    (.drawImage image 0 0))
+                (-> canvas
+                    (.toDataURL "image/jpeg")
+                    resolve)
+                ))
+       (set! (.-src image) image-url)
+       ))))
+
+(defn fetch-to-blob-url> [url]
+  (-> (js/fetch (js/Request. url))
+      (.then (fn [^js response]
+               (-> response
+                   .blob
+                   (.then (fn [blob]
+                            (js/URL.createObjectURL blob))))))))
+
+(defn fetch-to-array-buffer> [url]
+  (-> (js/fetch (js/Request. url))
+      (.then (fn [^js response]
+               (-> response
+                   .arrayBuffer)))))
+
 ;; * Misc
 
 (defn send-text-to-url-via-img [url text]
