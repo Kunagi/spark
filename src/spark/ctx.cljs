@@ -4,8 +4,12 @@
    ))
 
 
-(defn new-ctx []
-  {:ctx.identity :ctx.identity})
+(defn new-ctx
+  ([m]
+   (merge m (new-ctx)))
+  ([]
+   {:ctx.identity :ctx.identity}))
+
 
 (defn ctx? [ctx]
   (boolean
@@ -45,3 +49,13 @@
                          (assert-ctx ctx)
                          (u/as> (f ctx))))))
           (u/as> ctx) fns))
+
+(defn wrap> [ctx promise]
+  (u/=> promise (fn [_] ctx)))
+
+(defn assoc> [ctx ctx-key promise]
+   (u/=> promise
+         (fn [result]
+           (if ctx-key
+             (assoc ctx ctx-key result)
+             ctx))))
