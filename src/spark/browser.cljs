@@ -119,7 +119,7 @@
                     (.getContext "2d")
                     (.drawImage image 0 0))
                 (-> canvas
-                    (.toDataURL "image/jpeg")
+                    (.toDataURL "image/png")
                     resolve)
                 ))
        (set! (.-src image) image-url)
