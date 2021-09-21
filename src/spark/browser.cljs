@@ -113,6 +113,8 @@
        (set! (.-crossOrigin image) "anonymous")
        (set! (.-onload image)
              #(let [canvas (js/document.createElement "canvas")]
+                (set! (.-width canvas) (-> image .-naturalWidth))
+                (set! (.-height canvas) (-> image .-naturalHeight))
                 (-> canvas
                     (.getContext "2d")
                     (.drawImage image 0 0))
