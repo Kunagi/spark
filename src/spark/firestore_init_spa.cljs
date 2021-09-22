@@ -5,11 +5,11 @@
 
 
 (log ::init
-     :debug js/goog.DEBUG
+     :debug goog.DEBUG
      :firebase js/firebase)
 
 
-(when ^boolean js/goog.DEBUG
+(when goog.DEBUG
   (defonce initialized
     (do
       (-> js/firebase .firestore (.useEmulator "localhost" 8080))
