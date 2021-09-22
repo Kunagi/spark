@@ -103,7 +103,7 @@
   (-> theme
       (or {})
       clj->js
-      mui-styles/createMuiTheme
+      mui-styles/createTheme
       mui-styles/responsiveFontSizes))
 
 (defn adapt-styles [styles]
