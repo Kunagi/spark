@@ -30,8 +30,7 @@
                :type :fn
                :examples ~examples)))))
 
-
-(defn- complete-opts [opts sym schema-name]
+(defn complete-opts [opts sym schema-name]
   (let [symbol-name (-> sym name)
         calling-namespace-name (name (ns-name *ns*))
         id (str calling-namespace-name "/" symbol-name)]
@@ -77,10 +76,6 @@
   (let [opts (complete-opts opts sym "query")]
     `(def ~sym ~opts)))
 
-
-(defmacro def-page  [sym opts]
-  (let [opts (complete-opts opts sym "page")]
-    `(def ~sym ~opts)))
 
 
 (defmacro def-spa  [sym opts]

@@ -18,7 +18,9 @@
 (defmacro use-context [& body] `(r/use-context ~@body))
 (defmacro provider [& body] `(r/provider ~@body))
 
-(defmacro def-page [sym opts] `(spark/def-page ~sym ~opts))
+(defmacro def-page  [sym opts]
+  (let [opts (spark/complete-opts opts sym "page")]
+    `(def ~sym (reg-page ~opts))))
 
 (defmacro def-ui [type params & body]
   (let [[docstring params body] (if (string? params)

@@ -237,36 +237,6 @@
     (throw (ex-info "page expected"
                     {:value Page}))))
 
-(defn- coerce-page-path [thing]
-  (if (string? thing)
-
-    thing
-
-    (->> thing
-         (map (fn [path-element]
-                (cond
-                  (keyword? path-element)
-                  (str ":" (-> path-element csk/->camelCaseString))
-
-                  (doc-schema? path-element)
-                  (-> path-element doc-schema-router-param)
-
-                  (subdoc-schema? path-element)
-                  (-> path-element subdoc-schema-router-param)
-
-                  :else
-                  (str path-element))))
-         (str/join "/")
-         (str "/ui/"))))
-
-(comment
-  (coerce-page-path "/ui/book/:book")
-  (coerce-page-path ["book" :book-id])
-  (coerce-page-path []))
-
-(defn page-path [Page]
-  (-> Page :path coerce-page-path))
-
 (defn page-docs [Page]
   (reduce (fn [docs path-element]
             (if (doc-schema? path-element)

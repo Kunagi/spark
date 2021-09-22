@@ -46,11 +46,13 @@
 
    [spark.ui.styles :as styles]
    [spark.ui.showcase :as showcase]
+   [spark.pages :as pages]
    ))
 
 ;; * Misc
 
 (def reg-showcase showcase/reg-showcase)
+(def reg-page pages/reg-page)
 
 (def StringVectorChips form-ui/StringVectorChips)
 (def FormCardArea form-ui/FormCardArea)
@@ -1384,7 +1386,7 @@
     ))
 
 
-(defonce ADDITIONAL_PAGES (atom nil))
+;; (defonce ADDITIONAL_PAGES (atom nil))
 
 
 (defn- dev-section [title content]
@@ -1529,17 +1531,15 @@
 
 
 (defnc PageSwitch [{:keys [spa children]}]
-  (let [pages (spark/spa-pages spa)
-        pages (concat @ADDITIONAL_PAGES pages)]
-    ($ router/Switch
-       (for [page pages]
-         (let [path (spark/page-path page)]
-           ($ router/Route
-              {:key  path
-               :path path}
-              ($ PageWrapper {:spa  spa
-                              :page page}
-                 children)))))))
+  ($ router/Switch
+     (for [page (pages/pages-in-router-order)]
+       (let [path (-> page :router-path)]
+         ($ router/Route
+            {:key  path
+             :path path}
+            ($ PageWrapper {:spa  spa
+                            :page page}
+               children))))))
 
 
 (defnc VersionInfo []
