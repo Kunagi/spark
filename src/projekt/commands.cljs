@@ -3,6 +3,7 @@
 
    [spark.logging :refer [log]]
    [spark.core :as spark :refer [def-cmd]]
+   [spark.db :as db]
 
    [projekt.projekt :as projekt]
    [projekt.story :as story]
@@ -27,7 +28,7 @@
    :f (fn [{:keys [projekt values]}]
         (let [story (-> values
                         (assoc :id (projekt/next-story-id projekt)))]
-          [[:db/add-child projekt [:storys] story]]))})
+          (db/add-child> projekt [:storys] story)))})
 
 
 (def-cmd update-story
@@ -50,10 +51,11 @@
              {:fields fields
               :values story}))
 
-   :f (fn [{:keys [projekt values]}]
+   :f (fn [{:keys [story values]}]
         (log ::update-story
+             :story story
              :values values)
-        [[:db/update-child projekt [:storys] (-> values :id) values]])})
+        (db/update> story values))})
 
 
 (def-cmd update-sprint
@@ -69,5 +71,8 @@
               {:fields fields
                :values sprint}))
 
-    :f (fn [{:keys [projekt values]}]
-         [[:db/update-child projekt [:sprints] (-> values :id) values]])})
+    :f (fn [{:keys [sprint values]}]
+         (log ::update-sprint
+             :sprint sprint
+             :values values)
+         (db/update> sprint values))})

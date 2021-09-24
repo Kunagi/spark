@@ -114,6 +114,7 @@
         ]
     ($ mui/Card
        {:className "StoryMap-SprintCard"}
+       ;; (ui/data sprint)
        (ui/div
         {:padding "8px 16px"}
         (if (> sprint-id 9999)
@@ -190,6 +191,7 @@
         [expanded-sprint-ids set-expended-sprint-ids] (ui/use-state #{})
         expand #(set-expended-sprint-ids (conj expanded-sprint-ids %))]
     (ui/stack
+     ;; (ui/data (-> projekt :sprints))
      ;; (ui/data (macroexpand-1 '(def-ui Hello []
      ;;                            {:wrap-memo-props [story]}
      ;;                            nil)))
@@ -203,7 +205,9 @@
         ($ :tbody
            (for [sprint-id sprints-ids]
              (let [sprint (or (-> projekt :sprints (get sprint-id))
-                              {:id sprint-id})
+                              {:id sprint-id
+                               :db/ref [(-> projekt :db/ref) :sprints sprint-id]
+                               })
                    expanded? (or (contains? expanded-sprint-ids sprint-id)
                                  (not (-> sprint sprint/closed?)))]
                (<>
