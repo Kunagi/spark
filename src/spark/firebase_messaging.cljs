@@ -22,6 +22,7 @@
                           :notification {:title title
                                          :body body
                                          :image image}
+                          :apns {:payoad {:aps: {:sound "default"}}}
                           :data data})]
  (u/=> (-> ^js messaging-service (.send message))
           (fn [response]
