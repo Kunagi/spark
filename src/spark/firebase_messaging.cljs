@@ -22,12 +22,10 @@
                           :notification {:title title
                                          :body body
                                          :image image}
-                          :apns {:payoad {:aps: {:sound "default"}}}
+                          :apns {:payload {:aps {:sound "default"}}}
                           :data data})]
  (u/=> (-> ^js messaging-service (.send message))
           (fn [response]
             (log ::send-message-to-device>--response
                  :response response)
-            response))   )
-  )
-
+            response))))
