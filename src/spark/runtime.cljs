@@ -16,13 +16,6 @@
    [:args {:optional true} map?]
    [:f any?]])
 
-(def $Effect
-  [:vector any?])
-
-(def $Effects
-  [:vector $Effect])
-
-
 (defn validate-command [command]
   (when-let [explain (u/malli-explain $Command command)]
     (throw (ex-info (str  "Invalid command: "
@@ -68,24 +61,6 @@
                            :explain explain})))))))
 
 
-(defn validate-effects [command effects]
-  (when-let [explain (u/malli-explain $Effects effects)]
-    (throw (ex-info (str  "Invalid command effects: "
-                          (u/malli-explain->user-message explain $Effects))
-                    {:command command
-                     :effects effects
-                     :explain explain}))))
-
-
-(defmulti reify-effect> (fn [effect] (first effect)))
-
-
-(defn reify-effects> [effects]
-  (log ::reify-effects>
-       :effects effects)
-  (js/Promise.all
-   (mapv reify-effect> effects)))
-
 (defn post-process-query-result [query context result]
   (if-let [f (-> query spark/query-process)]
     (f result context)
@@ -109,19 +84,14 @@
   (log ::execute-command>
        :command command
        :context context)
-  (js/Promise.
-   (fn [resolve _reject]
-     (validate-command command)
-     (validate-command-context command context)
-     (let [f (get command :f)
-           result (f context)]
-       (if (instance? js/Promise result)
-         (-> result
-             (.then resolve))
-         (let [effects result]
-           (validate-effects command effects)
-           (-> (reify-effects> effects)
-               (.then resolve))))))))
+  (validate-command command)
+  (validate-command-context command context)
+  (let [f (get command :f)
+        result (f context)]
+    (when-not (instance? js/Promise result)
+      (log ::execute-command>--WARN-result-is-not-a-promise
+           :result result))
+    (u/as> result)))
 
 
 (defn report-error [error]
