@@ -2,29 +2,28 @@
   (:require
    [spark.logging :refer [log]]
    [spark.runtime :as runtime]
-   [spark.repository :as repository]))
-
-
+   [spark.db :as db]))
 
 
 (defmethod runtime/reify-effect> :db/create
   [[_ Doc values]]
-  (repository/create-doc> Doc values))
+  (db/add> Doc values))
 
 
 (defmethod runtime/reify-effect> :db/update
   [[_ doc changes]]
-  (repository/update-doc> doc changes))
+  (db/update> doc changes))
 
 
 (defmethod runtime/reify-effect> :db/add-child
   [[_ doc inner-path values]]
-  (repository/add-doc-child> doc inner-path values))
+  (db/add-child> doc inner-path values))
 
 
 (defmethod runtime/reify-effect> :db/update-child
   [[_ doc inner-path child-id values]]
-  (repository/update-doc-child> doc inner-path child-id values))
+  (let [child (get-in doc (conj inner-path child-id) values)]
+    (db/update> child values)))
 
 
 (defmethod runtime/reify-effect> :fn

@@ -19,7 +19,7 @@
    ;; [spark.mui :as ui]
    [spark.form :as form]
    [spark.react :as react]
-   [spark.repository :as repository]
+   [spark.db :as db]
    ))
 
 
@@ -562,7 +562,7 @@
         submit #(let [changes {id (get % id)}]
                   (if update-f
                     (update-f changes)
-                    (repository/update-doc> entity %)))]
+                    (db/update> entity %)))]
     ($ FormCardArea
        {:form {:fields [field]
                :values {id value}
@@ -609,10 +609,10 @@
         value        (get doc id)
         submit       #(let [changes {id (get % id)}]
                         (if doc
-                          (repository/update-doc> doc changes)
+                          (db/update> doc changes)
                           (do
                             (u/log-deprecated "use doc, not doc-path")
-                            (repository/update-doc> doc-path changes))))
+                            (db/update> doc-path changes))))
         type         (get field :type)]
     ($ FormCardArea
        {:form {:fields [(assoc field :value value)]

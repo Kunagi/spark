@@ -3,7 +3,8 @@
 
    [spark.logging :refer [log]]
    [spark.utils :as u]
-   [spark.repository :as repository]
+   [spark.core :as spark]
+   [spark.db :as db]
    [spark.browser :as browser]
 
    ))
@@ -85,18 +86,21 @@
   (log ::update-user-doc
        :doc-schema doc-schema )
   (let [uid   (-> auth-user :uid)
-        email (-> auth-user :email)]
-    (repository/transact-doc-update>
-     doc-schema uid
-     (fn [db-user]
-       (let [user (merge db-user
-                         {:uid               uid
-                          :auth-email        email
-                          :auth-domain       (email-domain email)
-                          :auth-display-name (-> auth-user :display-name)
-                          :auth-timestamp    [:db/timestamp]})
-             user (u/update-if user update-user auth-user)]
-         user)))))
+        email (-> auth-user :email)
+        col-path (spark/doc-schema-col-path doc-schema)]
+    (db/transact>
+     (fn [{:keys [get> set>]}]
+       (u/=> (get> (str col-path "/" uid))
+             (fn [db-user]
+               (let [user (merge db-user
+                                 {:uid               uid
+                                  :auth-email        email
+                                  :auth-domain       (email-domain email)
+                                  :auth-display-name (-> auth-user :display-name)
+                                  :auth-timestamp    [:db/timestamp]})
+                     user (u/update-if user update-user auth-user)]
+                 (set> user))))))))
+
 
 (defn- import-user [^js u]
   (log ::import-user

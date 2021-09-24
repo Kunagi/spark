@@ -4,11 +4,9 @@
    ["@material-ui/core" :as mui]
    [spark.logging :refer [log]]
    [spark.utils :as u]
-   [spark.repository :as repository]
    [spark.ui :as ui :refer [def-ui $]]
    [spark.auth :as auth]
-
-   [clojure.string :as str]))
+))
 
 (def use-auth-user (ui/atom-hook auth/AUTH_USER))
 
