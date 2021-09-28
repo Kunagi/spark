@@ -204,6 +204,7 @@
 (defn sign-out> []
   (u/=> (-> firebase .auth .signOut)
         (fn [result]
+          (browser/webkit-post-message "iosapp" "logout")
           (redirect-to-home)
           result)))
 

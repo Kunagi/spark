@@ -200,3 +200,16 @@
 ;;        (play-audio k)))
 ;;    1000))
 
+;; * Webkit
+
+(defn webkit-post-message [message-handler-name message-body]
+  (log ::webkit-post-message
+       :message-handler message-handler-name
+       :body message-body)
+  (when (and (exists? js/webkit) (exists? js/webkit.messageHandlers))
+    (when-let [message-handler (aget js/webkit.messageHandlers message-handler-name)]
+      (-> ^js message-handler
+          (.postMessage message-body)))))
+
+(comment
+  (webkit-post-message "test" "hallo"))
