@@ -513,9 +513,14 @@
    (set> nil tx-data))
   ([^js transaction tx-data]
    (if (sequential? tx-data)
-     (u/=> (u/all> (map #(set> transaction %) tx-data))
-           (fn [_]
-             tx-data))
+     ;; FIXME do one single transaction!
+
+     (u/=> (.runTransaction
+            (firestore)
+            (fn [^js transaction]
+              (u/all> (map #(set> transaction %) tx-data))))
+           (fn [_] tx-data))
+
      (if-not tx-data
        (u/no-op>)
        (let [db-ref  (-> tx-data :db/ref)
@@ -534,6 +539,8 @@
 (comment
   (set> nil)
   (set> {:firestore/path "devtest/dummy-1" :hello "world"})
+  (set> [{:firestore/path "devtest/dummy-1" :set-1 [:db/timestamp]}
+         {:firestore/path "devtest/dummy-1" :set-2 [:db/timestamp]}])
   (set> {:firestore/path "devtest/dummy-1" :hello [:db/delete]})
   (u/tap> (set> {:firestore/path "devtest/dummy-1" :db/delete true}))
   (u/tap> (get> "devtest/dummy-1"))
