@@ -596,7 +596,7 @@
 ;;;
 ;;; doc fields
 ;;; TODO deprecated: get rid of binding to docs
-;;;
+;;e
 
 
 (defnc DocFieldCardArea [{:keys [doc doc-path field value-filter]}]

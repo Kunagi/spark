@@ -22,12 +22,17 @@
 ;; * tap
 
 (defn tap> [value]
-  (if (instance? js/Promise value)
-    (-> value (.then (fn [result]
-                       (clojure.core/tap> {:promise/resolved result}))
-                     (fn [error]
-                       (clojure.core/tap> {:promise/rejected error}))))
-    (clojure.core/tap> value))
+  (let [start-time (-> (js/Date.) .getTime)]
+    (if (instance? js/Promise value)
+      (-> value (.then (fn [result]
+                         (clojure.core/tap> {:promise/resolved result
+                                             :promise/runtime (- (-> (js/Date.) .getTime)
+                                                                 start-time)}))
+                       (fn [error]
+                         (clojure.core/tap> {:promise/rejected error
+                                             :promise/runtime (- (-> (js/Date.) .getTime)
+                                                                 start-time)}))))
+      (clojure.core/tap> value)))
   value)
 
 (comment
@@ -484,14 +489,17 @@
       (.then (fn [result]
                (prn "result:" result)))))
 
+(defn- as-promises-vector [promises-or-lists-of-promises]
+  (reduce (fn [promises promise-or-list]
+            (if (instance? js/Promise promise-or-list)
+              (conj promises promise-or-list)
+              (->> promise-or-list
+                   (map as>)
+                   (into promises))))
+          [] promises-or-lists-of-promises))
+
 (defn all> [& promises-or-lists-of-promises]
-  (let [promises (reduce (fn [promises promise-or-list]
-                           (if (instance? js/Promise promise-or-list)
-                             (conj promises promise-or-list)
-                             (->> promise-or-list
-                                  (map as>)
-                                  (into promises))))
-                         [] promises-or-lists-of-promises)]
+  (let [promises (as-promises-vector promises-or-lists-of-promises)]
     (-> (js/Promise.all promises)
         (.then (fn [results]
                  (as> (vec results)))))))
@@ -504,6 +512,23 @@
    (promise> (fn [resolve]
                (js/console.log "#2")
                (resolve "2")))))
+
+(defn- next-promise> [promises results]
+  (if-let [next-promise (first promises)]
+    (-> next-promise
+        (.then (fn [result]
+                 (next-promise> (rest promises) (conj results result)))))
+    (as> results)))
+
+(defn all-in-sequence> [& promises-or-lists-of-promises]
+  (next-promise> (as-promises-vector promises-or-lists-of-promises) []))
+
+(comment
+  (tap>
+   (all-in-sequence>
+    (as> "#1")
+    (as> "#2")))
+  )
 
 (defn later> [wait-millis f]
   (js/Promise.

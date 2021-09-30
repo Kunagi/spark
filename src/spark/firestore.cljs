@@ -242,6 +242,7 @@
                 :firestore/path
                 :firestore/exists?
                 :firestore/schema
+                :firestore/create
                 :db/ref)
         inject-FieldValues
         remove-metadata
@@ -461,14 +462,19 @@
   (let [path (or (-> tx-data :firestore/path)
                  (-> tx-data :db/ref))
         ref  (ref path)
+        create? (-> tx-data :firestore/create)
         data (unwrap-doc tx-data)]
     (u/=> (if autocreate?
             (if transaction
-              (u/=> (get> transaction path)
-                    (fn [doc]
-                      (if doc
-                        (.update transaction ref data)
-                        (.set transaction ref data (clj->js {:merge true}))     )))
+              (if create?
+                (.set transaction ref data)
+                (.update transaction ref data))
+              ;; (u/=> (get> transaction path)
+              ;;       (fn [doc]
+              ;;         (if doc
+              ;;           (.update transaction ref data)
+              ;;           (.set transaction ref data (clj->js {:merge true}))     )))
+              ;;
               (-> (.update ref data)
                   (.catch (fn [_err]
                             (.set ref data (clj->js {:merge true}))))))
@@ -508,19 +514,14 @@
                                      tx-data)]
     (set>--set-doc> transaction entity false)))
 
+(declare set>)
+
 (defn set>
   ([tx-data]
    (set> nil tx-data))
   ([^js transaction tx-data]
    (if (sequential? tx-data)
-     ;; FIXME do one single transaction!
-
-     (u/=> (.runTransaction
-            (firestore)
-            (fn [^js transaction]
-              (u/all> (map #(set> transaction %) tx-data))))
-           (fn [_] tx-data))
-
+     (u/all-in-sequence> (map #(set> transaction %) tx-data))
      (if-not tx-data
        (u/no-op>)
        (let [db-ref  (-> tx-data :db/ref)
@@ -537,10 +538,14 @@
              (set>--set-doc> transaction tx-data true))))))))
 
 (comment
+
+  (u/tap> (set> [{:firestore/path "devtest/deleteme" :delete "me1"}]))
+
   (set> nil)
   (set> {:firestore/path "devtest/dummy-1" :hello "world"})
-  (set> [{:firestore/path "devtest/dummy-1" :set-1 [:db/timestamp]}
-         {:firestore/path "devtest/dummy-1" :set-2 [:db/timestamp]}])
+  (u/tap>
+   (set> [{:firestore/path "devtest/dummy-1" :set-1 [:db/timestamp]}
+          {:firestore/path "devtest/dummy-2" :set-2 [:db/timestamp]}]))
   (set> {:firestore/path "devtest/dummy-1" :hello [:db/delete]})
   (u/tap> (set> {:firestore/path "devtest/dummy-1" :db/delete true}))
   (u/tap> (get> "devtest/dummy-1"))
@@ -570,6 +575,7 @@
         u/tap>)
   )
 
+;; https://firebase.google.com/docs/reference/js/v8/firebase.firestore.Firestore#runtransaction
 (defn transact> [transaction>]
   (if (fn? transaction>)
     (.runTransaction
@@ -581,6 +587,17 @@
 
 
 (comment
+
+
+  (u/tap>
+   (transact> (fn [{:keys [get> set>]}]
+                (u/=> (get> ["devtest" "dummy-1"])
+                      (fn [dummy-1]
+                        (set> [{:firestore/path (-> dummy-1 :firestore/path)
+                                :ts [:db/timestamp]}
+                               ])))
+                )))
+
   (transact> {:db/ref "devtest/dummy-2" :hello "2nd world"})
   (transact> {:db/ref "devtest/dummy-2" :db/delete true})
   (def id "dummy-3")
