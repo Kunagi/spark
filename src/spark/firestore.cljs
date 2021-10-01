@@ -50,14 +50,26 @@
 (defn ^js timestamp []
   (-> ^js (FieldValue) .serverTimestamp))
 
+(declare inject-FieldValues)
+
 (defn convert-FieldValue-or-nil [v]
   (when-let [k (if (vector? v) (first v) nil)]
     (cond
-      (= k :db/array-union)  (array-union (second v))
+      (= k :db/array-union)  (let [elements (second v)
+                                   elements (mapv (fn [v]
+                                                   (cond
+                                                     (map? v) (inject-FieldValues v)
+                                                     :else v))
+                                                 elements)]
+                               (array-union elements))
       (= k :db/array-remove) (array-remove (second v))
       (= k :db/timestamp)    (timestamp)
       (= k :db/delete)       (-> ^js (FieldValue) .delete)
       :else                  nil)))
+
+(comment
+  (convert-FieldValue-or-nil [:db/array-union [{:ts [:db/timestamp]}]])
+  )
 
 (defn inject-FieldValues [data]
   (reduce (fn [data [k v]]
@@ -540,6 +552,9 @@
 (comment
 
   (u/tap> (set> [{:firestore/path "devtest/deleteme" :delete "me1"}]))
+
+  (u/tap> (set> {:firestore/path "devtest/array"
+                 :array [:db/array-union [{:ts [:db/timestamp]}]]}))
 
   (set> nil)
   (set> {:firestore/path "devtest/dummy-1" :hello "world"})
