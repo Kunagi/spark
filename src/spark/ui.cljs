@@ -1841,6 +1841,7 @@
                                  align (or (-> col :align)
                                            (case type
                                              :eur :right
+                                             :number :right
                                              :boolean :center
                                              :x-on-true :center
                                              :left))
