@@ -287,12 +287,23 @@
       (instance? js/Date v) (-> v tick/instant)
       (string? v) (tick/instant v)
       (number? v) (-> v tick/instant)
+
+      (and (map? v)
+           (-> v :_seconds)
+           (-> v :_nanoseconds))
+      (tick/instant (+ (-> v :_seconds (* 1000))
+                       (-> v :_nanoseconds (/ 1000))))
+
+      :else (throw (ex-info (str "Unsupported time instant format: " v)
+                            {:value v
+                             :type (type v)}))
       )))
 
 (tests
  "js.Date" (->instant (js/Date. "2020-01-01")) := (tick/instant (js/Date. "2020-01-01"))
  "millis" (->instant 1577870520000) := (tick/instant 1577870520000)
  "string" (->instant "2020-01-01T10:00:00") := (tick/instant "2020-01-01T10:00:00")
+ "map" (->instant {:_seconds 1633078276, :_nanoseconds 210000000})
  )
 
 (defn ->date
