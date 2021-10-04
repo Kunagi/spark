@@ -275,9 +275,14 @@
   ;;      :values (-> form :values)
   ;;      :field field-id
   ;;      :value new-value)
-  (-> form
-      (set-field-value field-id new-value)))
-
+  (let [form (-> form
+                 (set-field-value field-id new-value))
+        field (field-by-id form field-id)
+        on-change (-> field :on-change)
+        form (if-not on-change
+               form
+               (on-change form new-value))]
+    form))
 
 (defn field-error [form field-id]
   (get-in form [:errors field-id]))

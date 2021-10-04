@@ -320,15 +320,15 @@
 (defnc FormField [{:keys [field form on-submit update-form]}]
   (let [field-id (-> field :id)
         error    (form/field-error form field-id)
+        on-change (fn [value]
+                    (update-form form/on-field-value-change field-id value))
         Input    (d/div
                   (create-input
                    (assoc field
                           :form form
                           :error error
                           :on-submit on-submit
-                          :on-change #(update-form
-                                       form/on-field-value-change
-                                       field-id %)))
+                          :on-change on-change))
                   (when-let [helptext (-> field :helptext)]
                     (d/div
                      {:style {:color "#666"}}
