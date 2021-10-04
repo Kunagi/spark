@@ -198,6 +198,7 @@
 
 
 (defn sign-in []
+  (browser/webkit-post-message "iosapp" "login")
   (@SIGN_IN-F))
 
 
