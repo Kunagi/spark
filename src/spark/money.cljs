@@ -1,5 +1,5 @@
 (ns spark.money
-  (:refer-clojure :exclude [pos? zero? min max +])
+  (:refer-clojure :exclude [pos? zero? min max + < > <= >=])
   (:require
 
    ["dinero.js" :as dinero]
@@ -102,7 +102,7 @@
     :else
     (let [s (-> ^js m .toUnit str)
           dot-idx (-> s (.indexOf "."))]
-      (if (>= dot-idx 0)
+      (if (clojure.core/>= dot-idx 0)
         (if (-> s (.substring dot-idx) count (= 2))
           (str s "0")
           s)
@@ -183,3 +183,29 @@
        (remove nil?)
        (map money)
        (.maximum dinero)))
+
+(defn > [& vals]
+  (->> vals
+       (map ->number)
+       (apply clojure.core/>)))
+
+(comment
+  (> "10" "5")
+  (> "5" "10")
+  (> "1.2" "1.1" "1")
+  )
+
+(defn < [& vals]
+  (->> vals
+       (map ->number)
+       (apply clojure.core/<)))
+
+(defn >= [& vals]
+  (->> vals
+       (map ->number)
+       (apply clojure.core/>=)))
+
+(defn <= [& vals]
+  (->> vals
+       (map ->number)
+       (apply clojure.core/<=)))

@@ -5,6 +5,8 @@
    [spark.logging :refer [log]]
    [spark.utils :as u]
    [spark.core :as spark]
+   [spark.money :as money]
+   [spark.local :as local]
 
 
    [clojure.string :as str]
@@ -173,7 +175,12 @@
 
 (defn default-eur-validator [form field]
   (fn [value form]
-    (when value)))
+    (let [min-value (-> field :min)
+          max-value (-> field :max)]
+      (when value
+        (cond
+          (and min-value (money/< value min-value)) (str "Minimum: " (local/format-eur min-value))
+          (and max-value (money/> value max-value)) (str "Maximum: " (local/format-eur max-value)))))))
 
 (defn default-field-validator [form field-id]
   (let [field (field-by-id form field-id)]
