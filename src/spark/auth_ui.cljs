@@ -242,7 +242,7 @@ Bitte gib hier den empfangenen Code ein.")
 
 ;; * Selector
 
-(def-ui LoginSelector [email telephone google microsoft facebook]
+(def-ui LoginSelector [email telephone google apple microsoft facebook]
   (let [email-sign-in (use-email-sign-in)
         telephone-sign-in (use-telephone-sign-in)]
     (cond
@@ -261,6 +261,10 @@ Bitte gib hier den empfangenen Code ein.")
           ($ ui/Button
              {:text     "Google"
               :on-click auth/sign-in-with-google}))
+        (when apple
+          ($ ui/Button
+             {:text     "Apple"
+              :on-click auth/sign-in-with-apple}))
         (when microsoft
           ($ ui/Button
              {:text     "Microsoft"
@@ -291,4 +295,5 @@ Bitte gib hier den empfangenen Code ein.")
                                 :telephone (-> options :telephone)
                                 :google    (-> options :google)
                                 :microsoft (-> options :microsoft)
+                                :apple     (-> options :apple)
                                 :facebook  (-> options :facebook)})}))

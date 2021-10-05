@@ -87,17 +87,21 @@
        :doc-schema doc-schema )
   (let [uid   (-> auth-user :uid)
         email (-> auth-user :email)
-        col-path (spark/doc-schema-col-path doc-schema)]
+        col-path (spark/doc-schema-col-path doc-schema)
+        doc-path (str col-path "/" uid)]
     (db/transact>
      (fn [{:keys [get> set>]}]
-       (u/=> (get> (str col-path "/" uid))
+       (u/=> (get> doc-path)
              (fn [db-user]
                (let [user (merge db-user
-                                 {:uid               uid
+                                 {:db/ref            doc-path
+                                  :firestore/create  (nil? db-user)
+                                  :uid               uid
                                   :auth-email        email
                                   :auth-domain       (email-domain email)
                                   :auth-display-name (-> auth-user :display-name)
-                                  :auth-timestamp    [:db/timestamp]})
+                                  :auth-timestamp    [:db/timestamp]
+                                  })
                      user (u/update-if user update-user auth-user)]
                  (set> user))))))))
 
@@ -180,6 +184,14 @@
   (let [AuthProvider (-> firebase .-auth .-OAuthProvider)
         provider     (AuthProvider. "microsoft.com")]
     (-> ^js provider (.setCustomParameters #js {:prompt "login"}))
+    (provider-sign-in> provider)))
+
+(defn sign-in-with-apple []
+  (let [AuthProvider (-> firebase .-auth .-OAuthProvider)
+        provider     (AuthProvider. "apple.com")]
+    (.addScope ^js provider "name")
+    (.addScope ^js provider "email")
+    (-> ^js provider (.setCustomParameters #js {:locale "de"}))
     (provider-sign-in> provider)))
 
 
