@@ -33,6 +33,13 @@
                    (money/money? v) (money/->number v)
                    :else v)))))
 
+(comment
+  (-> js/Intl
+      (.NumberFormat "DE-de" (clj->js {:style "currency"
+                                       :currency "EUR"}))
+      (.format 23.42))
+  )
+
 (defn format-eur
   ([v]
    (format-currency @LANG "EUR" v))
