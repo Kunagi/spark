@@ -113,18 +113,22 @@
   (-> (money "2.1")  ->str)
   (-> (money "2.12")  ->str))
 
-(defn ->number [m]
+(defn ->cents [m]
   (cond
     (nil? m)
     nil
 
     (money? m)
-    (-> (money m) .getAmount (/ 100))
+    (-> (money m) .getAmount)
 
     :else
-    (->number (money m))
+    (->cents (money m))
 
     ))
+
+(defn ->number [m]
+  (when-let [cents (->cents m)]
+    (/ cents 100)))
 
 (comment
   (->number "23.42"))

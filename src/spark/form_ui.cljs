@@ -184,6 +184,15 @@
                          :input-props (assoc (-> field :input-props)
                                              :pattern pattern)))))
 
+(defmethod create-input "integer" [field]
+  (let [pattern (or (-> field :input-props :pattern)
+                    "[0-9]*")]
+    (create-input (assoc field
+                         :type "text"
+                         :input-type "number"
+                         :input-props (assoc (-> field :input-props)
+                                             :pattern pattern)))))
+
 (defmethod create-input "select" [field]
   (let [html-id     (str "select_" (-> field :id) "_input")
         input-props (-> field :input-props
