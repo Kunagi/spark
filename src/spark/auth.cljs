@@ -96,6 +96,7 @@
                (let [user (merge db-user
                                  {:db/ref            doc-path
                                   :firestore/create  (nil? db-user)
+                                  :id                uid
                                   :uid               uid
                                   :auth-email        email
                                   :auth-domain       (email-domain email)
