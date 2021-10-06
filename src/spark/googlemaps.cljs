@@ -132,7 +132,13 @@
              (fn [placesService callback]
                ^js (.nearbySearch placesService (clj->js {:location position
                                                           :radius   5000})
-                                  callback))))
+                                  (fn [results]
+                                    (log ::nearby-search--result
+                                         :results results)
+                                    ;; (->> results js->clj
+                                    ;;      (map (fn  [result]
+                                    ;;             (js/console.log result))))
+                                    (callback results))))))
         map-element-id                    (or id "map")
         [gmap set-gmap]                   (ui/use-state nil)
         [placesService set-placesService] (ui/use-state nil)
