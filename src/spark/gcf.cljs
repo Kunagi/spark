@@ -83,8 +83,9 @@
 (defn on-request> [handler>]
   (on-request
    (fn [req res]
-     (-> (handler> req)
-         (.then #(-> res (.status 200) (.send %)))))))
+     (-> (u/as> (handler> req))
+         (.then #(-> res (.status 200) (.send %))
+                #(-> res (.status 500) (.send %)))))))
 
 
 (defn on-request--format-output> [handler>]
