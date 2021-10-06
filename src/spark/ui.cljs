@@ -1781,13 +1781,14 @@
 (defnc EntityFieldCardActionArea [{:keys [on-click
                                           label children
                                           entity field
-                                          value-suffix]}]
+                                          value-suffix display]}]
   (let [label           (or label
                             (when field
                               (spark/field-schema-label field)))
         field-id        (when field (spark/field-schema-field-id field))
         value           (when field-id (get entity field-id))
-        value-component (if-let [display (-> field spark/schema-opts :display)]
+        value-component (if-let [display (or display
+                                             (-> field spark/schema-opts :display))]
                           (display value)
                           (when value
                             (div
