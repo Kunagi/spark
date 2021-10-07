@@ -186,6 +186,7 @@
   (let [field (field-by-id form field-id)]
     (case (-> field :type)
       :number (default-number-validator form field)
+      :int (default-number-validator form field)
       :eur (default-eur-validator form field)
       nil)))
 
@@ -222,6 +223,7 @@
       nil
       (let [value   (case field-type
                       :number (js/parseInt value)
+                      :int (js/parseInt value)
                       :eur (-> value (.replace "," "."))
                       value)
             coercer (field-coercer form field-id)

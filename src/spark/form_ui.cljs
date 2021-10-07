@@ -184,7 +184,7 @@
                          :input-props (assoc (-> field :input-props)
                                              :pattern pattern)))))
 
-(defmethod create-input "integer" [field]
+(defmethod create-input "int" [field]
   (let [pattern (or (-> field :input-props :pattern)
                     "[0-9]*")]
     (create-input (assoc field
