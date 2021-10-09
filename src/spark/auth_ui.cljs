@@ -287,7 +287,8 @@ Bitte gib hier den empfangenen Code ein.")
         ($ :div))))))
 
 (defn show-sign-in-selector-dialog [options]
-  (log ::sign-in)
+  (log ::show-sign-in-selector-dialog
+       :options options)
   (ui/show-dialog {:id      "sign-in"
                    :title   "Anmelden / Registrieren"
                    :content ($ LoginSelector
