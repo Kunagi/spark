@@ -933,7 +933,9 @@
        ($ :div
           {:style {:font-size   "120%"
                    :font-weight 900
-                   :color       (-> theme .-palette .-primary .-main)}}
+                   :color       (-> theme .-palette .-primary .-main)
+                   :white-space "pre-wrap"
+                   }}
           (str message))
        (when (seq dat)
          ($ :div

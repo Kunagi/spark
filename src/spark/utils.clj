@@ -19,7 +19,7 @@
                           "in " ~in-function " (" ~in-file ":" ~in-line ")")
                          (assoc ~data
                                 :value result#
-                                :form '~assertion
+                                :assertion-form '~assertion
                                 :in-function ~in-function
                                 :in-line ~in-line
                                 :in-file ~in-file

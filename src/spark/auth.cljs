@@ -212,7 +212,9 @@
 
 (defn sign-in []
   (browser/webkit-post-message "iosapp" "login")
-  (@SIGN_IN-F))
+  (let [sign-in-f @SIGN_IN-F]
+    (u/assert sign-in-f "Missing sign-in-f")
+    (sign-in-f)))
 
 
 (defn sign-out> []
