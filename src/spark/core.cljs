@@ -3,8 +3,7 @@
   (:require
    [clojure.string :as str]
    [spark.firestore :as firestore]
-   [camel-snake-kebab.core :as csk]
-   ))
+   [camel-snake-kebab.core :as csk]))
 
 ;;;
 ;;; test registry
@@ -19,7 +18,6 @@
 
 (defn reg-def [type id thing]
   (swap! DEFS assoc-in [type id] thing))
-
 
 ;; * entity updates
 
@@ -89,7 +87,7 @@
 
 (defn field-schema-label [Field]
   (assert-field-schema Field)
-  ( -> (schema-opts Field) :label))
+  (-> (schema-opts Field) :label))
 
 ;;;
 ;;; Doc
@@ -118,10 +116,11 @@
   (-> Doc schema-opts :firestore/collection))
 
 (defn doc-schema-singleton-doc-path [Doc]
+  ;; FIXME collection-name/singleton
   (assert-doc-schema Doc)
   ["singletons" (let [opts (schema-opts Doc)]
-                  (-> opts :firestore/doc-id)
-                  (-> opts :doc-schema/symbol str/lower-case))])
+                  (or (-> opts :firestore/doc-id)
+                      (-> opts :doc-schema/symbol str/lower-case)))])
 
 (defn doc-schema-id-generator [Doc]
   (assert-doc-schema Doc)
@@ -184,7 +183,6 @@
       subdoc-schema-id-generator
       (apply context)))
 
-
 ;;;
 ;;; cmd
 ;;;
@@ -246,14 +244,13 @@
               docs))
           {} (-> Page :path)))
 
-
 ;;;
 ;;; spa
 ;;;
 
 (defn spa? [thing]
   (and (map? thing)
-       (get thing(keyword "spa" "id"))))
+       (get thing (keyword "spa" "id"))))
 
 (defn assert-spa [spa]
   ;; FIXME dev only
@@ -271,4 +268,3 @@
 
 (defn save-doc> [doc]
   (firestore/save-doc> doc))
-

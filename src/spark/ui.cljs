@@ -49,6 +49,17 @@
    [spark.pages :as pages]
    ))
 
+;; * basics
+
+(defn fullscreen-center [children]
+  (div
+   {:display :flex
+    :place-items :center
+    :place-content :center
+    :height "100vh"}
+   (div
+    children)))
+
 ;; * Misc
 
 (def reg-showcase showcase/reg-showcase)
