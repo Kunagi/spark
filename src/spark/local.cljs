@@ -112,6 +112,8 @@
    :cancel "Abbrechen"
    :continue "Weiter"
    :error "Fehler"
+   :delete "Löschen"
+   :delete-image? "Bild löschen?"
    })
 
 ;; * texts

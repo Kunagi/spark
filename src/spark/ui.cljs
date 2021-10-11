@@ -27,7 +27,6 @@
    ["@material-ui/core" :as mui]
    ["@material-ui/core/styles" :as mui-styles]
 
-
    [spark.logging :refer [log]]
    [spark.utils :as u]
    [spark.react :as spark-react]
@@ -38,6 +37,7 @@
    [spark.firebase-functions :as firebase-functions]
    [spark.env :as env]
    [spark.money :as money]
+   [spark.local :as local]
 
    [spark.firebase-storage :as storage]
    [spark.runtime :as runtime]
@@ -46,8 +46,7 @@
 
    [spark.ui.styles :as styles]
    [spark.ui.showcase :as showcase]
-   [spark.pages :as pages]
-   ))
+   [spark.pages :as pages]))
 
 ;; * basics
 
@@ -95,9 +94,7 @@
       (sequential? to) (str "/ui/" (->> to (str/join "/")))
       :else            (throw (ex-info "Unsupported `to` property value."
                                        {:to   to
-                                        :type (type to)}))
-      ))
-  )
+                                        :type (type to)})))))
 
 (def RouterLink router/Link)
 
@@ -138,7 +135,6 @@
 (defn use-param [param-key]
   (-> (use-params) (get param-key)))
 
-
 (defn use-params-2 []
   (->> (router/useParams)
        cljs-bean/->clj
@@ -155,7 +151,6 @@
    :keywordize-keys true))
 
 (def use-history router/useHistory)
-
 
 (defnc Redirect [{:keys [to]}]
   (let [history (use-history)]
@@ -197,19 +192,16 @@
 
 ;; * page and context data
 
-
 (def PAGE (create-context {:page nil :data nil}))
 
 (defn use-page []
   (use-context PAGE))
-
 
 (def SPARK_CONTEXT (create-context {:spark/spa :MISSING!
                                     :spark/page :MISSING!}))
 
 (defn use-spark-context []
   (use-context SPARK_CONTEXT))
-
 
 ;; * repository
 
@@ -224,8 +216,7 @@
    ;; (log ::use-doc
    ;;      :path path)
    (let [[doc set-doc] (use-state nil)
-         effect-signal (str path)
-         ]
+         effect-signal (str path)]
 
      (use-effect
       [effect-signal]
@@ -257,8 +248,7 @@
    ;;      :path path)
    (let [docs-ids (into #{} docs-ids)
          [docs set-docs] (use-state [])
-         effect-signal (str collection-id (->> docs-ids str))
-         ]
+         effect-signal (str collection-id (->> docs-ids str))]
 
      (use-effect
       [effect-signal]
@@ -291,14 +281,11 @@
           #(doseq [unsubscribe unsubscribes]
              (unsubscribe)))))
 
-     docs
-     )))
-
+     docs)))
 
 (defn use-singleton-doc
   [Doc]
   (use-doc (spark/doc-schema-singleton-doc-path Doc)))
-
 
 (defn use-col
   "React hook for a collection."
@@ -340,7 +327,6 @@
          unsubscribe)))
 
     docs))
-
 
 (defn use-cols-union
   "React hook for a union of collections."
@@ -434,7 +420,6 @@
 (defonce STORAGE_URLS_CACHE (atom {}))
 (def use-storage-urls-cache (atom-hook STORAGE_URLS_CACHE))
 
-
 (defn use-storage-url
   ([path]
    (use-storage-url path nil))
@@ -524,7 +509,6 @@
 ;;             (use-storage-url path))
 ;;           paths)))
 
-
 ;; * styles
 
 ;; TODO deprecated
@@ -534,7 +518,6 @@
    :background-position-x "center"
    :background-position-y "top"
    :background-size       "contain"})
-
 
 ;; * common ui functions
 
@@ -550,8 +533,7 @@
             :color            color
             :padding          "1rem"
             :border-radius    "4px"
-            :margin           "1px"
-            }}
+            :margin           "1px"}}
    (when label
      (div
       {:font-weight 900
@@ -561,8 +543,7 @@
 
 (defn colored-data-line [label background-color color data]
   (d/div
-   {:style {
-            :white-space "nowrap"
+   {:style {:white-space "nowrap"
             :height "50px"
             :font-family :monospace
             :width "100%"
@@ -572,8 +553,7 @@
             :border-radius "4px"
             :margin "1px"
             :display :grid
-            :place-items "center"
-            }}
+            :place-items "center"}}
    (div
     {:max-width "300px"
      :overflow "hidden"
@@ -646,7 +626,6 @@
           (tdiv-red) (tdiv-yellow) (tdiv-blue) (tdiv-green)
           (tdiv-red) (tdiv-yellow) (tdiv-blue) (tdiv-green)))))
 
-
 (defn unsplash [width id]
   (str "https://images.unsplash.com/photo-" id "?&w=" width))
 
@@ -680,20 +659,17 @@
 ;;; common components
 ;;;
 
-
 (defnc Spacer [{:keys [width height]}]
   (let [theme (mui-styles/useTheme)]
     (d/div
      {:style {:width  (-> theme (.spacing (or width 1)))
               :height (-> theme (.spacing (or width 1)))}})))
 
-
 (defnc Icon [{:keys [name theme]}]
   ($ :div
      {:class (str "material-icons"
                   (when theme (str "-" theme)))}
      name))
-
 
 (defnc ValueLoadGuard [{:keys [children value padding debug-info]}]
   (let [theme   (mui-styles/useTheme)
@@ -717,13 +693,12 @@
                 true values)
       children
       ($ :div
-          {:style {:display :flex
-                   :padding (when padding (-> theme (.spacing padding)))
-                   :justify-content "space-around"}}
-          ($ mui/CircularProgress)
-          (when ^boolean goog.DEBUG
-            (data values))))))
-
+         {:style {:display :flex
+                  :padding (when padding (-> theme (.spacing padding)))
+                  :justify-content "space-around"}}
+         ($ mui/CircularProgress)
+         (when ^boolean goog.DEBUG
+           (data values))))))
 
 (defnc Stack [{:keys [children spacing]}]
   (let [theme (mui-styles/useTheme)]
@@ -731,7 +706,6 @@
      {:style {:display :grid
               :grid-gap (-> theme (.spacing (or spacing 1)))}}
      children)))
-
 
 (defnc Flexbox [{:keys [children spacing style]}]
   (let [children (if (seqable? children)
@@ -788,7 +762,6 @@
 
 ;; * dialogs
 
-
 (defonce DIALOGS (atom {}))
 
 (def use-dialogs (atom-hook DIALOGS))
@@ -807,8 +780,7 @@
        :id id)
   (swap! DIALOGS assoc-in [id :open?] false)
   (js/setTimeout #(swap! DIALOGS dissoc id)
-                 1000)
-  )
+                 1000))
 
 (defonce DIALOG_ID (create-context nil))
 
@@ -828,8 +800,7 @@
      {:context DIALOG_ID
       :value   dialog-id}
      ($ mui/Dialog
-        {
-         :open      (-> dialog :open?)
+        {:open      (-> dialog :open?)
          :onClose   #(hide-dialog (-> dialog :id))
          :className class}
         ;; (data dialog-id)
@@ -842,8 +813,7 @@
                :top 0}
               ($ mui/IconButton
                  {:onClick #(hide-dialog (-> dialog :id))}
-                 (div {:class "material-icons"} "close")))
-             )
+                 (div {:class "material-icons"} "close"))))
            ($ mui/DialogTitle title)))
         ($ mui/DialogContent
            (-> dialog :content))))))
@@ -853,7 +823,6 @@
     (<>
      (for [dialog dialogs]
        ($ Dialog {:key (-> dialog :id) :dialog dialog})))))
-
 
 (def show-form-dialog form-ui/show-form-dialog)
 (def show-form-dialog> form-ui/show-form-dialog>)
@@ -916,7 +885,6 @@
   (runtime/report-error error)
   (reset! ERROR error))
 
-
 (defn destructure-error [error]
   (cond
 
@@ -936,7 +904,6 @@
     :else
     [(str error)]))
 
-
 (defnc ErrorInfo [{:keys [error]}]
   (let [[message dat stacktrace cause] (destructure-error error)
         theme                          (use-theme)]
@@ -945,8 +912,7 @@
           {:style {:font-size   "120%"
                    :font-weight 900
                    :color       (-> theme .-palette .-primary .-main)
-                   :white-space "pre-wrap"
-                   }}
+                   :white-space "pre-wrap"}}
           (str message))
        (when (seq dat)
          ($ :div
@@ -963,8 +929,7 @@
                      :color            "#6ff"
                      :padding          "1rem"
                      :border-radius    "4px"
-                     :margin           "1px"
-                     }}
+                     :margin           "1px"}}
             stacktrace))
        (when cause
          ($ ErrorInfo {:error cause})))))
@@ -996,7 +961,6 @@
              {:onClick #(reset! ERROR nil)}
              "Close")))))
 
-
 (defn wrap-in-error-handler [f]
   (when f
     (fn [& args]
@@ -1010,7 +974,6 @@
             result)
           result)
         (catch :default error (show-error error))))))
-
 
 ;; * ErrorBoundary
 
@@ -1049,16 +1012,13 @@
                   :color   "primary"
                   :variant "contained"}
                  "HOME")
-              (div)
-              )
+              (div))
 
              ($ mui/Divider)
 
              ($ ErrorInfo
                 {:error (.. this -state -error)}))
-            #_(d/pre (d/code (pr-str (.. this -state -error))))
-            )))
-
+            #_(d/pre (d/code (pr-str (.. this -state -error)))))))
 
 ;;; links
 
@@ -1075,9 +1035,7 @@
            (stack
             children)))))
 
-
 ;;; commands
-
 
 (defn upgrade-legacy-command [command]
   (if (-> command :type)
@@ -1100,7 +1058,6 @@
                              %))]
     form))
 
-
 (defn execute-command>
   ([command context]
    (execute-command> command context nil))
@@ -1108,7 +1065,6 @@
    (-> (runtime/execute-command> command context)
        (.then (or then identity))
        (.catch show-error))))
-
 
 (defn new-command-on-click [command context then]
   (runtime/validate-command command)
@@ -1120,13 +1076,12 @@
              _       (runtime/validate-command-context command context)
              form    (complete-form form context)
              submit  (fn [values]
-                      (execute-command>
-                       command
-                       (assoc context :values values)
-                       then))
+                       (execute-command>
+                        command
+                        (assoc context :values values)
+                        then))
              form    (assoc form :submit submit)]
          (show-form-dialog form)))))
-
 
 (defnc CommandButton [{:keys [command context then
                               icon as-icon? icon-theme
@@ -1177,7 +1132,6 @@
    ($ CommandButton {:command {:label "color: secondary" :f (fn [_] [])}
                      :color "secondary"})))
 
-
 (defnc CommandCardArea [{:keys [command children context then]}]
   (let [command (u/trampoline-if command)
         onClick (when command
@@ -1207,7 +1161,6 @@
 
     command))
 
-
 (defn- wrap-on-click-in-hide-dialog [f hide-dialog]
   (if-not hide-dialog
     f
@@ -1219,7 +1172,6 @@
                 (fn [result]
                   (hide-dialog)
                   result)))))))
-
 
 (defnc Button [{:keys [text icon
                        onClick on-click to href target
@@ -1258,7 +1210,6 @@
                       (wrap-on-click-in-hide-dialog on-click hide-dialog)
                       on-click)
 
-
         variant      (if (keyword? variant) (name variant) variant)
         color        (if (keyword? color) (name color) color)
         color        (or color
@@ -1291,10 +1242,6 @@
           :className classes}
          text))))
 
-
-
-
-
 (defnc IconButton [{:keys [onClick on-click
                            icon color size command theme className
                            then context]}]
@@ -1302,7 +1249,7 @@
                         context)
         on-click (or on-click onClick)
         command  (u/trampoline-if command)
-        command  (when command (-> command upgrade-legacy-command complete-command ))
+        command  (when command (-> command upgrade-legacy-command complete-command))
         on-click (wrap-in-error-handler
                   (or on-click
                       (when command (-> command :onClick))
@@ -1328,9 +1275,6 @@
         :color     color
         :size      size}
        icon)))
-
-
-
 
 (defnc CardOverline [{:keys [text]}]
   ($ mui/Typography
@@ -1379,8 +1323,6 @@
      ($ Field {:label label}
         children)))
 
-
-
 ;;;
 ;;; desktop
 ;;;
@@ -1395,12 +1337,9 @@
       ($ mui/Container
          {:maxWidth (get page :max-width "sm")}
          Content)
-      Content)
-    ))
-
+      Content)))
 
 ;; (defonce ADDITIONAL_PAGES (atom nil))
-
 
 (defn- dev-section [title content]
   (div
@@ -1453,8 +1392,7 @@
         context (reduce (fn [context [k v]]
                           (assoc context
                                  k v
-                                 (csk/->kebab-case-keyword k) v)
-                          )
+                                 (csk/->kebab-case-keyword k) v))
                         context params)
 
         docs (merge (reduce (fn [docs [k Doc]]
@@ -1476,8 +1414,7 @@
         context        (u/safe-apply update-context [context])
         update-context (-> page :update-context)
         context        (u/safe-apply update-context [context])]
-    [docs context])
-  )
+    [docs context]))
 
 (defnc DefaultAuthenticationRequired [{:keys [spa]}]
   (stack-3
@@ -1494,8 +1431,7 @@
      ($ Button
         {:text     "Sign in"
          :icon     "login"
-         :on-click auth/sign-in}))))
-  )
+         :on-click auth/sign-in})))))
 
 (defnc PageWrapper [{:keys [spa page children]}]
   {:helix/features {:check-invalid-hooks-usage false}}
@@ -1505,7 +1441,6 @@
         uid          (use-uid)
         dev-sidebar? (use-dev-sidebar-enabled)
 
-
         force-sign-in? (-> page :force-sign-in)
 
         sign-in-request? (and force-sign-in? (nil? uid))
@@ -1513,8 +1448,7 @@
         [docs context] (if sign-in-request?
                          [nil context]
                          (load-docs+context context spa page params))
-        history        (use-history)
-        ]
+        history        (use-history)]
 
     (reset! HISTORY history)
 
@@ -1539,9 +1473,7 @@
               children)))
        ($ DialogsContainer)
        ($ ErrorDialog)
-       ($ FormDialogsContainer)
-       )))))
-
+       ($ FormDialogsContainer))))))
 
 (defnc PageSwitch [{:keys [spa children]}]
   ($ router/Switch
@@ -1553,7 +1485,6 @@
             ($ PageWrapper {:spa  spa
                             :page page}
                children))))))
-
 
 (defnc VersionInfo []
   ($ :div
@@ -1571,9 +1502,6 @@
   (let [auth-completed (use-auth-completed)]
     ($ ValueLoadGuard {:value auth-completed :padding padding}
        children)))
-
-
-
 
 (def-ui-showcase ::stack
   (stack
@@ -1620,7 +1548,6 @@
                 ($ PageSwitch {:spa spa}
                    children)))))))
 
-
 (defnc AppFrame [{:keys [children]}]
   ;; (log ::render-AppFrame)
   (let [spa                (use-spa)
@@ -1640,7 +1567,6 @@
            ($ AppFrame-inner {:spa spa}
               children))))))
 
-
 (defn load-spa [spa]
   (log ::load-spa
        :spa spa)
@@ -1656,7 +1582,6 @@
                                        false)
     (rdom/render ($ (-> spa :root-component))
                  (js/document.getElementById "app"))))
-
 
 (def-ui UpgradeRequest [available-version info-text reload-text color]
   (let [current-version    (str/trim (str (resource/inline "../spa/version.txt")))
@@ -1674,6 +1599,61 @@
               :text     (or reload-text "Reload now")
               :color    (or color "secondary")
               :variant  "text"})))))))
+
+;; * misc dialogs
+
+(defnc SelectionList [{:keys [items on-select]}]
+  ($ mui/List
+     (for [[idx item] (map-indexed vector items)]
+       ($ mui/ListItem
+          {:key     (or (-> item :id) idx)
+           :button  true
+           :onClick #(on-select item)}
+          ($ mui/ListItemText
+             {:primary (-> item :label)})))))
+
+(defn show-selection-list-dialog [dialog]
+  (let [dialog-id     (str "selection-list_" (random-uuid))
+        SelectionList ($ SelectionList
+                         {:items     (-> dialog :items)
+                          :on-select (fn [item]
+                                       (hide-dialog dialog-id)
+                                       ((-> dialog :on-select) item))})
+        dialog        (assoc dialog
+                             :id dialog-id
+                             :content SelectionList)]
+    (show-dialog dialog)))
+
+(defnc Confirmation [{:keys [text confirmation-text on-confirm]}]
+  (let [hide-dialog (use-hide-dialog)
+        confirm (fn []
+                  (on-confirm)
+                  (hide-dialog))]
+    (stack-2
+     (div
+      {:text-align :center
+       :font-weight :bold}
+      text)
+     (center
+      (flex
+       ($ Button
+          {:text (local/text :cancel)
+           :variant :text
+           :on-click hide-dialog})
+       ($ Button
+          {:text (or confirmation-text
+                     (local/text :ok))
+           :on-click confirm}))))))
+
+(defn show-confirmation-dialog [dialog]
+  (let [dialog-id     (str "selection-list_" (random-uuid))
+        dialog        (assoc dialog
+                             :id dialog-id
+                             :content ($ Confirmation
+                                         {:text (-> dialog :text)
+                                          :confirmation-text (-> dialog :confirmation-text)
+                                          :on-confirm (-> dialog :on-confirm)}))]
+    (show-dialog dialog)))
 
 ;;;
 ;;; storage
@@ -1694,7 +1674,6 @@
                         (.then then))))
       :style    {:display "none"}}))
 
-
 (defnc StorageImg [{:keys [path height width style class]}]
   (let [url (use-storage-url path)]
     ($ :img
@@ -1708,8 +1687,7 @@
   ;; (js/console.log "DEBUG render StorageImgDiv" path padding-bottom class)
   (let [url (use-storage-url path)]
     (imgdiv url {:padding-bottom padding-bottom
-                 :class          class}))
-  )
+                 :class          class})))
 
 (defnc StorageImageActionArea
   [{:keys [id storage-path upload-text
@@ -1723,7 +1701,17 @@
                                 :on-url-changed on-url-changed)
                            (when on-url-changed
                              (on-url-changed new-url))
-                           (set-url_ new-url)))]
+                           (set-url_ new-url)))
+        open-file-selector #(-> (js/document.getElementById id)
+                                .click)
+        delete-file #(u/=> (storage/delete> storage-path)
+                           (fn [_]
+                             (set-url nil)))
+        on-click #(if (and url (not= url :loading))
+                    (show-confirmation-dialog {:text (local/text :delete-image?)
+                                               :confirmation-text (local/text :delete)
+                                               :on-confirm delete-file})
+                    (open-file-selector))]
 
     (use-effect
      :always
@@ -1732,10 +1720,9 @@
      nil)
 
     ($ mui/CardActionArea
-       {:onClick #(-> (js/document.getElementById id)
-                      .click)}
+       {:onClick on-click}
        ($ mui/CardContent
-          (stack-0
+          (stack
            (when label
              ($ FieldLabel {:text label}))
            (div
@@ -1756,32 +1743,6 @@
                 (div
                  {:class "MuiButtonBase-root MuiButton-root MuiButton-contained"}
                  (or upload-text "Bild auswählen..."))))))))))
-
-;; * misc dialogs
-
-
-(defnc SelectionList [{:keys [items on-select]}]
-  ($ mui/List
-     (for [[idx item] (map-indexed vector items)]
-       ($ mui/ListItem
-          {:key     (or (-> item :id) idx)
-           :button  true
-           :onClick #(on-select item)}
-          ($ mui/ListItemText
-             {:primary (-> item :label)})))))
-
-
-(defn show-selection-list-dialog [dialog]
-  (let [dialog-id     (str "selection-list_" (random-uuid))
-        SelectionList ($ SelectionList
-                         {:items     (-> dialog :items)
-                          :on-select (fn [item]
-                                       (hide-dialog dialog-id)
-                                       ((-> dialog :on-select) item))})
-        dialog        (assoc dialog
-                             :id dialog-id
-                             :content SelectionList)]
-    (show-dialog dialog)))
 
 ;; * db dialogs
 
@@ -1840,15 +1801,13 @@
 
 ;; * DataTable
 
-
 (def-ui DataTable [table records
                    csv-filename]
   (let [record-id-getter (or (-> table :record-id-getter)
                              :id)
         record-on-click (-> table :record-on-click)
         footers-count (reduce (fn [c col]
-                                (max c (-> col :footers count))
-                                )
+                                (max c (-> col :footers count)))
                               0 (-> table :cols))
 
         ;; prepare cols
@@ -1870,8 +1829,7 @@
                                                 (env/formatter-from-env format)))
                                             (env/formatter-from-env type))
                                  record-key (or (-> col :record-key)
-                                                (-> col :id))
-                                 ]
+                                                (-> col :id))]
                              (assoc col
                                     :align align
                                     :format format
@@ -1898,15 +1856,12 @@
                                                                                          (vector? record) (get record col-idx)
                                                                                          :else record)]
                                                                              ((-> col :format) value)))
-                                                                         (map-indexed vector cols))
-                                                                    )
-                                                                  records)
-                                                             )]
+                                                                         (map-indexed vector cols)))
+                                                                  records))]
                                               (u/csv-table rows)))
                                 :size :small
                                 :variant :text
-                                :color :default}))
-        ]
+                                :color :default}))]
     (div
      {:class "DataTable"}
      ($ mui/Paper
@@ -1914,10 +1869,8 @@
              ($ mui/TableContainer
                 ;; {:component mui/Paper}
                 ($ mui/Table
-                   {
-                    :stickyHeader true
-                    :size "small"
-                    }
+                   {:stickyHeader true
+                    :size "small"}
 
                    ($ mui/TableHead
                       ;; (ui/data footers-count)
@@ -1937,8 +1890,7 @@
                                      (keyword "record-index" (str row-idx)))
                             :hover true
                             :onClick (when record-on-click
-                                       #(record-on-click record))
-                            }
+                                       #(record-on-click record))}
                            (for [[col-idx col] (map-indexed vector cols)]
                              (let [record-key (-> col :record-key)
                                    value (cond
@@ -1973,27 +1925,18 @@
                                                               :else str)
                                                  format (-> col :format)]
                                              (format (reduce (fn [result record]
-                                                               (let [value (get record record-key)
-                                                                     ]
+                                                               (let [value (get record record-key)]
                                                                  (aggregator result value)))
-                                                             nil records)))
+                                                             nil records))))]
 
-                                           )]
                                ($ mui/TableCell
                                   {:key (or (-> col :id) (-> col :label))}
                                   (div
                                    {:font-weight 900
                                     :text-align (-> col :align)}
-                                   value)))))))
-
-                   ))
+                                   value)))))))))
 
              (when CsvDownloadButton
                (div
                 {:padding "8px 16px"}
-                CsvDownloadButton))
-             )
-
-
-        )))
-  )
+                CsvDownloadButton)))))))
