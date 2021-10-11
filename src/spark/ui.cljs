@@ -1713,7 +1713,8 @@
 
 (defnc StorageImageActionArea
   [{:keys [id storage-path upload-text
-           img-style on-url-changed]}]
+           img-style on-url-changed
+           label]}]
   (let [[url set-url_] (use-state :loading)
         set-url        (fn [new-url]
                          (when (not= url new-url)
@@ -1734,23 +1735,27 @@
        {:onClick #(-> (js/document.getElementById id)
                       .click)}
        ($ mui/CardContent
-          ($ HiddenStorageUploadField
-             {:id           id
-              :accept       "image/jpeg"
-              :storage-path storage-path
-              :then         set-url})
-          (if (= :loading url)
-            ($ mui/CircularProgress)
-            (if url
-              (if img-style
-                ($ :img
-                   {:src   url
-                    :style img-style})
-                ($ mui/Avatar
-                   {:src url}))
-              (div
-               {:class "MuiButtonBase-root MuiButton-root MuiButton-contained"}
-               (or upload-text "Bild auswählen..."))))))))
+          (stack-0
+           (when label
+             ($ FieldLabel {:text label}))
+           (div
+            ($ HiddenStorageUploadField
+               {:id           id
+                :accept       "image/jpeg"
+                :storage-path storage-path
+                :then         set-url})
+            (if (= :loading url)
+              ($ mui/CircularProgress)
+              (if url
+                (if img-style
+                  ($ :img
+                     {:src   url
+                      :style img-style})
+                  ($ mui/Avatar
+                     {:src url}))
+                (div
+                 {:class "MuiButtonBase-root MuiButton-root MuiButton-contained"}
+                 (or upload-text "Bild auswählen..."))))))))))
 
 ;; * misc dialogs
 
