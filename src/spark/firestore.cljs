@@ -53,7 +53,14 @@
 (declare inject-FieldValues)
 
 (defn convert-FieldValue-or-nil [v]
-  (when-let [k (if (vector? v) (first v) nil)]
+  (when-let [k (cond
+                 (vector? v)
+                 (first v)
+
+                 (and (qualified-keyword? v)
+                      (-> v namespace (= "db")))
+                 v
+                 :else nil)]
     (cond
       (= k :db/array-union)  (let [elements (second v)
                                    elements (mapv (fn [v]
