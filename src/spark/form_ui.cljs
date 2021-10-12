@@ -233,7 +233,8 @@
                ($ :option
                   {:key   (-> option :value)
                    :value (-> option :value)}
-                  (-> option :label)))))
+                  (or (-> option :label)
+                      (-> option :value str))))))
        )))
 
 
