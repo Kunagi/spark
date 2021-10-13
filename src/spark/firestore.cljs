@@ -8,14 +8,12 @@
    [spark.utils :as u]
    [clojure.string :as str]))
 
-
 ;; https://firebase.google.com/docs/reference/js/firebase.firestore
 
 (defn doc? [doc]
   (and
    (-> doc :firestore/path string?)
    (-> doc :firestore/id string?)))
-
 
 (s/def ::doc doc?)
 (s/def ::path-element (s/or :map-path-element map?
@@ -26,7 +24,6 @@
                     :doc ::doc))
 (s/def ::opt-path (s/or :nil-path nil?
                         :non-nil-path ::path))
-
 
 (defonce FIRESTORE (atom nil))
 
@@ -65,10 +62,10 @@
     (cond
       (= k :db/array-union)  (let [elements (second v)
                                    elements (mapv (fn [v]
-                                                   (cond
-                                                     (map? v) (inject-FieldValues v)
-                                                     :else v))
-                                                 elements)]
+                                                    (cond
+                                                      (map? v) (inject-FieldValues v)
+                                                      :else v))
+                                                  elements)]
                                (array-union elements))
       (= k :db/array-remove) (array-remove (second v))
       (= k :db/timestamp)    (timestamp)
@@ -76,8 +73,7 @@
       :else                  nil)))
 
 (comment
-  (convert-FieldValue-or-nil [:db/array-union [{:ts [:db/timestamp]}]])
-  )
+  (convert-FieldValue-or-nil [:db/array-union [{:ts [:db/timestamp]}]]))
 
 (defn inject-FieldValues [data]
   (reduce (fn [data [k v]]
@@ -221,8 +217,7 @@
   (when data
     (-> data
         (conform-js-data schema db-doc-ref)
-        (assoc :firestore/schema (-> schema second :doc-schema/id))
-        )))
+        (assoc :firestore/schema (-> schema second :doc-schema/id)))))
 
 (defn doc-schema [col-id]
   (get @DOC_SCHEMAS col-id))
@@ -242,7 +237,6 @@
 
 (defn wrap-docs [^js query-snapshot]
   (mapv wrap-doc (-> query-snapshot .-docs)))
-
 
 (defn doc-id [doc]
   (-> doc :firestore/id))
@@ -271,14 +265,12 @@
 
 ;;; collection and doc references
 
-
 (defn as-path [thing]
   (cond
-    (string? thing)  (-> thing ( .split "/"))
+    (string? thing)  (-> thing (.split "/"))
     (doc? thing)     (-> thing doc-path as-path)
     (keyword? thing) [(name thing)]
     :else            (do (s/assert ::path thing) thing)))
-
 
 (defn- fs-collection [source path-elem]
   (if (map? path-elem)
@@ -292,7 +284,6 @@
                 (-> ^js collection (.where attr op (clj->js val))))
               collection wheres))
     (-> ^js source (.collection path-elem))))
-
 
 (defn ^js ref [path]
   ;; (log ::ref
@@ -320,7 +311,6 @@
           (recur (-> (firestore) (fs-collection (first path)))
                  nil
                  (rest path)))))))
-
 
 ;;;
 
@@ -362,7 +352,6 @@
       (-> ref (.add (unwrap-doc data)))
       (-> ref (.set (unwrap-doc data))))))
 
-
 (defn save-doc>
   "Saves the document `doc`."
   [doc]
@@ -371,7 +360,6 @@
       doc-path
       ref
       (.set ^js (unwrap-doc doc))))
-
 
 (defn update-fields>
   "Updates fields in an existing document."
@@ -384,7 +372,6 @@
   (-> doc-path
       ref
       (.update (unwrap-doc fields))))
-
 
 (defn- flatten-entity-map
   ([m]
@@ -413,13 +400,11 @@
   (let [changes (flatten-entity-map {} (str child-path "." child-id) child-changes)]
     (update-fields> doc changes)))
 
-
 (defn delete-doc>
   [doc-or-path]
   (log ::delete-doc
        :doc doc-or-path)
   (-> doc-or-path ref .delete))
-
 
 (defn load-and-save>
   "Load, update and save/delete.
@@ -458,23 +443,32 @@
    (log ::get>
         :path        path
         :transaction transaction)
-   (let [ref      (ref path)
+   (let [starttime (js/Date.)
+         ref      (ref path)
          col-ref? (-> ref .-where boolean)]
      (u/=> (if transaction
              (.get transaction ref)
              (.get ref))
            (fn [^js result]
-             (if col-ref?
-               (wrap-docs result)
-               (if (-> result .-exists)
-                 (wrap-doc result)
-                 not-found)))))))
+             (log ::get>--2
+                  :path path
+                  :transaction transaction
+                  :runtime (- (-> (js/Date.) .getTime) (-> starttime .getTime)))
+             (let [ret (if col-ref?
+                         (wrap-docs result)
+                         (if (-> result .-exists)
+                           (wrap-doc result)
+                           not-found))]
+               (log ::get>--3
+                    :path path
+                    :transaction transaction
+                    :runtime (- (-> (js/Date.) .getTime) (-> starttime .getTime)))
+               ret))))))
 
 (comment
   (u/=> (get> ["devtest" "dummy-1"]) u/tap>)
   (u/=> (get> "devtest/dummy-1") u/tap>)
   (u/=> (get> ["devtest"]) u/tap>))
-
 
 (defn- set>--set-doc> [^js transaction tx-data autocreate?]
   ;; (log ::set>--set-doc>
@@ -576,10 +570,10 @@
   (u/=> (get> "devtest/dummy-1")
         (fn [doc]
           (js/console.log "LOADED" doc)
-          (set> [ {:db/ref   "devtest/dummy-1"
-                   :ts       [:db/timestamp]
-                   :children {"a" {:name "a"}
-                              "b" {:name "b"}}}]))
+          (set> [{:db/ref   "devtest/dummy-1"
+                  :ts       [:db/timestamp]
+                  :children {"a" {:name "a"}
+                             "b" {:name "b"}}}]))
         (fn [result]
           (js/console.log "RESULT" result))
         u/tap>)
@@ -590,13 +584,12 @@
   (u/=> (get> "devtest/dummy-1")
         (fn [doc]
           (js/console.log "LOADED" doc)
-          (set> [ {:db/ref [ "devtest/dummy-1" :children "c"]
-                   :id     "c"
-                   :ts     [:db/timestamp]}]))
+          (set> [{:db/ref ["devtest/dummy-1" :children "c"]
+                  :id     "c"
+                  :ts     [:db/timestamp]}]))
         (fn [result]
           (js/console.log "RESULT" result))
-        u/tap>)
-  )
+        u/tap>))
 
 ;; https://firebase.google.com/docs/reference/js/v8/firebase.firestore.Firestore#runtransaction
 (defn transact> [transaction>]
@@ -608,18 +601,14 @@
                       :set> (partial set> transaction)})))
     (set> transaction>)))
 
-
 (comment
-
 
   (u/tap>
    (transact> (fn [{:keys [get> set>]}]
                 (u/=> (get> ["devtest" "dummy-1"])
                       (fn [dummy-1]
                         (set> [{:firestore/path (-> dummy-1 :firestore/path)
-                                :ts [:db/timestamp]}
-                               ])))
-                )))
+                                :ts [:db/timestamp]}]))))))
 
   (transact> {:db/ref "devtest/dummy-2" :hello "2nd world"})
   (transact> {:db/ref "devtest/dummy-2" :db/delete true})
@@ -629,18 +618,14 @@
                             (fn [dummy]
                               (js/console.log "DEBUG dummy-loaded" dummy)
                               (set> [{:firestore/path (str "devtest/" id)
-                                      :counter        (inc (-> dummy :counter))}])))
-                      )]
+                                      :counter        (inc (-> dummy :counter))}]))))]
     (u/=> (transact> transaction)
-          u/tap>))
-  )
-
+          u/tap>)))
 
 (comment
   (u/tap> (transact> (fn [{:keys [set>]}]
                        (set> {:db/ref "devtest/new"
                               :hello  :world})))))
-
 
 (defn delete-docs> [path]
   (p/let [docs (get> path)]
@@ -654,5 +639,4 @@
   (p/let [doc-1 (get> "devtest/dummy-1")
           doc-2 (get> "devtest/dummy-2")]
     (u/tap> {:doc-1 doc-1
-             :doc-2 doc-2}))
-  )
+             :doc-2 doc-2})))
