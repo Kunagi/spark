@@ -144,6 +144,7 @@
 
 (defn on-call [handler]
   (-> (region--europe-west1)
+      (.runWith (clj->js {:minInstances 1}))
       .-https
       (.onCall (fn [^js data ^js context]
                  (handle-on-call-result
