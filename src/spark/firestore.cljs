@@ -2,6 +2,7 @@
   (:require
    [clojure.spec.alpha :as s]
    [goog.object :as gobj]
+   [promesa.core :as p]
    [cljs-bean.core :as cljs-bean]
    [spark.logging :refer [log]]
    [spark.utils :as u]
@@ -642,10 +643,16 @@
 
 
 (defn delete-docs> [path]
-  (u/=> (get> path)
-        (fn [docs]
-          (transact>
-           (mapv (fn [doc]
-                   {:firestore/path (-> doc :firestore/path)
-                    :db/delete      true})
-                 docs)))))
+  (p/let [docs (get> path)]
+    (transact>
+     (mapv (fn [doc]
+             {:firestore/path (-> doc :firestore/path)
+              :db/delete      true})
+           docs))))
+
+(comment
+  (p/let [doc-1 (get> "devtest/dummy-1")
+          doc-2 (get> "devtest/dummy-2")]
+    (u/tap> {:doc-1 doc-1
+             :doc-2 doc-2}))
+  )
