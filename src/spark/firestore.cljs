@@ -443,26 +443,23 @@
    (log ::get>
         :path        path
         :transaction transaction)
-   (let [starttime (js/Date.)
-         ref      (ref path)
+   (let [ref      (ref path)
          col-ref? (-> ref .-where boolean)]
      (u/=> (if transaction
              (.get transaction ref)
              (.get ref))
            (fn [^js result]
-             (log ::get>--2
-                  :path path
-                  :transaction transaction
-                  :runtime (- (-> (js/Date.) .getTime) (-> starttime .getTime)))
+             ;; (log ::get>--2
+             ;;      :path path
+             ;;      :transaction transaction)
              (let [ret (if col-ref?
                          (wrap-docs result)
                          (if (-> result .-exists)
                            (wrap-doc result)
                            not-found))]
-               (log ::get>--3
-                    :path path
-                    :transaction transaction
-                    :runtime (- (-> (js/Date.) .getTime) (-> starttime .getTime)))
+               ;; (log ::get>--3
+               ;;      :path path
+               ;;      :transaction transaction)
                ret))))))
 
 (comment
@@ -593,13 +590,21 @@
 
 ;; https://firebase.google.com/docs/reference/js/v8/firebase.firestore.Firestore#runtransaction
 (defn transact> [transaction>]
-  (if (fn? transaction>)
-    (.runTransaction
-     (firestore)
-     (fn [^js transaction]
-       (transaction> {:get> (partial get> transaction)
-                      :set> (partial set> transaction)})))
-    (set> transaction>)))
+  (log ::transact>)
+  (let [starttime (js/Date.)]
+    (if (fn? transaction>)
+      (-> (firestore)
+          (.runTransaction
+           (fn [^js transaction]
+             (log ::transact>--2
+                  :runtime (- (-> (js/Date.) .getTime) (-> starttime .getTime)))
+             (u/=> (transaction> {:get> (partial get> transaction)
+                                  :set> (partial set> transaction)})
+                   (fn [result]
+                     (log ::transact>--3
+                          :runtime (- (-> (js/Date.) .getTime) (-> starttime .getTime)))
+                     result)))))
+      (set> transaction>))))
 
 (comment
 
