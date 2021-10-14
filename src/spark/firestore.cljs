@@ -601,8 +601,8 @@
              (u/=> (transaction> {:get> (partial get> transaction)
                                   :set> (partial set> transaction)})
                    (fn [result]
-                     (log ::transact>--3
-                          :runtime (- (-> (js/Date.) .getTime) (-> starttime .getTime)))
+                     ;; (log ::transact>--3
+                     ;;      :runtime (- (-> (js/Date.) .getTime) (-> starttime .getTime)))
                      result)))))
       (set> transaction>))))
 
