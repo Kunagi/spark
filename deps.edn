@@ -1,9 +1,6 @@
-{:paths ["src" "resources"]
- :deps  {org.clojure/clojurescript {:mvn/version "RELEASE"}
-         org.clojure/spec.alpha    {:mvn/version "RELEASE"}
-
-         ;; com.github.seancorfield/expectations {:mvn/version "2.0.0-alpha2"}
-         ;; pjstadig/humane-test-output          {:mvn/version "0.11.0"}
+{:paths ["src"]
+ :deps  {org.clojure/clojurescript {:mvn/version "1.10.879"}
+         org.clojure/spec.alpha    {:mvn/version "0.2.194"}
 
          hyperfiddle/rcf                     {:git/url "https://github.com/hyperfiddle/rcf.git"
                                               :sha "1ed7a56b6f924aa2050cc163fc4636544ff6c279"}
@@ -14,17 +11,4 @@
          metosin/malli                       {:mvn/version "0.4.0"}
          camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}}
 
- :aliases {:test
-           {:extra-paths ["test"]
-            :extra-deps  {}}
-
-           :shadow-cljs
-           {:extra-paths ["dev" "test"]
-            :extra-deps  {thheller/shadow-cljs {:mvn/version "RELEASE"}
-                          binaryage/devtools   {:mvn/version "RELEASE"}
-                          cider/cider-nrepl    {:mvn/version "RELEASE"}}
-            :main-opts   ["-m" "shadow.cljs.devtools.cli"]}
-
-           :build-release
-           {:extra-deps {thheller/shadow-cljs {:mvn/version "RELEASE"}}
-            :main-opts  ["-m" "shadow.cljs.devtools.cli" "release" "spa" "gcf"]}}}
+ :aliases {}}
