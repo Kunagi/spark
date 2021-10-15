@@ -442,7 +442,7 @@
   ([^js transaction path not-found]
    (log ::get>
         :path        path
-        :transaction transaction)
+        :transaction (boolean transaction))
    (let [ref      (ref path)
          col-ref? (-> ref .-where boolean)]
      (u/=> (if transaction
