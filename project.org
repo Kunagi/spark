@@ -1,5 +1,0 @@
-#+TITLE: Project
-
-* TODO Delete deprecated APIs
-- repository
-- form-ui.DocFieldCardArea
