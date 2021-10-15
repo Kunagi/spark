@@ -91,6 +91,9 @@
   (pos? "0")
   (pos? nil))
 
+(defn pos-or-nil [m]
+  (when (pos? m) m))
+
 (defn ->str [m]
   (cond
     (nil? m)
