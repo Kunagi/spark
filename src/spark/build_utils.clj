@@ -45,6 +45,8 @@
   (assert-git-clean)
   (process {:command-args ["git" "tag" git-version-tag]})
   (process {:command-args ["git" "push" "origin" git-version-tag]})
+  (process {:command-args ["git" "push"]
+            :dir "spark"})
   (let [next-version (inc version)
         time-string (-> (process {:command-args ["date" "-Iminutes"]
                                             :out :capture})
