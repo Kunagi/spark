@@ -36,26 +36,26 @@
   (print-action "assert-git-clean")
   (let [{:keys [out]}
         (process {:command-args ["git" "status" "-s"]
-                            :out :capture})]
+                  :out :capture})]
     (when out
       (fail! "git directory dirty"))))
 
 (defn commit-version []
   (print-action "commit-version")
   (assert-git-clean)
-  (process {:command-args ["git" "tag" git-version-tag]})
-  (process {:command-args ["git" "push" "origin" git-version-tag]})
   (process {:command-args ["git" "push"]
             :dir "spark"})
+  (process {:command-args ["git" "tag" git-version-tag]})
+  (process {:command-args ["git" "push" "origin" git-version-tag]})
   (let [next-version (inc version)
         time-string (-> (process {:command-args ["date" "-Iminutes"]
-                                            :out :capture})
+                                  :out :capture})
                         :out)]
     (print-info version "->" next-version)
     (spit "src/spa/version.txt" next-version)
     (spit "src/spa/version-time.txt" time-string)
     (process {:command-args ["git" "commit"
-                                       "-am" (str "[version-bump] " version " -> " next-version)]})
+                             "-am" (str "[version-bump] " version " -> " next-version)]})
     (process {:command-args ["git" "push"]})))
 
 (defn clean []
@@ -73,7 +73,7 @@
 (defn npm-install [dir]
   (print-action "npm-install")
   (process {:command-args ["npm" "install"]
-                      :dir dir}))
+            :dir dir}))
 
 (defn release-build []
   (print-action "release-build")
@@ -81,12 +81,12 @@
   (npm-install ".")
   (npm-install "firebase/functions")
   (process {:command-args ["clojure" "-M:shadow-cljs-release"
-                                     "--config-merge" (str "{:release-version \"v" version "\"}")]}))
+                           "--config-merge" (str "{:release-version \"v" version "\"}")]}))
 
 (defn firebase-deploy []
   (print-action "firebase-deploy")
   (process {:command-args ["firebase" "deploy"]
-                      :dir "firebase"}))
+            :dir "firebase"}))
 
 (defn update-references-to-build-artifacts []
   (replace-in-file "firebase/public/index.html" "main.js" (str "main.v" version ".js"))
