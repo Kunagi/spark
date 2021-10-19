@@ -192,7 +192,15 @@
                         (assoc :name (-> field :name)))
         value       (-> field :value)
         required?   (-> field :required?)
-        label-id (str "select_" (-> field :id) "_label")]
+        label-id (str "select_" (-> field :id) "_label")
+        get-value-from-options (fn [selected-value]
+                                 (->> field :options
+                                      (reduce (fn [ret option]
+                                                (or ret
+                                                    (when (-> option :value str
+                                                              (= selected-value))
+                                                      (-> option :value))))
+                                              nil)))]
     ($ :div
        ;; ($ :pre "!" (-> field :error str) "!")
        ($ mui/FormControl
@@ -200,8 +208,7 @@
            :variant      "outlined"
            :margin       "dense"
            :required     required?
-           :error (-> field :error boolean)
-           }
+           :error (-> field :error boolean)}
           ($ mui/InputLabel
              {:htmlFor html-id
               :shrink  true
@@ -216,14 +223,14 @@
               :defaultValue value
               :inputProps   (clj->js input-props)
               :onChange     #((:on-change field)
-                              (-> % .-target .-value))
+                              (-> % .-target .-value get-value-from-options))
               :autoFocus    (-> field :auto-focus?)}
              (when (or (nil? value) (not required?))
                ($ :option {:value nil} ""))
              (for [option (-> field :options)]
                ($ :option
                   {:key   (-> option :value)
-                   :value (-> option :value)}
+                   :value (-> option :value str)}
                   (or (-> option :label)
                       (-> option :value str)))))
           (when-let [error (-> field :error)]
