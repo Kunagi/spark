@@ -245,7 +245,7 @@
         value     (field-value form field-id)
         value     (coerce-value value form field-id)
         error     (when (and  (-> field :required?) (nil? value))
-                    "Input required.")
+                    (local/text :form-field-input-required))
         validator (field-validator form field-id)
         error     (or error
                       (when (and value validator)

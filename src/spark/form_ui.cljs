@@ -8,7 +8,6 @@
    [helix.hooks :as hooks]
    [helix.dom :as d]
 
-
    ["@material-ui/core" :as mui]
    ["@material-ui/lab" :as mui-lab]
 
@@ -19,16 +18,13 @@
    ;; [spark.mui :as ui]
    [spark.form :as form]
    [spark.react :as react]
-   [spark.db :as db]
-   ))
-
+   [spark.db :as db]))
 
 (defonce DIALOG_FORMS (atom {}))
 
 (defn close-form-dialog [form-id]
   (swap! DIALOG_FORMS assoc-in [form-id :open?] false)
   (js/setTimeout #(swap! DIALOG_FORMS dissoc form-id) 1000))
-
 
 (defn show-form-dialog [form]
   (let [form-id (random-uuid)
@@ -56,7 +52,6 @@
 ;;   ($ mui/Card
 ;;      ($ mui/CardContent
 ;;         (ui/data (use-dialog-forms)))))
-
 
 (defmulti create-input (fn [field]
                          (if-let [type (-> field :type)]
@@ -115,8 +110,7 @@
         input-props (or (-> field :input-props)
                         {})
         InputProps  {:startAdornment start-adornment
-                     :endAdornment end-adornment}
-        ]
+                     :endAdornment end-adornment}]
     ($ :div
        ;; ($ :pre (str field))
        ;; (when goog.DEBUG
@@ -127,8 +121,7 @@
        ;;               :font-family      "monospace"}}
        ;;      (u/->edn (:value field))))
        ($ mui/TextField
-          {
-           :id              (-> field :id name)
+          {:id              (-> field :id name)
            :name            (-> field :name)
            :autoComplete    (-> field :auto-complete)
            :value           (or (-> field :value) "")
@@ -152,7 +145,6 @@
            ;; :variant "filled"
            :variant         "outlined"
            :fullWidth       true}))))
-
 
 (defmethod create-input "eur" [field]
   (create-input (assoc field
@@ -202,31 +194,30 @@
         required?   (-> field :required?)
         label-id (str "select_" (-> field :id) "_label")]
     ($ :div
+       ;; ($ :pre "!" (-> field :error str) "!")
        ($ mui/FormControl
           {:fullWidth true
            :variant      "outlined"
            :margin       "dense"
+           :required     required?
+           :error (-> field :error boolean)
            }
           ($ mui/InputLabel
              {:htmlFor html-id
               :shrink  true
-              :id label-id
-              }
+              :id label-id}
              (-> field :label))
           ($ mui/Select
-             {
-              :label (-> field :label)
+             {:label (-> field :label)
               :native       true
               :id           (-> field :id name)
               :labelId label-id
               :name         (-> field :name)
               :defaultValue value
               :inputProps   (clj->js input-props)
-              :required     required?
               :onChange     #((:on-change field)
                               (-> % .-target .-value))
-              :autoFocus    (-> field :auto-focus?)
-              }
+              :autoFocus    (-> field :auto-focus?)}
              (when (or (nil? value) (not required?))
                ($ :option {:value nil} ""))
              (for [option (-> field :options)]
@@ -234,9 +225,9 @@
                   {:key   (-> option :value)
                    :value (-> option :value)}
                   (or (-> option :label)
-                      (-> option :value str))))))
-       )))
-
+                      (-> option :value str)))))
+          (when-let [error (-> field :error)]
+            ($ mui/FormHelperText error))))))
 
 (defmethod create-input "chips" [field]
   ($ mui-lab/Autocomplete
@@ -263,8 +254,7 @@
                               :InputProps      (-> props .-InputProps)
                               :inputProps      (-> props .-inputProps)}))})
   #_($ ChipInput
-       {
-        :id           (-> field :id name)
+       {:id           (-> field :id name)
         :name         (-> field :name)
         :defaultValue (clj->js (-> field :value))
         :onChange     #((:on-change field) (-> % js->clj))
@@ -292,7 +282,6 @@
            {:value "false"
             :label "Nein"
             :control ($ mui/Radio)}))))
-
 
 (defmethod create-input "checkboxes" [field]
   (log ::create-input
@@ -414,8 +403,7 @@
                                                    (submit values))))]
                               (-> p
                                   (.then (fn [result]
-                                           (close result)
-                                           ))
+                                           (close result)))
                                   (.catch (fn [error]
                                             (update-form (fn [_]
                                                            (form/set-error form error))))))))))))]
@@ -458,8 +446,7 @@
               ;;      (u/->edn (-> form :values))))
               #_($ :pre (-> context keys str))
               ($ :div
-                 {:style {
-                          ;; :width     "500px"
+                 {:style {;; :width     "500px"
                           ;; :max-width "100%"
                           }}
 
@@ -470,7 +457,6 @@
                        :form        form
                        :on-submit   on-submit
                        :update-form update-form}))
-
 
                  (get form :content))
               ;; (ui/data form)
@@ -514,7 +500,6 @@
               (when (-> form :waiting?)
                 ($ mui/LinearProgress)))))))))
 
-
 (defnc FormDialogsContainer []
   (let [forms (use-dialog-forms)]
     (for [form (-> forms vals)]
@@ -522,14 +507,11 @@
          {:key (-> form :id)
           :form form}))))
 
-
 ;; TODO deprecated
 (defnc FormCardArea [{:keys [form children]}]
   ($ mui/CardActionArea
      {:onClick #(show-form-dialog form)}
      children))
-
-
 
 (defnc FieldLabel [{:keys [text]}]
   (d/div
@@ -548,7 +530,6 @@
        :style {:min-height "15px"}}
       children)))
 
-
 (defnc StringVectorChips [{:keys [values]}]
   ($ :div
      {:style {:display :flex
@@ -559,7 +540,6 @@
           {:key value}
           ($ mui/Chip
              {:label value})))))
-
 
 (defnc FieldCardArea [{:keys [entity update-f field]}]
   #_(u/log-deprecated "use CommandCardArea")
@@ -608,7 +588,6 @@
 ;;; TODO deprecated: get rid of binding to docs
 ;;e
 
-
 (defnc DocFieldCardArea [{:keys [doc doc-path field value-filter]}]
   (let [field        (if (spark/field-schema? field)
                        (spark/schema-opts field)
@@ -636,7 +615,6 @@
                   {:style {:word-break "break-word"}}
                   (value-filter value))))))))
 
-
 (defnc DocFieldsCardAreas [{:keys [doc fields]}]
   (<> (for [field fields]
         ($ DocFieldCardArea
@@ -644,14 +622,12 @@
             :doc doc
             :field field}))))
 
-
 (defnc DocFieldCard [{:keys [doc field value-filter]}]
   ($ mui/Card
      ($ DocFieldCardArea
         {:doc doc
          :field field
          :value-filter value-filter})))
-
 
 (defnc DocFieldsCard [{:keys [doc fields title children]}]
   ($ mui/Card

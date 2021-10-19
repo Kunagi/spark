@@ -114,6 +114,8 @@
    :error "Fehler"
    :delete "Löschen"
    :delete-image? "Bild löschen?"
+
+   :form-field-input-required "Eingabe erforderlich"
    })
 
 ;; * texts
