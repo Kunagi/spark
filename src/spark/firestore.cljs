@@ -121,90 +121,96 @@
 ;; * conform to schema
 
 (defn conform-js-data [^js data schema db-doc-ref]
-  (cond
+  (let [schema-type (if (vector? schema)
+                      (first schema)
+                      schema)]
+    ;; (when (= :keyword schema)
+    ;;   (js/console.log "!!!" "keyword schema:" data (keyword data)))
+    (cond
 
-    (nil? data)
-    nil
+      (nil? data)
+      nil
 
-    (= :keyword schema)
-    (keyword data)
+      (= :keyword schema-type)
+      (keyword data)
 
-    (= :string schema)
-    (str data)
+      (= :string schema-type)
+      (str data)
 
-    (= :int schema)
-    (js/parseInt data)
+      (= :int schema-type)
+      (js/parseInt data)
 
-    (or (string? data) (number? data) (boolean? data))
-    (js->clj data)
+      ;; FIXME ???
+      (or (string? data) (number? data) (boolean? data))
+      (js->clj data)
 
-    (instance? (if (exists? js/firebase)
-                 (-> js/firebase.firestore.Timestamp)
-                 (-> (js/require "firebase-admin") .-firestore .-Timestamp))
-               data)
-    (-> data .toDate)
+      (instance? (if (exists? js/firebase)
+                   (-> js/firebase.firestore.Timestamp)
+                   (-> (js/require "firebase-admin") .-firestore .-Timestamp))
+                 data)
+      (-> data .toDate)
 
-    ^boolean (js/Array.isArray data)
-    (case (first schema)
-      :set
-      (into #{} (map (fn [[idx item]]
-                       (let [item-schema (if (map? (second schema))
-                                           (nth schema 2)
-                                           (nth schema 1))]
-                         (conform-js-data item item-schema (conj db-doc-ref idx))))
-                     (map-indexed vector data)))
+      ^boolean (js/Array.isArray data)
+      (case schema-type
+        :set
+        (into #{} (map (fn [[idx item]]
+                         (let [item-schema (if (map? (second schema))
+                                             (nth schema 2)
+                                             (nth schema 1))]
+                           (conform-js-data item item-schema (conj db-doc-ref idx))))
+                       (map-indexed vector data)))
 
-      :vector
-      (mapv (fn [[idx item]]
-              (let [item-schema (if (map? (second schema))
-                                  (nth schema 2)
-                                  (nth schema 1))]
-                (conform-js-data item item-schema (conj db-doc-ref idx))))
-            (map-indexed vector data))
-
-      ;; else
-      (mapv (fn [[idx item]]
-              (conform-js-data item nil (conj db-doc-ref idx)))
-            (map-indexed vector data)))
-
-    (vector? schema)
-    (case (first schema)
-
-      :map-of
-      (reduce (fn [m js-key]
-                (let [k           js-key
-                      v           (gobj/get data js-key)
-                      k-schema    (if (map? (second schema))
+        :vector
+        (mapv (fn [[idx item]]
+                (let [item-schema (if (map? (second schema))
                                     (nth schema 2)
-                                    (nth schema 1))
-                      v-schema    (if (map? (second schema))
-                                    (nth schema 3)
-                                    (nth schema 2))
-                      k-conformed (conform-js-data k k-schema db-doc-ref)]
-                  (assoc m
-                         k-conformed
-                         (conform-js-data v v-schema (conj db-doc-ref
-                                                           k-conformed)))))
-              {} (js/Object.keys data))
+                                    (nth schema 1))]
+                  (conform-js-data item item-schema (conj db-doc-ref idx))))
+              (map-indexed vector data))
 
-      ;; else -> :map
-      (let [new-data {:db/ref db-doc-ref}
-            new-data (if-let [doc-schema-id (or (-> schema second :subdoc-schema/id)
-                                                (-> schema second :doc-schema/id))]
-                       (assoc new-data :firestore/schema doc-schema-id)
-                       new-data)]
+        ;; else
+        (mapv (fn [[idx item]]
+                (conform-js-data item nil (conj db-doc-ref idx)))
+              (map-indexed vector data)))
+
+      (vector? schema)
+      (case schema-type
+
+        :map-of
         (reduce (fn [m js-key]
-                  (let [k        (decode-field-key js-key)
-                        v        (gobj/get data js-key)
-                        v-schema (u/malli-map-field-schema-by-id schema k)
-                        v        (conform-js-data v v-schema (conj db-doc-ref k))]
-                    (if (nil? v)
-                      m
-                      (assoc m k v))))
-                new-data (js/Object.keys data))))
+                  (let [k           js-key
+                        v           (gobj/get data js-key)
+                        k-schema    (if (map? (second schema))
+                                      (nth schema 2)
+                                      (nth schema 1))
+                        v-schema    (if (map? (second schema))
+                                      (nth schema 3)
+                                      (nth schema 2))
+                        k-conformed (conform-js-data k k-schema db-doc-ref)]
+                    (assoc m
+                           k-conformed
+                           (conform-js-data v v-schema (conj db-doc-ref
+                                                             k-conformed)))))
+                {} (js/Object.keys data))
 
-    :else
-    (js->clj data :keywordize-keys true)))
+        ;; else -> :map
+        (let [new-data {:db/ref db-doc-ref}
+              new-data (if-let [doc-schema-id (or (-> schema second :subdoc-schema/id)
+                                                  (-> schema second :doc-schema/id))]
+                         (assoc new-data :firestore/schema doc-schema-id)
+                         new-data)]
+          (reduce (fn [m js-key]
+                    (let [k        (decode-field-key js-key)
+                          v        (gobj/get data js-key)
+                          v-schema (u/malli-map-field-schema-by-id schema k)
+                          v        (conform-js-data v v-schema (conj db-doc-ref k))]
+                      (if (nil? v)
+                        m
+                        (assoc m k v))))
+                  new-data (js/Object.keys data))))
+
+      :else
+      (js->clj data :keywordize-keys true))))
 
 ;; * wrap docs to have access to id and path
 
