@@ -104,11 +104,11 @@
                                       {:id messaging-token
                                        :disabled false
                                        :type :web
-                                       :user-agent (js/navigator.userAgent)
-                                       :navigator-platform (js/navigator.platform)
-                                       :navigator-app-code-name (js/navigator.appCodeName)
-                                       :navigator-app-name (js/navigator.appName)
-                                       :navigator-app-version (js/navigator.appVersion)
+                                       :user-agent js/navigator.userAgent
+                                       :navigator-platform js/navigator.platform
+                                       :navigator-app-code-name js/navigator.appCodeName
+                                       :navigator-app-name js/navigator.appName
+                                       :navigator-app-version js/navigator.appVersion
                                        :ts :db/timestamp})
                              user (if device
                                     (assoc-in user [:devices (-> device :id)] device)
