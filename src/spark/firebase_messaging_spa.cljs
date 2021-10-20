@@ -4,8 +4,12 @@
    [spark.utils :as u]))
 
 (defn messaging []
-  (when (exists? js/firebase.messaging)
-    (-> js/firebase .messaging)))
+  (try
+    (when (exists? js/firebase.messaging)
+      (-> js/firebase .messaging))
+    (catch :default ex
+      (js/console.error "firebase.messaging() failed" ex)
+      nil)))
 
 ;; https://firebase.google.com/docs/cloud-messaging/js/client#web-version-8
 (defn get-token> [public-vapid-key]
@@ -25,7 +29,7 @@
                           :error error)
                      nil)))
         (catch :default ex
-          (js/console.error "messaging.getToken(..) failed" ex)))
+          (js/console.error "firebase messaging.getToken(..) failed" ex)))
       (u/resolve> nil))))
 
 (defn register-on-message-handler [handler]
@@ -39,4 +43,4 @@
                              :payload payload)
                         (handler (js->clj payload :keywordize-keys true)))))
       (catch :default ex
-        (js/console.error "messaging.onMessage(..) failed" ex)))))
+        (js/console.error "firebase messaging.onMessage(..) failed" ex)))))
