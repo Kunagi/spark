@@ -59,7 +59,16 @@
                           (when-let [id (-> field :id)]
                             (if (keyword? id)
                               (name id)
-                              (str id))))]
+                              (str id))))
+
+        options (when-let [options (-> field :options)]
+                  (->> options
+                       (mapv (fn [option]
+                               (if (map? option)
+                                 option
+                                 {:value option
+                                  :label (str option)})))))
+        ]
     (assoc field
            :id id
            :auto-focus? (= 0 idx)
@@ -70,7 +79,8 @@
            :type field-type
            :multiline? (or (-> field :multiline?)
                            (-> field :rows boolean))
-           :auto-complete (get field :auto-complete "off"))))
+           :auto-complete (get field :auto-complete "off")
+           :options options)))
 
 (def ^js eur-number-format
   (-> js/Intl (.NumberFormat "de-DE"
