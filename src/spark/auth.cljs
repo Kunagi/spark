@@ -85,8 +85,10 @@
         doc-path (str col-path "/" uid)]
     (u/=> (if (and  messaging-vapid-key (not (browser/apple?)))
             (messaging/get-token> messaging-vapid-key)
-            (u/no-op>))
+            (u/resolve> nil))
           (fn [messaging-token]
+            (log ::update-user-doc--2
+                 :messaging-token messaging-token)
             (db/transact>
              (fn [{:keys [get> set>]}]
                (u/=> (get> doc-path)
@@ -105,10 +107,6 @@
                                        :disabled false
                                        :type :web
                                        :user-agent js/navigator.userAgent
-                                       :navigator-platform js/navigator.platform
-                                       :navigator-app-code-name js/navigator.appCodeName
-                                       :navigator-app-name js/navigator.appName
-                                       :navigator-app-version js/navigator.appVersion
                                        :ts :db/timestamp})
                              user (if device
                                     (assoc-in user [:devices (-> device :id)] device)

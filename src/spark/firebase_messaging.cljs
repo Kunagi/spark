@@ -10,7 +10,7 @@
 (defn messaging-service []
   (-> ^js admin .messaging))
 
-(defn send-notification-to-device> [device-token title body image data]
+(defn send-notification-to-device> [device-token title body image url data]
   (log ::send-message-do-device>
        :token device-token
        :title title
@@ -22,6 +22,7 @@
                           :notification {:title title
                                          :body body
                                          :image image}
+                          :webpush {:fcm_options {:link url}}
                           :apns {:payload {:aps {:sound "default"}}}
                           :data data})]
  (u/=> (-> ^js messaging-service (.send message))
