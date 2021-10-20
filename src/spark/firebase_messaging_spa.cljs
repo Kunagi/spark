@@ -9,4 +9,8 @@
 (defn get-token> [public-vapid-key]
   (log ::get-token>)
   (-> (messaging)
-      (.getToken public-vapid-key)))
+      (.getToken public-vapid-key)
+      (.catch (fn [error]
+                (log ::get-token>--error
+                     :error error)
+                nil))))
