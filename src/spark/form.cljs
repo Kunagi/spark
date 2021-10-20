@@ -260,6 +260,12 @@
       (assoc-in form [:errors field-id] error)
       (update form :errors dissoc field-id))))
 
+(defn set-field-attr [form field-id attr value]
+  (let [field-index (field-index-by-id form field-id)]
+    (-> form
+        (assoc-in [:fields field-index attr] value)
+        (validate-field field-id))))
+
 (defn set-field-value [form field-id value]
   (let [field-index (field-index-by-id form field-id)]
     (-> form
