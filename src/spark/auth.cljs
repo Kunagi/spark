@@ -83,7 +83,7 @@
         email (-> auth-user :email)
         col-path (spark/doc-schema-col-path doc-schema)
         doc-path (str col-path "/" uid)]
-    (u/=> (if messaging-vapid-key
+    (u/=> (if (and  messaging-vapid-key (not (browser/apple?)))
             (messaging/get-token> messaging-vapid-key)
             (u/no-op>))
           (fn [messaging-token]
