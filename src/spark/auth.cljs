@@ -6,6 +6,7 @@
    [spark.core :as spark]
    [spark.db :as db]
    [spark.browser :as browser]
+   [spark.firebase-messaging-spa :as messaging]
 
    ))
 
@@ -82,29 +83,40 @@
   (when email (-> email (.substring (-> email (.indexOf "@") inc)))))
 
 
-(defn update-user-doc [doc-schema auth-user update-user]
+(defn update-user-doc [doc-schema auth-user update-user messaging-vapid-key]
   (log ::update-user-doc
        :doc-schema doc-schema )
   (let [uid   (-> auth-user :uid)
         email (-> auth-user :email)
         col-path (spark/doc-schema-col-path doc-schema)
         doc-path (str col-path "/" uid)]
-    (db/transact>
-     (fn [{:keys [get> set>]}]
-       (u/=> (get> doc-path)
-             (fn [db-user]
-               (let [user (merge db-user
-                                 {:db/ref            doc-path
-                                  :firestore/create  (nil? db-user)
-                                  :id                uid
-                                  :uid               uid
-                                  :auth-email        email
-                                  :auth-domain       (email-domain email)
-                                  :auth-display-name (-> auth-user :display-name)
-                                  :auth-timestamp    [:db/timestamp]
-                                  })
-                     user (u/update-if user update-user auth-user)]
-                 (set> user))))))))
+    (u/=> (if messaging-vapid-key
+            (messaging/get-token> messaging-vapid-key)
+            (u/no-op>))
+          (fn [messaging-token]
+            (db/transact>
+             (fn [{:keys [get> set>]}]
+               (u/=> (get> doc-path)
+                     (fn [db-user]
+                       (let [user (merge db-user
+                                         {:db/ref            doc-path
+                                          :firestore/create  (nil? db-user)
+                                          :id                uid
+                                          :uid               uid
+                                          :auth-email        email
+                                          :auth-domain       (email-domain email)
+                                          :auth-display-name (-> auth-user :display-name)
+                                          :auth-timestamp    [:db/timestamp]
+                                          })
+                             device (when messaging-token
+                                      {:id messaging-token
+                                       :disabled false
+                                       :type :web})
+                             user (if device
+                                    (assoc-in user [:devices (-> device :id)] device)
+                                    user)
+                             user (u/update-if user update-user auth-user)]
+                         (set> user))))))))))
 
 
 (defn- import-user [^js u]
@@ -120,7 +132,8 @@
      :tenant-id (-> u .-tenantId)
      :uid (-> u .-uid)}))
 
-(defn initialize [{:keys [user-doc-schema update-user set-user sign-in error-handler]}]
+(defn initialize [{:keys [user-doc-schema update-user set-user sign-in error-handler
+                          messaging-vapid-key]}]
   (log ::initialize
        :doc-schema user-doc-schema)
   (reset! SIGN_IN-F sign-in)
@@ -145,7 +158,7 @@
                  (reset! AUTH_USER user)
                  (when user
                    (when user-doc-schema
-                     (update-user-doc user-doc-schema user update-user)))
+                     (update-user-doc user-doc-schema user update-user messaging-vapid-key)))
                  (when set-user
                    (set-user user)))
                (when-not auth-completed?
