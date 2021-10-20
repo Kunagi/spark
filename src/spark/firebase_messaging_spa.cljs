@@ -37,6 +37,6 @@
           (.onMessage (fn [payload]
                         (log ::on-message
                              :payload payload)
-                        (handler (js->clj payload)))))
+                        (handler (js->clj payload :keywordize-keys true)))))
       (catch :default ex
         (js/console.error "messaging.onMessage(..) failed" ex)))))
