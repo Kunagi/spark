@@ -13,23 +13,30 @@
     (log ::get-token>
          :messaging messaging)
     (if messaging
-      (-> messaging
-          (.getToken public-vapid-key)
-          (.then (fn [token]
-                   (log ::get-token>--token-received
-                        :token token)
-                   token)
-                 (fn [error]
-                   (log ::get-token>--error
-                        :error error)
-                   nil)))
+      (try
+        (-> messaging
+            (.getToken public-vapid-key)
+            (.then (fn [token]
+                     (log ::get-token>--token-received
+                          :token token)
+                     token)
+                   (fn [error]
+                     (log ::get-token>--error
+                          :error error)
+                     nil)))
+        (catch :default ex
+          (js/console.error "messaging.getToken(..) failed" ex)))
       (u/resolve> nil))))
 
 (defn register-on-message-handler [handler]
   (log ::register-on-message-handler
        :handler handler)
   (when-let [messaging (messaging)]
-    (-> ^js messaging (.onMessage (fn [payload]
-                                    (log ::on-message
-                                         :payload payload)
-                                    (handler (js->clj payload)))))))
+    (try
+      (-> ^js messaging
+          (.onMessage (fn [payload]
+                        (log ::on-message
+                             :payload payload)
+                        (handler (js->clj payload)))))
+      (catch :default ex
+        (js/console.error "messaging.onMessage(..) failed" ex)))))
