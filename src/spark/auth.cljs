@@ -6,9 +6,7 @@
    [spark.core :as spark]
    [spark.db :as db]
    [spark.browser :as browser]
-   [spark.firebase-messaging-spa :as messaging]
-
-   ))
+   [spark.firebase-messaging-spa :as messaging]))
 
 ;; https://firebase.google.com/docs/auth/
 ;; https://firebase.google.com/docs/reference/js/firebase.auth.Auth
@@ -27,7 +25,6 @@
   (when-let [auth-user (auth-user)]
     (-> ^js auth-user :uid)))
 
-
 (def ^js firebase (-> js/window .-firebase))
 
 (defn redirect [href]
@@ -35,7 +32,6 @@
 
 (defn redirect-to-home []
   (redirect "/"))
-
 
 (defn process-sign-in-with-custom-token-from-url [error-handler]
   (let [custom-token (browser/url-param "customAuthToken")]
@@ -58,7 +54,6 @@
                        :error error)
                   (when error-handler (error-handler error)))))))
 
-
 (defn process-sign-in-with-email-link [error-handler]
   (let [auth (-> firebase .auth)
         href js/window.location.href]
@@ -78,14 +73,12 @@
                         (error-handler %)
                         (redirect-to-home)))))))))
 
-
 (defn- email-domain [email]
   (when email (-> email (.substring (-> email (.indexOf "@") inc)))))
 
-
 (defn update-user-doc [doc-schema auth-user update-user messaging-vapid-key]
   (log ::update-user-doc
-       :doc-schema doc-schema )
+       :doc-schema doc-schema)
   (let [uid   (-> auth-user :uid)
         email (-> auth-user :email)
         col-path (spark/doc-schema-col-path doc-schema)
@@ -106,18 +99,22 @@
                                           :auth-email        email
                                           :auth-domain       (email-domain email)
                                           :auth-display-name (-> auth-user :display-name)
-                                          :auth-timestamp    [:db/timestamp]
-                                          })
+                                          :auth-timestamp    [:db/timestamp]})
                              device (when messaging-token
                                       {:id messaging-token
                                        :disabled false
-                                       :type :web})
+                                       :type :web
+                                       :user-agent (js/navigator.userAgent)
+                                       :navigator-platform (js/navigator.platform)
+                                       :navigator-app-code-name (js/navigator.appCodeName)
+                                       :navigator-app-name (js/navigator.appName)
+                                       :navigator-app-version (js/navigator.appVersion)
+                                       :ts :db/timestamp})
                              user (if device
                                     (assoc-in user [:devices (-> device :id)] device)
                                     user)
                              user (u/update-if user update-user auth-user)]
                          (set> user))))))))))
-
 
 (defn- import-user [^js u]
   (log ::import-user
@@ -174,8 +171,6 @@
   (-> firebase .auth (.signInWithRedirect provider))
   ;; (-> firebase .auth (.signInWithPopup provider))
   )
-
-
 (defn sign-in-with-google []
   (log ::sign-in-with-google)
   (let [GoogleAuthProvider (-> firebase .-auth .-GoogleAuthProvider)
@@ -186,7 +181,6 @@
     (.addScope ^js provider "https://www.googleapis.com/auth/userinfo.email")
     (.addScope ^js provider "https://www.googleapis.com/auth/userinfo.profile")
     (provider-sign-in> provider)))
-
 
 (defn sign-in-with-microsoft []
   ;; https://firebase.google.com/docs/auth/web/microsoft-oauth?authuser=0
@@ -208,7 +202,6 @@
     (-> ^js provider (.setCustomParameters #js {:locale "de"}))
     (provider-sign-in> provider)))
 
-
 (defn sign-in-with-facebook []
   ;; https://firebase.google.com/docs/auth/web/facebook-login
   ;; https://developers.facebook.com
@@ -222,13 +215,11 @@
                (fn [result]
                  (js/console.log "AUTH FAILURE" result))))))
 
-
 (defn sign-in []
   (browser/webkit-post-message "iosapp" "login")
   (let [sign-in-f @SIGN_IN-F]
     (u/assert sign-in-f "Missing sign-in-f")
     (sign-in-f)))
-
 
 (defn sign-out> []
   (u/=> (-> firebase .auth .signOut)
@@ -255,15 +246,13 @@
                   (swap! EMAIL_SIGN_IN assoc
                          :email email
                          :status :waiting-for-email))
-               #(reset! EMAIL_SIGN_IN {:error %}))))
-  )
+               #(reset! EMAIL_SIGN_IN {:error %})))))
 
 (defn sign-in-with-email []
   (log ::sign-in-with-email
        :url (-> js/window.location.href))
   (reset! EMAIL_SIGN_IN {:status :input-email
                          :url    (-> js/window.location.href)}))
-
 
 ;; * Telephone
 ;; https://firebase.google.com/docs/auth/web/phone-auth?hl=en
@@ -300,5 +289,4 @@
                       :result result)
                  (js/window.location.reload)))
         (.catch (fn [^js error]
-                  (swap! TELEPHONE_SIGN_IN assoc :error error)))))
-  )
+                  (swap! TELEPHONE_SIGN_IN assoc :error error))))))
