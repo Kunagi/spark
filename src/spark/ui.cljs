@@ -768,7 +768,7 @@
 
 (defn show-dialog [dialog]
   (let [id     (or (-> dialog :id)
-                   (str "dialog_" (random-uuid)))
+                   (str "dialog_" (u/nano-id)))
         dialog (assoc dialog :id id)]
     (swap! DIALOGS assoc id (assoc dialog
                                    :id id
@@ -1613,7 +1613,7 @@
              {:primary (-> item :label)})))))
 
 (defn show-selection-list-dialog [dialog]
-  (let [dialog-id     (str "selection-list_" (random-uuid))
+  (let [dialog-id     (str "selection-list_" (u/nano-id))
         SelectionList ($ SelectionList
                          {:items     (-> dialog :items)
                           :on-select (fn [item]
@@ -1646,7 +1646,7 @@
            :on-click confirm}))))))
 
 (defn show-confirmation-dialog [dialog]
-  (let [dialog-id     (str "selection-list_" (random-uuid))
+  (let [dialog-id     (str "selection-list_" (u/nano-id))
         dialog        (assoc dialog
                              :id dialog-id
                              :content ($ Confirmation

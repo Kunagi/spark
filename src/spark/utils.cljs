@@ -13,6 +13,8 @@
    [malli.core :as malli]
    [malli.error :as malli-error]
 
+   [nano-id.core :as nano-id]
+
    [spark.rct :refer [tests]]
    ))
 
@@ -46,6 +48,12 @@
 (comment
   (pprint [:a :b])
   (macroexpand '(assert :x)))
+
+;; * unique ids
+
+(defn nano-id []
+  (nano-id/nano-id))
+
 
 ;; * fetch
 

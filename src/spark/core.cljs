@@ -125,7 +125,7 @@
 (defn doc-schema-id-generator [Doc]
   (assert-doc-schema Doc)
   (or (-> Doc schema-opts :spark/id-generator)
-      (fn [_context] (-> (random-uuid) str))))
+      (fn [_context] (firestore/new-id))))
 
 (defn doc-schema-router-param [Doc]
   (assert-doc-schema Doc)
@@ -176,7 +176,7 @@
 
 (defn subdoc-schema-id-generator [Subdoc]
   (or (-> Subdoc schema-opts :spark/id-generator)
-      (fn [_context] (-> (random-uuid) str))))
+      (fn [_context] (firestore/new-id))))
 
 (defn new-subdoc-id [Subdoc context]
   (-> Subdoc

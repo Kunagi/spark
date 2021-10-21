@@ -8,6 +8,8 @@
 
 ;; * common
 
+(def new-id firestore/new-id)
+
 (defn- entity-type->ref [entity-type id]
   (when-not (or (string? entity-type)
                 (keyword? entity-type)
@@ -52,7 +54,7 @@
           id  (or (if (string? ref)
                     (second (str/split ref "/"))
                     (last ref))
-                  (str (random-uuid)))]
+                  (new-id))]
       (assoc entity :id id))))
 
 (comment
@@ -154,7 +156,7 @@
 
 (defn add-tx [entity-type values]
   (let [id  (or (-> values :id)
-                (str (random-uuid)))
+                (new-id))
         ref (entity-type->ref entity-type id)]
     (assoc values
            :id id
@@ -188,7 +190,7 @@
   ;;                    :path  path
   ;;                    :values  values})))
   (let [id  (or (-> values :id)
-                (str (random-uuid)))
+                (new-id))
         ref (let [ref (->ref parent-thing)]
               (-> (if (string? ref) [ref] ref)
                   (into (if (vector? path) path [path]))

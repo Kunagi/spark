@@ -10,6 +10,9 @@
 
 ;; https://firebase.google.com/docs/reference/js/firebase.firestore
 
+(defn new-id []
+  (u/nano-id))
+
 (defn doc? [doc]
   (and
    (-> doc :firestore/path string?)

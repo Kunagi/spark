@@ -27,7 +27,7 @@
   (js/setTimeout #(swap! DIALOG_FORMS dissoc form-id) 1000))
 
 (defn show-form-dialog [form]
-  (let [form-id (random-uuid)
+  (let [form-id (u/nano-id)
         form    (form/initialize form)
         form    (assoc form
                        :open? true

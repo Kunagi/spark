@@ -41,7 +41,7 @@
                    (if doc?
                      (let [id-generator (spark/doc-schema-id-generator path-or-Doc)]
                        (id-generator {:values values}))
-                     (str (random-uuid))))
+                     (firestore/new-id)))
         values (assoc values
                       :id id
                       :ts-created [:db/timestamp]
@@ -80,7 +80,7 @@
   (let [child-id                (get child-values :id)
         [child-id child-values] (if child-id
                                   [child-id child-values]
-                                  (let [id (str (random-uuid))]
+                                  (let [id (firestore/new-id)]
                                     [id (assoc child-values :id id)]))
         path                    (-> inner-path (conj child-id) inner-path-as-string)
         values                  {path child-values}]

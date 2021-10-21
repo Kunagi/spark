@@ -16,7 +16,6 @@
       (-> functions (.useEmulator "localhost", 5001)))
     functions))
 
-
 (defn call> [gcf-name data]
   (log ::call>
        :gcf-name gcf-name
@@ -26,11 +25,15 @@
      (fn [resolve reject]
        (-> (callable (clj->js data))
            (.then (fn [^js result]
-                    (-> result
-                        .-data
-                        (js->clj :keywordize-keys true)
-                        resolve)))
+                    (let [result (-> result
+                                     .-data
+                                     (js->clj :keywordize-keys true))]
+                      (log ::call>--completed
+                           :result result)
+                      (resolve result))))
            (.catch (fn [error]
+                     (log ::call>--failed
+                          :error error)
                      (reject (ex-info (str "Call to " gcf-name " failed")
                                       {:gcf-name gcf-name
                                        :data     data}
