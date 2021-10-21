@@ -1,12 +1,15 @@
 (ns spark.firestore
   (:require
    [clojure.spec.alpha :as s]
+[clojure.string :as str]
    [goog.object :as gobj]
    [promesa.core :as p]
    [cljs-bean.core :as cljs-bean]
+
+   [spark.env-config :as env-config]
    [spark.logging :refer [log]]
    [spark.utils :as u]
-   [clojure.string :as str]))
+   ))
 
 ;; https://firebase.google.com/docs/reference/js/firebase.firestore
 
@@ -31,7 +34,7 @@
 (defonce FIRESTORE (atom nil))
 
 (defn ^js firestore []
-  (if-let [firestore @FIRESTORE]
+  (if-let [firestore (env-config/get! :firestore)]
     firestore
     (throw (js/Error. "FIRESTORE atom not initialized!"))))
 

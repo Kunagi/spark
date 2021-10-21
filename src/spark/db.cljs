@@ -40,8 +40,7 @@
   (u/tap> (get> "devtest" "dummy-1"))
   (u/tap> (get> :devtest "dummy-1"))
   (u/tap> (get> "devtest"))
-  (u/tap> (get> :devtest))
-  )
+  (u/tap> (get> :devtest)))
 
 ;; * write
 
@@ -97,8 +96,7 @@
              (if (string? path)
                path
                (->> path
-                    (str/join "/")))
-             )
+                    (str/join "/"))))
       entity)))
 
 (defn conform-tx-data-entity [entity]
@@ -107,8 +105,7 @@
         entity--migrate-path-to-ref
         entity--assert-ref
         entity--update-id
-        (assoc :ts-updated [:db/timestamp])
-        )))
+        (assoc :ts-updated [:db/timestamp]))))
 
 (comment
   (conform-tx-data-entity {})
@@ -128,12 +125,10 @@
            (map conform-tx-data-entity)
            (remove nil?)))))
 
-
 (defn transact> [tx-data]
   (firestore/transact> (if (fn? tx-data)
                          tx-data
                          (conform-tx-data tx-data))))
-
 
 (defn ->ref [thing]
   (when thing
@@ -150,9 +145,7 @@
   (->ref nil)
   (->ref "devtest/dummy")
   (->ref {:db/ref "devtest/dummy"})
-  (->ref {:db/ref ["devtest/dummy" :children "child-1"]})
-  )
-
+  (->ref {:db/ref ["devtest/dummy" :children "child-1"]}))
 
 (defn add-tx [entity-type values]
   (let [id  (or (-> values :id)
@@ -160,7 +153,8 @@
         ref (entity-type->ref entity-type id)]
     (assoc values
            :id id
-           :db/ref ref)))
+           :db/ref ref
+           :firestore/create true)))
 
 (defn add> [entity-type values]
   (transact> (add-tx entity-type values)))
@@ -206,7 +200,6 @@
 (defn add-child> [parent-thing path values]
   (transact> (add-child-tx parent-thing path values)))
 
-
 (comment
   (js/console.log "smoketest")
 
@@ -228,5 +221,4 @@
   (add-child> "devtest/db-1" :group {:id   "g2"
                                      :name "Group #2"})
 
-  (add-child> {:db/ref ["devtest/db-1" :group "g2"]} :people {:name "Olga"})
-  )
+  (add-child> {:db/ref ["devtest/db-1" :group "g2"]} :people {:name "Olga"}))

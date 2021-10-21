@@ -1,7 +1,7 @@
 (ns spark.logging
   (:require
-   [cljs.pprint :refer [pprint]]))
-
+   [cljs.pprint :refer [pprint]]
+   [spark.env-config :as env-config]))
 
 (defn format-clojure-value [data]
   (when data
@@ -10,19 +10,15 @@
       (catch :default _ex
         nil))))
 
-
 (defn format-event-data [data]
   (when data
     (if (and ^boolean js/goog.DEBUG
-             (exists? js/window)
-             )
+             (exists? js/window))
       data
       ;; (clj->js data)
       (with-out-str (pprint data))
       ;; (str data)
       )))
-
-
 (defn console-writer [^js console event-namespace event-name event-data]
   (try
     (let [event-s (str "%cLOG" " %c" event-namespace " %c" event-name)
@@ -83,8 +79,7 @@
                      event-data)
         event-data (if extra-data
                      (merge extra-data event-data)
-                     event-data)
-        ]
+                     event-data)]
     (@WRITER event-namespace event-name event-data)))
 
 (comment
@@ -116,3 +111,9 @@
                             (log ::tap> :_ value))]
                  (add-tap tap)
                  tap))))
+
+(when goog.DEBUG
+  (install-tap))
+
+(reset! WRITER (or (env-config/get! :logging-writer)
+                   @WRITER))
