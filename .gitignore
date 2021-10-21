@@ -1,3 +1,5 @@
+.dir-locals.el
+
 .clj-kondo/.cache
 .lsp/*.db
 .lsp/.cache
