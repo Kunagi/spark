@@ -1,5 +1,6 @@
 (ns spark.googlemaps
   (:require
+   [promesa.core :as p]
 
    ["@material-ui/core" :as mui]
    ["@material-ui/lab" :as mui-lab]
@@ -89,12 +90,38 @@
   (-> (find-place-from-phone-number> "+4915774737908" #{"geometry"}))
   )
 
-(defn place-details [place-id fields]
-  (-> ^js (places-service (js/document.createElement "div"))
-      (.getDetails (clj->js {:placeId place-id
-                             :fields fields}))))
+(defn place-details> [place-id fields]
+  (log ::place-details
+       :place place-id
+       :fields fields)
+  (u/promise>
+   (fn [resolve reject]
+     (-> ^js (places-service (js/document.createElement "div"))
+         (.getDetails (clj->js {:placeId place-id
+                                :fields fields})
+                      (fn [result status]
+                        (log ::place-details--result
+                             :status status
+                             :result result)
+                        (if (= status "OK")
+                          (resolve (js->clj result :keywordize-keys true))
+                          (reject status))
+                        ))))))
 
+(comment
+  (u/tap>
+   (place-details> "ChIJMZ5c1DV7ukcRto8Ta4_ygzs" #{"rating"}))
+  )
 
+(defn use-place-details [place-id fields]
+  (let [[details set-details] (ui/use-state nil)]
+
+    (ui/use-effect
+     [place-id fields]
+     (p/let [result (place-details> place-id fields)]
+       (set-details result))
+     nil)
+    details))
 
 (comment
   
