@@ -37,9 +37,10 @@
 (defn show-form-dialog> [form]
   (u/promise>
    (fn [resolve reject]
-     (show-form-dialog (assoc form
-                              :then resolve
-                              :catch reject)))))
+     (let [form (assoc form :submit (get form :submit identity))]
+       (show-form-dialog (assoc form
+                                :then resolve
+                                :catch reject))))))
 
 (def use-dialog-forms (react/atom-hook DIALOG_FORMS))
 

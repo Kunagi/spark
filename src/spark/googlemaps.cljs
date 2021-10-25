@@ -83,7 +83,7 @@
                  :status status
                  :results results)
             (if (= status "OK")
-              (resolve (first results))
+              (resolve (js->clj (first results) :keywordize-keys true))
               (reject status))))))))
 
 (comment
