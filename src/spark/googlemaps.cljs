@@ -33,6 +33,14 @@
     ;; (set! (.-defer script) true)
     (-> js/document .-head (.appendChild script))))
 
+(defn places-service [target-element]
+  (new (-> js/window .-google .-maps
+                              .-places
+                              .-PlacesService)
+       target-element))
+
+(comment
+  (-> places-service))
 
 (defn init-map [map-element-id map-config]
   (let [e (js/document.getElementById map-element-id)
@@ -58,6 +66,35 @@
 
 
 ;; * Lokationen aus Google
+
+(defn find-place-from-phone-number> [phone fields]
+  (log ::find-place-from-phone-number
+       :phone phone
+       :fields fields)
+  (u/promise>
+   (fn [resolve reject]
+     (-> ^js (places-service (js/document.createElement "div"))
+         (.findPlaceFromPhoneNumber
+          (clj->js {:phoneNumber phone
+                    :fields (into #{"place_id"} fields)})
+          (fn [results status]
+            (log ::find-place-from-phone-number--results
+                 :status status
+                 :results results)
+            (if (= status "OK")
+              (resolve (first results))
+              (reject status))))))))
+
+(comment
+  (-> (find-place-from-phone-number> "+4915774737908" #{"geometry"}))
+  )
+
+(defn place-details [place-id fields]
+  (-> ^js (places-service (js/document.createElement "div"))
+      (.getDetails (clj->js {:placeId place-id
+                             :fields fields}))))
+
+
 
 (comment
   
