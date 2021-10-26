@@ -169,15 +169,18 @@
                                      (select-keys place [:types :name :place_id])))))))))
 
 (defn- google-place-to-marker-props
-  ""
-  [{:keys [name geometry]}]
-  (let [location-obj (:location geometry)]
+  [{:keys [name geometry] :as place} on-click]
+  (let [location-obj (:location geometry)
+        position {:lat ^js (.lat location-obj)
+                :lng ^js (.lng location-obj)}]
     {:title    name
      :label    name
      :icon     {:url         "/img/grey_map_marker.png"
                 :labelOrigin (new js/google.maps.Point 16 -6)}
-     :position {:lat ^js (.lat location-obj)
-                :lng ^js (.lng location-obj)}}))
+     :position position
+     :on-click #(when on-click
+                  (on-click (assoc place
+                                   :geoloc position)))}))
 
 ;; * MapWithPosition
 ;; https://developers.google.com/maps/documentation/javascript/adding-a-google-map
@@ -198,7 +201,8 @@
    markers
    position
    lokationen
-   google-types]
+   google-types
+   google-place-on-click]
   (assert position)
   (let [position                          (if (map? position)
                                             (clj->js position)
@@ -245,9 +249,9 @@
                              (->> (js->clj % :keywordize-keys true)
                                   (keep
                                    (fn [place]
-                                     (if (some google-types
+                                     (when (some google-types
                                                (:types place))
-                                       (google-place-to-marker-props place)))))]
+                                       (google-place-to-marker-props place google-place-on-click)))))]
                          (set-all-markers (doall
                                            (map
                                             (partial create-marker gmap)
