@@ -14,13 +14,31 @@
 (defn lang []
   @LANG)
 
-;; * currency
-
 (defn ->js-locale-string [lang]
   (cond
     (string? lang) lang
     (= lang :de) "DE-de"
     (= lang :en) "EN-us"))
+
+;; * numbers
+
+(defn format-decimal
+  ([v]
+   (when v
+     (format-decimal @LANG v)))
+  ( [lang v]
+   (when v
+     (-> js/Intl
+         (.NumberFormat (->js-locale-string lang)
+                        (clj->js {:style    "decimal"
+                                  }))
+         (.format (cond
+                    (number? v) v
+                    :else v))))))
+
+;; * currency
+
+
 
 (defn format-currency [lang currency v]
   (when v

@@ -17,6 +17,7 @@
  )
 
 (def ENV (atom {:formatters {:default format-default
+                             :decimal local/format-decimal
                              :eur local/format-eur
                              :date local/format-date
                              :time local/format-time
