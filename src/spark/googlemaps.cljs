@@ -143,7 +143,7 @@
   (let [[details set-details] (ui/use-state nil)]
 
     (ui/use-effect
-     [place-id fields]
+     :always
      (p/let [result (place-details> place-id fields)]
        (set-details result))
      nil)
