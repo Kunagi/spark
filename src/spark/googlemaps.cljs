@@ -36,8 +36,8 @@
 
 (defn places-service [target-element]
   (new (-> js/window .-google .-maps
-                              .-places
-                              .-PlacesService)
+           .-places
+           .-PlacesService)
        target-element))
 
 (comment
@@ -64,7 +64,6 @@
     (when on-click
       (-> ^js marker (.addListener "click" on-click)))
     marker))
-
 
 ;; * Lokationen aus Google
 
@@ -113,8 +112,7 @@
               (reject status))))))))
 
 (comment
-  (-> (find-place-from-phone-number> "+4915774737908" #{"geometry"}))
-  )
+  (-> (find-place-from-phone-number> "+4915774737908" #{"geometry"})))
 
 (defn place-details> [place-id fields]
   (log ::place-details
@@ -131,26 +129,25 @@
                              :result result)
                         (if (= status "OK")
                           (resolve (js->clj result :keywordize-keys true))
-                          (reject status))
-                        ))))))
+                          (reject status))))))))
 
 (comment
   (u/tap>
-   (place-details> "ChIJMZ5c1DV7ukcRto8Ta4_ygzs" #{"rating"}))
-  )
+   (place-details> "ChIJMZ5c1DV7ukcRto8Ta4_ygzs" #{"rating"})))
 
 (defn use-place-details [place-id fields]
   (let [[details set-details] (ui/use-state nil)]
 
     (ui/use-effect
-     :always
+     (str place-id fields)
+     (log ::use-place-details)
      (p/let [result (place-details> place-id fields)]
        (set-details result))
      nil)
     details))
 
 (comment
-  
+
   (def testdiv (js/document.createElement "div"))
   (.setAttribute testdiv "id" "testdiv")
   (-> js/document .-body (.appendChild testdiv))
@@ -171,7 +168,6 @@
                              (mapv (fn [place]
                                      (select-keys place [:types :name :place_id])))))))))
 
-
 (defn- google-place-to-marker-props
   ""
   [{:keys [name geometry]}]
@@ -180,9 +176,8 @@
      :label    name
      :icon     {:url         "/img/grey_map_marker.png"
                 :labelOrigin (new js/google.maps.Point 16 -6)}
-     :position {:lat ^js (.lat location-obj) 
+     :position {:lat ^js (.lat location-obj)
                 :lng ^js (.lng location-obj)}}))
-
 
 ;; * MapWithPosition
 ;; https://developers.google.com/maps/documentation/javascript/adding-a-google-map
@@ -194,11 +189,8 @@
             {:center            position
              :zoom              zoomlevel-streets
              :streetViewControl false
-             :styles            [
-                                 {:featureType "poi"
-                                  :stylers     [{:visibility "off"}]}
-                                 ]}))
-
+             :styles            [{:featureType "poi"
+                                  :stylers     [{:visibility "off"}]}]}))
 
 (def-ui MapWithPosition
   [id
@@ -334,7 +326,6 @@
   (u/=> (geocode-address> "Marschenhausweg 3, 27580 Bremerhaven")
         u/tap>))
 
-
 ;; * Standorteingabe
 
 (def AUTOCOMPLETE_SERVICE (atom nil))
@@ -372,10 +363,9 @@
 
 (defn rand-str [len]
   (.toLowerCase
-   (apply str (take len (repeatedly #(char (+ (rand 26) 65))))))) 
+   (apply str (take len (repeatedly #(char (+ (rand 26) 65)))))))
 
-
-(defn options-mock-effect 
+(defn options-mock-effect
   ""
   [set-options input-value value fetch]
   (let [c           (count input-value)
@@ -386,7 +376,7 @@
                                                    (Math/ceil (- 6 c))
                                                    1))))) "")]
     (set-options
-     (into [ ] new-options))))
+     (into [] new-options))))
 
 ;; ** Helpers for PositionInput
 
@@ -401,8 +391,7 @@
       :padding 4
       :width "100%"}
      ($ :img
-        {:src "/img/google/powered_by_google_on_white.png"})
-     )
+        {:src "/img/google/powered_by_google_on_white.png"}))
     (let [option
           (js->clj option :keywordize-keys true)
           matches   (get-in option
@@ -437,7 +426,6 @@
                        [:structured_formatting
                         :secondary_text])))))))
 
-
 (def-ui PositionInput [on-place-selected label placeholder auto-focus]
   (let [[input-value set-input-value] (ui/use-state "")
         [options set-options]         (ui/use-state [])
@@ -461,9 +449,8 @@
                                 (when on-place-selected
                                   (on-place-selected
                                    {:place_id    (-> new-value .-place_id)
-                                    :description (-> new-value .-description)
-                                    }))
-                                ))
+                                    :description (-> new-value .-description)}))))
+
         :onInputChange      (fn [^js _event new-input-value]
                               (update-input-value new-input-value)
                               (when-not (-> new-input-value str/blank?)
@@ -481,8 +468,7 @@
                                          "place")))
 
                               ($ mui/TextField
-                                 {
-                                  :label       label
+                                 {:label       label
                                   :placeholder placeholder
                                   ;; :onChange #(-> % .-target .-value set-ort)
                                   :variant     "outlined"
@@ -492,16 +478,13 @@
         ;; :renderOption #(str (js->clj %))
         :renderOption render-google-option})))
 
- 
 (def-ui-showcase ::PositionInput ;TODO: Write Proper test?
   ($ PositionInput {:set-position js/alert}))
-
 
 ;; * Map
 
 (def-ui-showcase ::PositionInput
   ($ PositionInput {:set-position js/alert}))
-
 
 (def-ui Map
   [id height markers google-types
@@ -562,7 +545,6 @@
           :force-position-input? true
           :markers [{:title "A Title" :label "A Label"
                      :position {:lat 52.1875305 :lng 9.0788149}}]}))))
-
 
 (defn compute-distance-text> [origin destination]
   (let [service (js/google.maps.DistanceMatrixService.)
