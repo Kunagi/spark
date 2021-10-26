@@ -68,6 +68,28 @@
 
 ;; * Lokationen aus Google
 
+(defn find-place-from-query> [query fields]
+  (log ::find-place-from-query
+       :query query
+       :fields fields)
+  (u/promise>
+   (fn [resolve reject]
+     (-> ^js (places-service (js/document.createElement "div"))
+         (.findPlaceFromQuery
+          (clj->js {:query query
+                    :fields (into #{"place_id"} fields)})
+          (fn [results status]
+            (log ::find-place-from-query--results
+                 :status status
+                 :results results)
+            (cond
+              (= status "OK")
+              (resolve (js->clj (first results) :keywordize-keys true))
+              (= status "ZERO_RESULTS")
+              (resolve nil)
+              :else
+              (reject status))))))))
+
 (defn find-place-from-phone-number> [phone fields]
   (log ::find-place-from-phone-number
        :phone phone
@@ -82,8 +104,12 @@
             (log ::find-place-from-phone-number--results
                  :status status
                  :results results)
-            (if (= status "OK")
+            (cond
+              (= status "OK")
               (resolve (js->clj (first results) :keywordize-keys true))
+              (= status "ZERO_RESULTS")
+              (resolve nil)
+              :else
               (reject status))))))))
 
 (comment
