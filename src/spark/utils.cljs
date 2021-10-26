@@ -52,7 +52,10 @@
 ;; * unique ids
 
 (defn nano-id []
-  (nano-id/nano-id))
+  (let [id (nano-id/nano-id)]
+    (if (.startsWith id "-")
+      (nano-id)
+      id)))
 
 
 ;; * fetch
