@@ -167,7 +167,8 @@
   (let [to (if (vector? to)
              (str "/ui/" (str/join "/" to))
              (str to))]
-    (-> ^js @HISTORY (.push to))))
+    (-> ^js @HISTORY (.push to))
+    nil))
 
 ;; * firebase
 

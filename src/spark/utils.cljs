@@ -15,9 +15,7 @@
 
    [nano-id.core :as nano-id]
 
-   [spark.rct :refer [tests]]
-   ))
-
+   [spark.rct :refer [tests]]))
 
 ;; http://weavejester.github.io/medley/medley.core.html
 
@@ -53,10 +51,13 @@
 
 (defn nano-id []
   (let [id (nano-id/nano-id)]
-    (if (.startsWith id "-")
-      (nano-id)
-      id)))
+    (if (re-matches #"[a-zA-Z].*" id)
+      id
+      (nano-id))))
 
+(comment
+  (nano-id)
+  )
 
 ;; * fetch
 
@@ -68,8 +69,7 @@
 
 (defn fetch-json>
   ([url]
-   (fetch-json> url {})
-   )
+   (fetch-json> url {}))
   ([url opts]
    (-> (fetch> url opts)
        (.then (fn [^js response]
@@ -115,7 +115,6 @@
   ([a b & more]
    (reduce deep-merge (or a {}) (cons b more))))
 
-
 (defn dissoc-nil-vals
   "Dissoc all keys in `m` where the value is `nil?`."
   [m]
@@ -132,14 +131,12 @@
     m
     (assoc m k v)))
 
-
 (defn assoc-if-missing
   "Assoc if `m` is missing key `k`."
   [m k v]
   (if (= ::missing (get m k ::missing))
     (assoc m k v)
     m))
-
 
 (defn assoc-if-not-nil
   "Assoc if the value `v` ist not nil."
@@ -156,7 +153,6 @@
   vector of values."
   [f coll]
   (persistent! (reduce #(assoc! %1 (f %2) %2) (transient {}) coll)))
-
 
 ;; * sequences
 
@@ -192,7 +188,7 @@
 
 (comment
   (seq-position #{:b} [:a :b :c])
-  (seq-position #{:b} [:a ])
+  (seq-position #{:b} [:a])
   (seq-position #{:b} nil))
 
 ;; ** vectors
@@ -230,7 +226,6 @@
   (v-assoc-last [0] :x)
   (v-assoc-last nil :x))
 
-
 ;; * functions
 
 (defn trampoline-if
@@ -241,19 +236,16 @@
     (trampoline fn-or-value)
     fn-or-value))
 
-
 (defn fn->value
   [fn-or-value & args]
   (if (fn? fn-or-value)
     (apply fn-or-value args)
     fn-or-value))
 
-
 (defn safe-apply [f args]
   (if f
     (apply f args)
     (first args)))
-
 
 (defn update-if
   [v f & more-args]
@@ -265,8 +257,8 @@
 
 (defn string-pad-left [s min-len padding]
   (when s
-    (let [s       (if ( string? s) s (str s))
-          padding (if ( string? padding) padding (str padding))]
+    (let [s       (if (string? s) s (str s))
+          padding (if (string? padding) padding (str padding))]
       (if (-> padding count (= 0))
         s
         (if (-> s count (>= min-len))
@@ -307,15 +299,13 @@
 
       :else (throw (ex-info (str "Unsupported time instant format: " v)
                             {:value v
-                             :type (type v)}))
-      )))
+                             :type (type v)})))))
 
 (tests
  "js.Date" (->instant (js/Date. "2020-01-01")) := (tick/instant (js/Date. "2020-01-01"))
  "millis" (->instant 1577870520000) := (tick/instant 1577870520000)
  "string" (->instant "2020-01-01T10:00:00") := (tick/instant "2020-01-01T10:00:00")
- "map" (->instant {:_seconds 1633078276, :_nanoseconds 210000000})
- )
+ "map" (->instant {:_seconds 1633078276, :_nanoseconds 210000000}))
 
 (defn ->date
   "Coerces `v` to `tick/date`."
@@ -324,16 +314,14 @@
     (cond
       (tick/date? v) v
       (string? v) (tick/date v)
-      :else (-> v ->instant tick/date)
-      )))
+      :else (-> v ->instant tick/date))))
 
 (tests
  "nil" (->date nil) := nil
  "tick/date" (->date (tick/date "2020-01-01")) := (tick/date "2020-01-01")
  "js.Date" (->date (js/Date. "2020-01-01")) := (tick/date "2020-01-01")
  "millis" (->date 1577870520000) := (tick/date "2020-01-01")
- "string" (->date "2020-01-01") := (tick/date "2020-01-01")
- )
+ "string" (->date "2020-01-01") := (tick/date "2020-01-01"))
 
 (defn ->time
   "Coerces `v` to `tick/time`."
@@ -342,16 +330,14 @@
     (cond
       (tick/time? v) v
       (string? v) (tick/time v)
-      :else (-> v ->instant tick/time)
-      )))
+      :else (-> v ->instant tick/time))))
 
 (tests
  "nil" (->time nil) := nil
  "tick/time " (->time (tick/time "12:23")) := (tick/time "12:23")
  "js.Date" (->time (js/Date. "2020-01-01T12:23")) := (tick/time "12:23")
  "millis" (->time 1577870520000) := (tick/time "10:22")
- "string" (->time "12:23") := (tick/time "12:23")
- )
+ "string" (->time "12:23") := (tick/time "12:23"))
 
 (defn millis [thing]
   (cond
@@ -364,7 +350,6 @@
   (js/Date. (millis "2020-01-01"))
   (js/Date. (millis 1577870520000))
   (js/Date. (millis (js/Date.))))
-
 
 (defn timespans-overlapping? [a-start a-end b-start b-end]
   (not
@@ -415,7 +400,6 @@
   (date-same-day? "2020-01-01" "2020-01-01")
   (date-same-day? "2020-01-01" "2020-01-02"))
 
-
 (defn date-before? [date test-date]
   (let [date (timestamp date)
         test-date (timestamp test-date)]
@@ -450,7 +434,6 @@
   (date-past? "2021-04-01")
   (date-past? "2021-04-02")
   (date-past? "2021-04-03"))
-
 
 (defn time-of-date
   ([date-or-string]
@@ -549,8 +532,7 @@
   (tap>
    (all-in-sequence>
     (as> "#1")
-    (as> "#2")))
-  )
+    (as> "#2"))))
 
 (defn later> [wait-millis f]
   (js/Promise.
@@ -597,7 +579,6 @@
                     (resolve transformed)))
                 reject)))))
 
-
 (defn p-transformed
   "Wraps promise function `f>` with `transform` function.
 
@@ -606,14 +587,12 @@
   (fn [& args]
     (transform> (apply f> args) transform)))
 
-
 (defn chain-promise-fns> [input-value fns]
   (let [fns (remove nil? fns)]
     (if-let [fn> (first fns)]
       (-> (fn> input-value)
           (.then #(chain-promise-fns> % (rest fns))))
       (js/Promise.resolve input-value))))
-
 
 (defn apply>
   "Returns `js/Promise` with the result of applying `f` on `args` while
@@ -623,14 +602,12 @@
   (-> (js/Promise.all args)
       (.then #(js/Promise.resolve (apply f %)))))
 
-
 (comment
   (instance? js/Promise (js/Promise. (fn [_ _])))
   (let [sum (fn [a b c] (+ a b c))]
     (js/console.log "direct invocation:" (sum 1 2 3))
     (-> (apply> sum [1 2 3])
         (.then #(js/console.log "promise result #1:" %)))))
-
 
 ;; * deprecations
 
@@ -647,8 +624,7 @@
              (.replace "\\" "\\\\")
              (.replace "\"" "\\\""))
          "\"")
-    "")
-  )
+    ""))
 
 (defn csv-record [fields]
   (->> fields
@@ -661,7 +637,6 @@
        (str/join "\n")))
 
 ;; * malli
-
 
 (defn malli-explain->user-message [explain schema]
   (when explain
@@ -688,13 +663,11 @@
                     {:malli/explain explain})))
   value)
 
-
 (defn malli-map-field-by-id [schema field-key]
   (when schema
     (->> schema
          (filter #(and (vector? %) (= field-key (first %))))
          first)))
-
 
 (defn malli-map-field-schema-by-id [schema field-key]
   (when-let [field (malli-map-field-by-id schema field-key)]
@@ -702,5 +675,3 @@
       (if (map? field-schema)
         (nth field 2)
         field-schema))))
-
-
