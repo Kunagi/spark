@@ -854,7 +854,10 @@
      (-> promise
          (.then (fn [result]
                   (hide)
-                  result)))
+                  result))
+         (.catch (fn [error]
+                  (hide)
+                  (u/reject> error))))
      nil)
 
     (stack
