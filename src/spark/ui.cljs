@@ -1860,7 +1860,13 @@
                           (display value)
                           (when value
                             (div
-                             (str value)
+                             (cond
+                               (or (set? value)
+                                   (vector? value)
+                                   (list? value))
+                               (str/join ", " value)
+
+                               :else (str value))
                              (when value-suffix
                                (str " " value-suffix)))))
         on-click        (or on-click
