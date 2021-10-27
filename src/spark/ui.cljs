@@ -432,15 +432,15 @@
   ([path]
    (use-storage-url path nil))
   ([path fallback-url]
-   ;; (log ::use-storage-url
-   ;;      :path path
-   ;;      :fallback fallback-url)
    (let [cache (use-storage-urls-cache)]
 
      (use-effect
       :always
       (when path
         (when-not (get cache path)
+          (log ::use-storage-url--load
+               :path path
+               :fallback fallback-url)
           (-> (u/=> (storage/url> path)
                     (fn [new-url]
                       ;; (log ::use-storage-url--received
@@ -1835,7 +1835,7 @@
        :entity entity
        :fields fields
        :values (select-keys entity
-                         (map spark/field-schema-field-id fields)))
+                            (map spark/field-schema-field-id fields)))
   (show-form-dialog>
    {:fields fields
     :values (select-keys entity
