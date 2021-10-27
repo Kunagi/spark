@@ -1831,6 +1831,11 @@
 ;; * db dialogs
 
 (defn show-entity-form-dialog> [entity fields]
+  (log ::show-entity-form-dialog>
+       :entity entity
+       :fields fields
+       :values (select-keys entity
+                         (map spark/field-schema-field-id fields)))
   (show-form-dialog>
    {:fields fields
     :values (select-keys entity
@@ -1866,6 +1871,7 @@
        ;;        :value    value})
        ($ FieldCardContent
           {:label label}
+          ;; (DEBUG (get entity field-id))
           ;; (when goog.DEBUG
           ;;   (data (-> field spark/schema-opts :display)))
           (if (and value-component
