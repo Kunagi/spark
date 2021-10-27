@@ -9,12 +9,6 @@
    [spark.ui :as ui :refer [def-ui def-page $]]
    [spark.firebase-functions :as functions]
 
-   [spark.googlemaps :as maps]
-
-   [ui.hgui :as hgui]
-
-   [domain.facebook :as facebook]
-
    ))
 
 (defonce INPUT (atom "{:cmd :dummy}"))

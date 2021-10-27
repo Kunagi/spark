@@ -7,14 +7,7 @@
    [spark.logging :refer [log]]
    [spark.utils :as u]
    [spark.ui :as ui :refer [def-ui def-page $]]
-   [spark.firebase-functions :as functions]
    [spark.ui.showcase :as showcase]
-
-   [spark.googlemaps :as maps]
-
-   [ui.hgui :as hgui]
-
-   [domain.facebook :as facebook]
 
    ))
 
