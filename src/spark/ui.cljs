@@ -18,6 +18,7 @@
    [shadow.resource :as resource]
    [cljs-bean.core :as cljs-bean]
    [camel-snake-kebab.core :as csk]
+   [promesa.core :as p]
    [helix.core :as helix]
    [helix.dom :as d]
 
@@ -96,17 +97,23 @@
                                        {:to   to
                                         :type (type to)})))))
 
+(defn to-is-remote? [to]
+  (and (string? to)
+       (or (-> to (.startsWith "https:"))
+           (-> to (.startsWith "http:")))))
+
+(defn to-is-applink? [to]
+  (and (string? to)
+       (or (-> to (.startsWith "mailto:"))
+           (-> to (.startsWith "tel:")))))
+
 (def RouterLink router/Link)
 
 (defnc Link [{:keys [to href on-click class className children style]}]
   (let [to        (or to href)
         className (or class className)
-        remote?   (and (string? to)
-                       (or (-> to (.startsWith "https:"))
-                           (-> to (.startsWith "http:"))))
-        applink? (and (string? to)
-                      (or (-> to (.startsWith "mailto:"))
-                          (-> to (.startsWith "tel:"))))]
+        remote?   (to-is-remote? to)
+        applink? (to-is-applink? to)]
     (if (or remote? applink? (nil? to))
       ($ :a
          {:href      to
@@ -412,7 +419,7 @@
                                                                 (.-fullPath item)))))))))]
 
     (use-effect
-     :once
+     (str path)
      (reload-f)
      nil)
 
@@ -857,8 +864,8 @@
                   (hide)
                   result))
          (.catch (fn [error]
-                  (hide)
-                  (u/reject> error))))
+                   (hide)
+                   (u/reject> error))))
      nil)
 
     (stack
@@ -1224,16 +1231,17 @@
 
         size (if (keyword? size) (name size) size)]
     (if to
-      ($ mui/Button
-         {:to        (coerce-link-to to)
-          :component router/Link
-          :id        id
-          :variant   (or variant "contained")
-          :color     (or color "primary")
-          :startIcon icon
-          :size      size
-          :className classes}
-         text)
+      (let [to (coerce-link-to to)]
+        ($ mui/Button
+           {:to        to
+            :component router/Link
+            :id        id
+            :variant   (or variant "contained")
+            :color     (or color "primary")
+            :startIcon icon
+            :size      size
+            :className classes}
+           text))
       ($ mui/Button
          {:onClick   on-click
           :id        id
@@ -1665,17 +1673,27 @@
 
 (defnc HiddenStorageUploadField
   [{:keys [id accept capture
-           storage-path then]}]
+           storage-path append-filename
+           then
+           on-upload-started]}]
   ($ :input
      {:id       id
       :type     "file"
       :accept   accept
       :capture  capture
       :onChange (fn [event]
-                  (when-let [file (-> event .-target .-files (aget 0))]
-                    (-> (storage/upload-file> file storage-path)
-                        (.then #(storage/url> storage-path))
-                        (.then then))))
+                  (when-let [^js file (-> event .-target .-files (aget 0))]
+                    (let [storage-path (if append-filename
+                                         (conj storage-path
+                                               (str (u/nano-id)
+                                                    "."
+                                                    (-> file .-name)))
+                                         storage-path)]
+                      (when on-upload-started
+                        (on-upload-started file))
+                      (-> (storage/upload-file> file storage-path)
+                          (.then #(storage/url> storage-path))
+                          (.then then)))))
       :style    {:display "none"}}))
 
 (defnc StorageImg [{:keys [path height width style class]}]
@@ -1747,6 +1765,68 @@
                 (div
                  {:class "MuiButtonBase-root MuiButton-root MuiButton-contained"}
                  (or upload-text "Bild auswählen..."))))))))))
+
+(def-ui StorageFileButton [path idx]
+  (let [url (use-storage-url path)]
+    (if-not url
+      ($ mui/CircularProgress)
+      (let [text (str "Datei " (inc idx))]
+        ($ Button
+           {:key url
+            :text text
+            :color :secondary
+            :href url
+            :target "_blank"})))))
+
+(def-ui StorageFiles [paths]
+  (flex
+   (for [[idx path] (map-indexed vector paths)]
+     ($ StorageFileButton
+        {:key path
+         :path path
+         :idx idx}))))
+
+(defnc StorageFilesUploader
+  [{:keys [id storage-path upload-text
+           label
+           on-change]}]
+  (let [[storage-files reload-storage-files] (use-storage-files storage-path)
+        open-file-selector #(-> (js/document.getElementById id)
+                                .click)
+        [uploading? set-uploading] (use-state false)
+        on-upload-started (fn [file]
+                            (log ::StorageFilesUploader--on-upload-started
+                                 :file file)
+                            (set-uploading true))
+        on-uploaded (fn [file-url]
+                      (log ::StorageFilesUploader--on-uploaded
+                           :file-url file-url)
+                      (reload-storage-files)
+                      (when on-change (on-change))
+                      (set-uploading false))]
+
+    (stack
+     (when label
+       ($ FieldLabel {:text label}))
+     (div
+      ($ HiddenStorageUploadField
+         {:id           id
+          ;; :accept       "image/jpeg"
+          :storage-path storage-path
+          :append-filename true
+          :on-upload-started on-upload-started
+          :then         on-uploaded})
+      (if uploading?
+        ($ mui/CircularProgress)
+        (stack
+         ($ StorageFiles
+            {:paths storage-files})
+         (flex
+          ($ Button
+             {:text (or upload-text "Datei hinzufügen...")
+              :on-click open-file-selector
+              :color :default})))))
+     (DEBUG storage-files))))
 
 ;; * db dialogs
 
