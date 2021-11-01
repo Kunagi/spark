@@ -401,19 +401,20 @@
   (date-same-day? "2020-01-01" "2020-01-02"))
 
 (defn date-before? [date test-date]
-  (let [date (timestamp date)
-        test-date (timestamp test-date)]
+  (when date
+    (let [date (timestamp date)
+          test-date (timestamp test-date)]
 
-    (cond
-      (< (-> date .getFullYear) (-> test-date .getFullYear)) true
-      (> (-> date .getFullYear) (-> test-date .getFullYear)) false
-      :else (cond
-              (< (-> date .getMonth) (-> test-date .getMonth)) true
-              (> (-> date .getMonth) (-> test-date .getMonth)) false
-              :else (cond
-                      (< (-> date .getDate) (-> test-date .getDate)) true
-                      (> (-> date .getDate) (-> test-date .getDate)) false
-                      :else false)))))
+      (cond
+        (< (-> date .getFullYear) (-> test-date .getFullYear)) true
+        (> (-> date .getFullYear) (-> test-date .getFullYear)) false
+        :else (cond
+                (< (-> date .getMonth) (-> test-date .getMonth)) true
+                (> (-> date .getMonth) (-> test-date .getMonth)) false
+                :else (cond
+                        (< (-> date .getDate) (-> test-date .getDate)) true
+                        (> (-> date .getDate) (-> test-date .getDate)) false
+                        :else false))))))
 
 (comment
   (date-before? "2020-01-01" "2020-01-02")
@@ -425,7 +426,8 @@
   (date-before? "2022-01-01" "2020-01-01"))
 
 (defn date-past? [date]
-  (date-before? date (date-today)))
+  (when date
+    (date-before? date (date-today))))
 
 (comment
   (date-today)
