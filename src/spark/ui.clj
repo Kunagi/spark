@@ -4,11 +4,9 @@
    [clojure.string :as str]
 
    [spark.react :as r]
-   [spark.core :as spark]
-   ))
+   [spark.core :as spark]))
 
-
-(defmacro defnc [& body ] `(r/defnc ~@body))
+(defmacro defnc [& body] `(r/defnc ~@body))
 (defmacro $ [type & args] `(r/$ ~type ~@args))
 (defmacro <> [& children] `(r/<> ~@children))
 (defmacro use-state [& body] `(r/use-state ~@body))
@@ -74,13 +72,11 @@
        ~opts
        ~@body)))
 
-
 (defmacro def-ui-showcase [id-keyword component]
   (when (= :dev (:shadow.build/mode &env))
     `(reg-showcase ~id-keyword
                    {:component (fn [] ~component)
-                    :code '~component
-                    })))
+                    :code '~component})))
 
 (defn- conform-style-value [v]
   (cond
@@ -88,7 +84,6 @@
     (string? v)  v
     (keyword? v) (name v)
     :else        v))
-
 
 (defn- conform-style [styles]
   (reduce (fn [styles [k v]]
@@ -116,6 +111,9 @@
                          [props style])
          [props style] (if-let [v (-> style :tab-index)]
                          [(assoc props :tab-index v) (dissoc style :tab-index)]
+                         [props style])
+         [props style] (if-let [v (-> style :on-click)]
+                         [(assoc props :onClick v) (dissoc style :on-click)]
                          [props style])
          [props style] (if-let [v (-> style :onKeyDown)]
                          [(assoc props :onKeyDown v) (dissoc style :onKeyDown)]
@@ -187,7 +185,6 @@
   (grid-div grid-template-columns 4 style-and-children))
 (defmacro grid-5 [grid-template-columns & style-and-children]
   (grid-div grid-template-columns 5 style-and-children))
-
 
 (defn- div-class [class style-and-children]
   (html-element :div style-and-children
