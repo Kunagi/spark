@@ -255,6 +255,10 @@
 
 ;; * strings
 
+(defn non-blank-string [s]
+  (when-not (str/blank? s)
+    s))
+
 (defn string-pad-left [s min-len padding]
   (when s
     (let [s       (if (string? s) s (str s))
