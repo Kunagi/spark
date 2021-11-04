@@ -10,7 +10,11 @@
 (defn messaging-service []
   (-> ^js admin .messaging))
 
-(defn send-notification-to-device> [device-token title body image url data]
+;; https://firebase.google.com/docs/cloud-messaging/send-message
+;; https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/generating_a_remote_notification
+
+(defn send-notification-to-device>
+  [device-token title body image url badge-count data]
   (log ::send-message-do-device>
        :token device-token
        :title title
@@ -23,7 +27,8 @@
                                          :body body
                                          :image image}
                           :webpush {:fcm_options {:link url}}
-                          :apns {:payload {:aps {:sound "default"}}}
+                          :apns {:payload {:aps {:sound "default"
+                                                 :badge badge-count}}}
                           :data data})]
  (u/=> (-> ^js messaging-service (.send message))
           (fn [response]
