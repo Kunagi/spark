@@ -1196,7 +1196,7 @@
                        auto-hide-dialog]}]
   (when command
     (log ::Button.DEPRECATED.with-command
-         {:command command}))
+         :command command))
   (let [context  (merge (use-spark-context)
                         context)
         command  (u/trampoline-if command)
