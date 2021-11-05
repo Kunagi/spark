@@ -112,8 +112,8 @@
                  (add-tap tap)
                  tap))))
 
-(when goog.DEBUG
-  (install-tap))
+;; (when goog.DEBUG
+;;   (install-tap))
 
 (reset! WRITER (or (env-config/get! :logging-writer)
                    @WRITER))
