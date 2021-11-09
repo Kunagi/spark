@@ -1,4 +1,5 @@
 (ns spark.gcf.cmd
+  (:require-macros [spark.gcf.cmd :refer [def-cmd]])
   (:require
    [tick.locale-en-us]
    [spark.logging :refer [log]]
@@ -14,11 +15,10 @@
 
   (case (-> arg-def :type)
     :money (u/assert (money/money? arg-value)
-                     (str "type :money expected: " arg-value) )
+                     (str "type :money expected: " arg-value))
     :eur (u/assert (money/money? arg-value)
-                   (str "type :eur expected: " arg-value) )
-    nil)
-  )
+                   (str "type :eur expected: " arg-value))
+    nil))
 
 (defn assert-args [command args]
   (doseq [[arg-key arg-def] (-> command :args)]
@@ -75,8 +75,7 @@
           command-args (-> params
                            (dissoc :cmd)
                            (assoc :uid uid))]
-      (execute-command> commands-map command-key command-args)))
-  )
+      (execute-command> commands-map command-key command-args))))
 
 (defn handle-cmd-call> [commands-map data ^js context]
   (let [uid (when-let [auth (-> context .-auth)]
@@ -102,12 +101,25 @@
                           (reduce (fn [m [k v]]
                                     (assoc m k (assoc v :key k)))
                                   {}))]
-    {
-
-     :cmdRequest
+    {:cmdRequest
      (gcf/on-request--format-output> (partial handle-cmd-request> commands-map))
 
      :cmdCall
-     (gcf/on-call (partial handle-cmd-call> commands-map))
+     (gcf/on-call (partial handle-cmd-call> commands-map))}))
 
-     }))
+;; * registry
+
+(defonce CMDS (atom {}))
+
+(defn reg-cmd [cmd]
+  (u/assert (-> cmd :id) "Invalid cmd" cmd)
+  (u/assert (-> cmd :public boolean?) "Invalid cmd" cmd)
+  (u/assert (-> cmd :f>) "Invalid cmd" cmd)
+  (let [id (-> cmd :id)]
+    (log ::reg-cmd
+         :id id)
+    (swap! CMDS assoc id cmd)
+    cmd))
+
+(defn registered-cmds []
+  @CMDS)
