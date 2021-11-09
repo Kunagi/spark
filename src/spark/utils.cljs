@@ -351,6 +351,7 @@
     :else                     (js/Date.parse thing)))
 
 (comment
+  (js/Date. (millis (tick/instant)))
   (js/Date. (millis "2020-01-01"))
   (js/Date. (millis 1577870520000))
   (js/Date. (millis (js/Date.))))
