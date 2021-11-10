@@ -276,7 +276,7 @@ Bitte gib hier den empfangenen Code ein.")
         (when telephone
           (ui/<>
            ($ ui/Button
-              {:text     "Telefon / SMS"
+              {:text     "Mobiltelefon / SMS"
                :id       "telephone-sign-in-button"
                :on-click auth/sign-in-with-telephone
                })))
