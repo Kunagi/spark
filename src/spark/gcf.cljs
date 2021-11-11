@@ -51,7 +51,7 @@
            (str "\n\n  caused by:\n\n" (exception-text cause))))))
 
 (defn- format-response [val]
-  (js/console.log "!!!" (instance? cljs.core.ExceptionInfo val))
+  ;; (js/console.log "!!!" (instance? cljs.core.ExceptionInfo val))
   (cond
     (instance? cljs.core.ExceptionInfo val)
     (wrap-in-html (exception-text val))
