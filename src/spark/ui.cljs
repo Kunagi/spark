@@ -749,25 +749,6 @@
   (let [spa (use-spa)]
     (use-styles-class (-> spa :styles))))
 
-;; * Audio
-
-(def SPA_AUDIOS_ACTIVATED (atom false))
-
-(defn activate-spa-audios []
-  (when-not @SPA_AUDIOS_ACTIVATED
-    (reset! SPA_AUDIOS_ACTIVATED true)
-    (let [audios (get @SPA :audios)]
-      (log ::activate-spa-audios
-           :audios audios)
-      (doseq [[k url] audios]
-        (browser/activate-audio k url))
-      ;; (browser/activate-audio-hack)
-      )))
-
-(comment
-  (js/console.log "test")
-  (browser/play-audio :nachricht))
-
 ;; * dialogs
 
 (defonce DIALOGS (atom {}))
@@ -1586,12 +1567,6 @@
                 (update :theme styles/adapt-theme)
                 (update :styles styles/adapt-styles))]
     (reset! SPA spa)
-    (js/document.body.addEventListener "touchstart"
-                                       activate-spa-audios
-                                       false)
-    (js/document.body.addEventListener "click"
-                                       activate-spa-audios
-                                       false)
     (rdom/render ($ (-> spa :root-component))
                  (js/document.getElementById "app"))))
 
