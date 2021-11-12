@@ -167,10 +167,12 @@
 
 (defn + [& vals]
   (reduce (fn [ret val]
-            (if val
-              (-> ret (.add (money val)))
-              ret))
-          (money 0) vals))
+            (cond
+              (and (nil? ret) (nil? val)) nil
+              (nil? ret) (money val)
+              (nil? val) ret
+              :else (-> ret (.add (money val)))))
+          nil vals))
 
 (comment
   (->str (+ 2 "3.20" nil)))
