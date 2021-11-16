@@ -4,7 +4,6 @@
    [clojure.string :as str]
    [cljs.pprint :refer [pprint]]
 
-   [tick.locale-en-us]
    [tick.timezone]
 
    ["firebase-functions" :as functions]

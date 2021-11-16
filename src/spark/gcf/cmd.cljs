@@ -1,7 +1,6 @@
 (ns spark.gcf.cmd
   (:require-macros [spark.gcf.cmd :refer [def-cmd]])
   (:require
-   [tick.locale-en-us]
    [spark.logging :refer [log]]
    [spark.utils :as u]
    [spark.money :as money]

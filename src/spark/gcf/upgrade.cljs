@@ -1,6 +1,5 @@
 (ns spark.gcf.upgrade
   (:require
-   [tick.locale-en-us]
    [spark.logging :refer [log]]
    [spark.firestore :as firestore]
    [spark.gcf :as gcf]

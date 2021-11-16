@@ -1,13 +1,13 @@
 (ns spark.local
   (:require
    [clojure.string :as str]
-   [tick.alpha.api :as tick]
-   [tick.format :as tick.format]
+
+   [tick.timezone]
+   [tick.core :as tick]
 
    [spark.rct :refer [tests]]
    [spark.utils :as u]
-   [spark.money :as money]
-   ))
+   [spark.money :as money]))
 
 (defonce LANG (atom :de))
 
@@ -26,19 +26,16 @@
   ([v]
    (when v
      (format-decimal @LANG v)))
-  ( [lang v]
+  ([lang v]
    (when v
      (-> js/Intl
          (.NumberFormat (->js-locale-string lang)
-                        (clj->js {:style    "decimal"
-                                  }))
+                        (clj->js {:style    "decimal"}))
          (.format (cond
                     (number? v) v
                     :else v))))))
 
 ;; * currency
-
-
 
 (defn format-currency [lang currency v]
   (when v
@@ -55,8 +52,7 @@
   (-> js/Intl
       (.NumberFormat "DE-de" (clj->js {:style "currency"
                                        :currency "EUR"}))
-      (.format 23.42))
-  )
+      (.format 23.42)))
 
 (defn format-eur
   ([v]
@@ -68,19 +64,33 @@
  "integer" (format-eur :de 20) := "20,00 €"
  "decimal" (format-eur :de 20.2) := "20,20 €"
  "string" (format-eur :de "20.2") := "20,20 €"
- "money" (format-eur (money/money 200))
- )
+ "money" (format-eur (money/money 200)))
 
 ;; * time
+
+(defn ->joda-locale
+  ([]
+   (->joda-locale @LANG))
+  ([lang]
+   (cond
+     (string? lang) (->joda-locale (keyword lang))
+     (= lang :de) (-> js/JSJodaLocale .-Locale .-GERMANY)
+     (= lang :en) (-> js/JSJodaLocale .-Locale .-US))))
+
+(defn tick-formatter
+  ([pattern]
+   (tick-formatter @LANG pattern))
+  ([lang pattern]
+   (tick/formatter pattern (->joda-locale lang))))
 
 (defn formatter--date
   ([]
    (formatter--date @LANG))
   ([lang]
-   (tick.format/formatter
-    (case
-        lang :de "dd.MM.yyyy"
-        "yyyy-mm-dd"))))
+   (tick-formatter
+    lang (case
+          lang :de "dd.MM.yyyy"
+          "yyyy-mm-dd"))))
 
 (defn format-date
   ([v]
@@ -91,7 +101,15 @@
           (tick/format (formatter--date lang))))))
 
 (tests
- "string" (format-date :de "2020-01-01"))
+ "string" (format-date :de "2020-01-01")
+
+ (->> (u/->date "2020-01-01") (tick/format (tick/formatter "dd.MM." (->joda-locale :de))))
+ (->> (u/->date "2020-01-01") (tick/format (tick/formatter "E, dd.MM." (->joda-locale :de))))
+ (->> (u/->date "2020-01-01") (tick/format (tick/formatter "E, dd.MM." (->joda-locale :en))))
+ (->> (u/->date "2020-01-01") (tick/format (tick-formatter "E, dd.MM." )))
+
+ ;;
+ )
 
 (defn format-time
   ([v]
@@ -105,7 +123,7 @@
          str))))
 
 (tests
- "js/Date" (format-time (js/Date. "2020-01-01T12:21") ) := "12:21")
+ "js/Date" (format-time (js/Date. "2020-01-01T12:21")) := "12:21")
 
 (defn format-date+time
   ([v]
@@ -118,7 +136,11 @@
 
 (tests
  "js/Date" (format-date+time :de (js/Date.))
- "string" (format-date+time :de "2020-01-01T12:23") := "01.01.2020 12:23"
+ "string" (format-date+time :de "2020-01-01T12:23") := "01.01.2020 12:23")
+
+(tests
+
+;;
  )
 
 ;; * texts de
@@ -133,8 +155,7 @@
    :delete "Löschen"
    :delete-image? "Bild löschen?"
 
-   :form-field-input-required "Eingabe erforderlich"
-   })
+   :form-field-input-required "Eingabe erforderlich"})
 
 ;; * texts
 
@@ -152,9 +173,7 @@
          (nil? v)    (name k)
          (fn? v)     (v opts)
          (string? v) v
-         :else       (str v)
-         ))))
-  )
+         :else       (str v))))))
 
 (tests
  (text :yes)
@@ -173,5 +192,4 @@
 (tests
  "nil" (format-yes-no :de nil) := nil
  "true" (format-yes-no :de true) := "Ja"
- "false" (format-yes-no :de false) := "Nein"
- )
+ "false" (format-yes-no :de false) := "Nein")

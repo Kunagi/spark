@@ -1,9 +1,6 @@
 (ns spark.firebase.backup
   (:require
-   [tick.locale-en-us]
-   [tick.timezone]
-   [tick.alpha.api :as tick]
-   [tick.format :as tick.format]
+   [tick.core :as tick]
    ["firebase-admin" :as admin]
 
    [spark.logging :refer [log]]
@@ -96,7 +93,7 @@
           cols-names))
   )
 
-(def date-path-format (tick.format/formatter "yyyy/MM/dd"))
+(def date-path-format (tick/formatter "yyyy/MM/dd"))
 
 (defn date-path []
   (let [now  (tick/now)

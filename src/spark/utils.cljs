@@ -7,8 +7,7 @@
    [clojure.string :as str]
    [cljs.pprint :refer [pprint]]
 
-   [tick.alpha.api :as tick]
-   [tick.format :as tick.format]
+   [tick.core :as tick]
 
    [malli.core :as malli]
    [malli.error :as malli-error]
