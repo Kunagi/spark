@@ -457,7 +457,6 @@
 (defnc FormDialog [{:keys [form]}]
   (let [[form set-form] (hooks/use-state form)
 
-        form-id      (-> form :id)
         form         (assoc form :update (fn [f]
                                            (set-form (f form))))
         update-form_ (fn [f & args]
@@ -484,10 +483,8 @@
                                 set-form))
                           (set-form result))))
 
-        ;; form (assoc form :update update-form)
         close     (fn [result]
-                    (update-form assoc :open? false)
-                    (close-form-dialog form-id)
+                    (close-form-dialog (-> form :id))
                     (when-let [then (get form :then)]
                       (then result)))
 
