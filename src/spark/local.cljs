@@ -104,9 +104,11 @@
  "string" (format-date :de "2020-01-01")
 
  (->> (u/->date "2020-01-01") (tick/format (tick/formatter "dd.MM." (->joda-locale :de))))
- (->> (u/->date "2020-01-01") (tick/format (tick/formatter "E, dd.MM." (->joda-locale :de))))
- (->> (u/->date "2020-01-01") (tick/format (tick/formatter "E, dd.MM." (->joda-locale :en))))
- (->> (u/->date "2020-01-01") (tick/format (tick-formatter "E, dd.MM." )))
+ (->> (u/->date "2020-01-01") (tick/format (tick/formatter "E dd.MM." (->joda-locale :de))))
+ (->> (u/->date "2020-01-01") (tick/format (tick/formatter "E dd.MM." (->joda-locale :en))))
+ (->> (u/->date "2020-01-01") (tick/format (tick-formatter "E dd.MM." )))
+ (->> (u/->date (tick/instant)) (tick/format (tick-formatter "E dd.MM." )))
+ (->> (tick/instant) (tick/format (tick-formatter "E dd.MM." )))
 
  ;;
  )
