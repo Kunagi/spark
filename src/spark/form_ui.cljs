@@ -360,104 +360,8 @@
 
 (def DIALOG-CLASS (atom nil))
 
-(defnc Form [{:keys [form update-form close set-waiting]}]
-  (let [on-submit (fn []
-                    (let [form (form/on-submit form)]
-                      (update-form (fn [_] form))
-                      (when-not (form/contains-errors? form)
-                        (let [values (form/values form)]
-                          (log ::submit
-                               :form form
-                               :values values)
-                          (when-let [submit (get form :submit)]
-                            (set-waiting true)
-                            (let [p (u/promise> (fn [resolve]
-                                                  (resolve
-                                                   (submit values))))]
-                              (-> p
-                                  (.then (fn [result]
-                                           (close result)))
-                                  (.catch (fn [error]
-                                            (update-form (fn [_]
-                                                           (form/set-error form error))))))))))))
-        ]
-    ($ :div
-       (when goog.DEBUG
-         (when-let [data (-> form :debug-data)]
-           ($ :div
-              {:style {:padding          "8px"
-                       :background-color "black"
-                       :color            "#6F6"
-                       :font-family      "monospace"}}
-              (u/->edn data))))
-       ;; (when goog.DEBUG
-       ;;   ($ :div
-       ;;      {:style {:padding          "8px"
-       ;;               :background-color "black"
-       ;;               :color            "#6F6"
-       ;;               :font-family      "monospace"}}
-       ;;      (u/->edn (-> form :values))))
-       #_($ :pre (-> context keys str))
-       ($ :div
-          {:style { ;; :width     "500px"
-                   ;; :max-width "100%"
-                   }}
-
-          (for [field (get form :fields)]
-            ($ FormField
-               {:key         (-> field :id)
-                :field       field
-                :form        form
-                :on-submit   on-submit
-                :update-form update-form}))
-
-          (get form :content))
-       ;; (ui/data form)
-
-
-       (when-let [error (-> form form/error)]
-         ($ :div
-            {:style {:margin "16px"
-                     :padding "16px"
-                     :background-color "red"
-                     :color "white"
-                     :font-weight 900
-                     :border-radius "8px"}}
-            (str error)))
-
-       ($ :div
-          {:style {:padding               "16px"
-                   :display               "grid"
-                   :grid-template-columns "max-content auto max-content"
-                   :grid-gap              "8px"}}
-          ($ :div
-             (when-not (-> form form/waiting?)
-               (-> form :extra-buttons)))
-          ($ :div)
-          ($ :div
-             {:style {:display               "grid"
-                      :grid-template-columns "max-content max-content"
-                      :grid-gap              "8px"}}
-             ($ mui/Button
-                {:onClick #(close nil)}
-                "Abbrechen")
-             ($ mui/Button
-                {:onClick on-submit
-                 :variant "contained"
-                 :color   "primary"
-                 :disabled (-> form form/waiting?)}
-                "Ok")))
-
-       ($ :div
-          {:style {:min-height "4px"}}
-          (when (-> form :waiting?)
-            ($ mui/LinearProgress)))))
-  )
-
-(defnc FormDialog [{:keys [form]}]
-  (let [[form set-form] (hooks/use-state form)
-
-        form         (assoc form :update (fn [f]
+(defnc Form [{:keys [form set-form on-close]}]
+  (let [form         (assoc form :update (fn [f]
                                            (set-form (f form))))
         update-form_ (fn [f & args]
                        (set-form (apply f (into [form] args))))
@@ -484,37 +388,129 @@
                           (set-form result))))
 
         close     (fn [result]
-                    (close-form-dialog (-> form :id))
+                    (when on-close (on-close))
                     (when-let [then (get form :then)]
                       (then result)))
 
-        ]
+        on-submit (fn []
+                    (let [form (form/on-submit form)]
+                      (update-form (fn [_] form))
+                      (when-not (form/contains-errors? form)
+                        (let [values (form/values form)]
+                          (log ::submit
+                               :form form
+                               :values values)
+                          (when-let [submit (get form :submit)]
+                            (set-waiting true)
+                            (let [p (u/promise> (fn [resolve]
+                                                  (resolve
+                                                   (submit values))))]
+                              (-> p
+                                  (.then (fn [result]
+                                           (close result)))
+                                  (.catch (fn [error]
+                                            (update-form (fn [_]
+                                                           (form/set-error form error))))))))))))]
     (r/provider
      {:context HIDE_DIALOG
       :value   close}
-     (d/div
-      (let [max-width (or (-> form :max-width)
-                          :md)
-            max-width (if (keyword? max-width)
-                        (name max-width)
-                        max-width)]
-        ($ mui/Dialog
-           {:open      (-> form :open? boolean)
-            :className @DIALOG-CLASS
-            :fullWidth true
-            :maxWidth max-width
+     ($ :div
+        (when goog.DEBUG
+          (when-let [data (-> form :debug-data)]
+            ($ :div
+               {:style {:padding          "8px"
+                        :background-color "black"
+                        :color            "#6F6"
+                        :font-family      "monospace"}}
+               (u/->edn data))))
+        ;; (when goog.DEBUG
+        ;;   ($ :div
+        ;;      {:style {:padding          "8px"
+        ;;               :background-color "black"
+        ;;               :color            "#6F6"
+        ;;               :font-family      "monospace"}}
+        ;;      (u/->edn (-> form :values))))
+        #_($ :pre (-> context keys str))
+        ($ :div
+           {:style {;; :width     "500px"
+                    ;; :max-width "100%"
+                    }}
+
+           (for [field (get form :fields)]
+             ($ FormField
+                {:key         (-> field :id)
+                 :field       field
+                 :form        form
+                 :on-submit   on-submit
+                 :update-form update-form}))
+
+           (get form :content))
+        ;; (ui/data form)
+
+        (when-let [error (-> form form/error)]
+          ($ :div
+             {:style {:margin "16px"
+                      :padding "16px"
+                      :background-color "red"
+                      :color "white"
+                      :font-weight 900
+                      :border-radius "8px"}}
+             (str error)))
+
+        ($ :div
+           {:style {:padding               "16px"
+                    :display               "grid"
+                    :grid-template-columns "max-content auto max-content"
+                    :grid-gap              "8px"}}
+           ($ :div
+              (when-not (-> form form/waiting?)
+                (-> form :extra-buttons)))
+           ($ :div)
+           ($ :div
+              {:style {:display               "grid"
+                       :grid-template-columns "max-content max-content"
+                       :grid-gap              "8px"}}
+              ($ mui/Button
+                 {:onClick #(close nil)}
+                 "Abbrechen")
+              ($ mui/Button
+                 {:onClick on-submit
+                  :variant "contained"
+                  :color   "primary"
+                  :disabled (-> form form/waiting?)}
+                 "Ok")))
+
+        ($ :div
+           {:style {:min-height "4px"}}
+           (when (-> form :waiting?)
+             ($ mui/LinearProgress)))))))
+
+(defnc FormDialog [{:keys [form]}]
+  (let [on-close (fn []
+                   (close-form-dialog (-> form :id)))
+        [form set-form] (hooks/use-state form)]
+    (d/div
+     (let [max-width (or (-> form :max-width)
+                         :md)
+           max-width (if (keyword? max-width)
+                       (name max-width)
+                       max-width)]
+       ($ mui/Dialog
+          {:open      (-> form :open? boolean)
+           :className @DIALOG-CLASS
+           :fullWidth true
+           :maxWidth max-width
             ;; :onClose close
-            }
+           }
 
-           (when-let [title (-> form :title)]
-             ($ mui/DialogTitle
-                title))
+          (when-let [title (-> form :title)]
+            ($ mui/DialogTitle
+               title))
 
-           ($ mui/DialogContent
-              ($ Form {:form form
-                       :update-form update-form
-                       :close close
-                       :set-waiting set-waiting}))))))))
+          ($ mui/DialogContent
+             ($ Form {:form form
+                      :set-form set-form
+                      :on-close on-close})))))))
 
 (defnc FormDialogsContainer []
   (let [forms (use-dialog-forms)]
