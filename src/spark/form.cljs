@@ -120,7 +120,10 @@
   (s/assert ::form form)
   ;; (log ::initialize
   ;;      :form form)
-  (let [fields (into []
+  (let [form-id (or (-> form :id)
+                    (u/nano-id))
+        form (assoc form :id form-id)
+        fields (into []
                      (map-indexed
                       (partial initialize-field form)
                       (->> form
