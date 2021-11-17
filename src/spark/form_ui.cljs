@@ -111,7 +111,7 @@
         InputProps  {:startAdornment start-adornment
                      :endAdornment end-adornment}]
     ($ :div
-       ($ :pre (-> field :on-change str))
+       ;; ($ :pre (-> field :on-change str))
        ;; (when goog.DEBUG
        ;;   ($ :div
        ;;      {:style {:padding          "8px"
