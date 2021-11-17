@@ -111,7 +111,7 @@
         InputProps  {:startAdornment start-adornment
                      :endAdornment end-adornment}]
     ($ :div
-       ;; ($ :pre (str field))
+       ($ :pre (-> field :on-change str))
        ;; (when goog.DEBUG
        ;;   ($ :div
        ;;      {:style {:padding          "8px"
@@ -162,9 +162,15 @@
                        :input-type "time")))
 
 (defmethod create-input "date" [field]
-  (create-input (assoc field
-                       :type "text"
-                       :input-type "date")))
+  (let [on-change (fn [new-value]
+                    ((-> field :on-change) new-value)
+                    (when new-value
+                      (when (-> field :form :fields count (= 1))
+                        ((-> field :on-submit)))))]
+    (create-input (assoc field
+                         :type "text"
+                         :input-type "date"
+                         :on-change on-change))))
 
 (defmethod create-input "number" [field]
   (let [pattern (or (-> field :input-props :pattern)
