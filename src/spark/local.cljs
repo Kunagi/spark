@@ -131,10 +131,11 @@
   ([v]
    (format-date+time @LANG v))
   ([lang v]
-   (let [instant (u/->instant v)]
-     (str (format-date lang (tick/date instant))
-          " "
-          (format-time lang (tick/time instant) :minutes)))))
+   (when v
+     (let [instant (u/->instant v)]
+       (str (format-date lang (tick/date instant))
+            " "
+            (format-time lang (tick/time instant) :minutes))))))
 
 (tests
  "js/Date" (format-date+time :de (js/Date.))
