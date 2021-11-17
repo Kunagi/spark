@@ -162,15 +162,18 @@
                        :input-type "time")))
 
 (defmethod create-input "date" [field]
-  (let [on-change (fn [new-value]
-                    ((-> field :on-change) new-value)
-                    (when new-value
-                      (when (-> field :form :fields count (= 1))
-                        ((-> field :on-submit)))))]
+  (let [_ nil
+        ;; on-change (fn [new-value]
+        ;;             ((-> field :on-change) new-value)
+        ;;             (when new-value
+        ;;               (when (-> field :form :fields count (= 1))
+        ;;                 ((-> field :on-submit)))))
+        ]
     (create-input (assoc field
                          :type "text"
                          :input-type "date"
-                         :on-change on-change))))
+                         ;; :on-change on-change
+                         ))))
 
 (defmethod create-input "number" [field]
   (let [pattern (or (-> field :input-props :pattern)
