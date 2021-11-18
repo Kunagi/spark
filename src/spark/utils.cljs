@@ -46,6 +46,57 @@
   (pprint [:a :b])
   (macroexpand '(assert :x)))
 
+;; * edn
+
+(defn ->edn [data]
+  (with-out-str (pprint data)))
+
+;; Errors and Exceptions
+
+(defn exception-as-data [ex]
+  (cond
+
+    (nil? ex)
+    {}
+
+    (string? ex)
+    {:message ex}
+
+    (instance? js/Error ex)
+    {:message (-> ^js ex .-message)
+     :data (ex-data ex)
+     :stacktrace (-> ^js ex .-stack)
+     :cause (when-let [c (ex-cause ex)]
+              (exception-as-data c))}
+
+    (map? ex)
+    (if-let [message (-> ex :message)]
+      {:message message
+       :data (-> ex :data)
+       :stacktrace (-> ex :stacktrace)
+       :cause (when-let [cause (-> ex :cause)]
+                (exception-as-data cause))}
+      {:message nil
+       :data ex})
+
+    :else
+    {:data (->edn ex)}))
+
+(comment
+  (instance? js/Error
+             (ex-cause
+              (ex-info "ex-info error"
+                       {:with :data}
+                       (js/Error. "Some cause"))))
+
+  (:cause
+   (exception-as-data
+    (ex-info "ex-info error"
+             {:with :data}
+             (js/Error. "Some cause"))))
+  ;
+  )
+
 ;; * unique ids
 
 (defn nano-id []
@@ -55,8 +106,7 @@
       (nano-id))))
 
 (comment
-  (nano-id)
-  )
+  (nano-id))
 
 ;; * fetch
 
@@ -274,11 +324,6 @@
   (string-pad-left "100" 3 "0")
   (string-pad-left "1" 3 nil)
   (string-pad-left "1" 3 ""))
-
-;; * edn
-
-(defn ->edn [data]
-  (with-out-str (pprint data)))
 
 ;; * date and time
 

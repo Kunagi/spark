@@ -182,7 +182,16 @@
 (def call-server> firebase-functions/call>)
 
 (defn server-cmd> [cmd args]
-  (call-server> "cmdCall" (assoc args :cmd cmd)))
+  (p/let [result (call-server> "cmdCall" (assoc args :cmd cmd))]
+    ;; (log ::server-cmd>--result
+    ;;      :result result
+    ;;      :error (-> result :_spark-cmd-error))
+    (if-let [error (-> result :_spark-cmd-error)]
+      (do
+        (log ::server-cmd>--error
+             :result result)
+        (u/reject> error))
+      result)))
 
 ;; * auth
 
@@ -877,7 +886,7 @@
   (runtime/report-error error)
   (reset! ERROR error))
 
-(defn destructure-error [error]
+(defn normalize-error [error]
   (cond
 
     (instance? js/Error error)
@@ -891,13 +900,15 @@
 
     (-> error :message)
     [(-> error :message)
-     (-> error :data)]
+     (-> error :data)
+     (-> error :stacktrace)
+     (-> error :cause)]
 
     :else
     [(str error)]))
 
 (defnc ErrorInfo [{:keys [error]}]
-  (let [[message dat stacktrace cause] (destructure-error error)
+  (let [[message dat stacktrace cause] (normalize-error error)
         theme                          (use-theme)]
     ($ Stack
        ($ :div

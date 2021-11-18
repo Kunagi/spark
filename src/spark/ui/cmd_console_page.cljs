@@ -18,7 +18,7 @@
 (def use-output (ui/atom-hook OUTPUT))
 
 (defn execute> [data]
-  (u/=> (functions/call> "cmdCall" data)
+  (u/=> (ui/server-cmd> (-> data :cmd) (dissoc data :cmd))
         (fn [result]
           (reset! OUTPUT result))))
 

@@ -4,7 +4,6 @@
    [clojure.string :as str]
    [cljs.pprint :refer [pprint]]
 
-   [tick.timezone]
 
    ["firebase-functions" :as functions]
 
@@ -25,6 +24,11 @@
            (config) path))
   ([]
    (-> functions .config)))
+
+(comment
+  (js/console.log (-> functions .config))
+
+  )
 
 ;; * response formatting
 
@@ -137,7 +141,8 @@
        (-> result
            (.then #(resolve (handle-on-call-result %)))
            (.catch (fn [error]
-                     (log ::call-handler-failed error)
+                     (log ::handle-on-call-result--call-handler-failed!
+                          :error error)
                      (reject error))))))
     (clj->js result)))
 

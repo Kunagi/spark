@@ -23,20 +23,36 @@
   (doseq [[arg-key arg-def] (-> command :args)]
     (assert-arg arg-key arg-def (get args arg-key))))
 
+(defn converge-arg-value-to-type [v t]
+  (case t
+    :keyword (keyword v)
+    :string (str v)
+    :int (js/parseInt v)
+    v))
+
 (defn load-args> [args command]
   (u/=> (u/all> (map (fn [[k v]]
                        (if-not v
                          [k v]
                          (let [arg-def (get-in command [:args k])
                                optional? (-> arg-def :optional boolean)]
-                           (if-let [doc-col-name (-> arg-def :get-doc)]
-                             (let [path (str doc-col-name "/" v)]
+
+                           (cond
+
+                             (-> arg-def :type)
+                             [k (converge-arg-value-to-type v (-> arg-def :type))]
+
+                             (-> arg-def :get-doc)
+                             (let [path (str (-> arg-def :get-doc) "/" v)]
                                (u/=> (db/get> path)
                                      (fn [doc]
                                        (when-not optional?
                                          (u/assert doc (str "Missing doc: " path)))
                                        [k doc])))
+
+                             :else
                              [k v]))))
+
                      args))
         (fn [args-as-kvs]
           (reduce (fn [m [k v]]
@@ -86,7 +102,11 @@
           command-args (-> data
                            (dissoc :cmd)
                            (assoc :uid uid))]
-      (execute-command> commands-map command-key command-args))))
+      (-> (execute-command> commands-map command-key command-args)
+          (.catch (fn [error]
+                    (log ::handle-cmd-call>--catch!!!!!!
+                         :error error)
+                    (u/resolve> {:_spark-cmd-error (u/exception-as-data error)})))))))
 
 (def default-commands-map
   {:dummy {:public true
