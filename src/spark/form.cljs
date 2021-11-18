@@ -339,3 +339,9 @@
 
 (defn waiting? [form]
   (-> form :waiting?))
+
+
+(defn set-submitted [form]
+  (-> form
+      (set-waiting false)
+      (assoc :submitted? true)))
