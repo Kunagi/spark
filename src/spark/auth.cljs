@@ -132,7 +132,13 @@
   (log ::initialize
        :doc-schema user-doc-schema)
   (reset! SIGN_IN-F sign-in)
-  (let [auth (-> firebase .auth)]
+
+  (when-not (fn? (-> ^js firebase .-auth))
+    (js/setTimeout
+     #(js/window.location.reload)
+     1000))
+
+  (let [ auth (-> firebase .auth)]
     (-> auth (.useDeviceLanguage))
     (-> auth
         ;; https://firebase.google.com/docs/reference/js/firebase.auth.Auth#onauthstatechanged
