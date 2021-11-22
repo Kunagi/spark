@@ -43,7 +43,8 @@
                              [k (converge-arg-value-to-type v (-> arg-def :type))]
 
                              (-> arg-def :get-doc)
-                             (let [path (str (-> arg-def :get-doc) "/" v)]
+                             (let [_ (u/assert (string? v))
+                                   path (str (-> arg-def :get-doc) "/" v)]
                                (u/=> (db/get> path)
                                      (fn [doc]
                                        (when-not optional?
