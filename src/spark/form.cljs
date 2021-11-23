@@ -8,7 +8,6 @@
    [spark.money :as money]
    [spark.local :as local]
 
-
    [clojure.string :as str]
    [clojure.set :as set]))
 
@@ -21,7 +20,6 @@
 (s/def ::fields (s/coll-of ::field
                            :min-count 1))
 (s/def ::form (s/keys :req-un [::fields ::submit]))
-
 
 (defn field-id [field]
   (if (spark/field-schema? field)
@@ -67,8 +65,7 @@
                                (if (map? option)
                                  option
                                  {:value option
-                                  :label (str option)})))))
-        ]
+                                  :label (str option)})))))]
     (assoc field
            :id id
            :auto-focus? (= 0 idx)
@@ -115,7 +112,6 @@
        :values (-> form :values))
   form)
 
-
 (defn initialize [form]
   (s/assert ::form form)
   ;; (log ::initialize
@@ -148,7 +144,6 @@
          :form form)
     form))
 
-
 ;; (defn load-values [form values-map]
 ;;   ;; (log ::load-values
 ;;   ;;      :form form
@@ -158,7 +153,6 @@
 ;;           #(mapv (fn [field]
 ;;                    (assoc field :value (get values-map (-> field :id))))
 ;;                  %)))
-
 
 (defn field-by-id [form field-id]
   (s/assert ::form form)
@@ -217,12 +211,10 @@
 (defn values [form]
   (-> form :values))
 
-
 (defn field-value [form field-id]
   (let [values (values form)]
     (or (get values field-id)
         (-> (field-by-id form field-id) :value))))
-
 
 (defn coerce-value [value form field-id]
   (let [field-type (field-type form field-id)
@@ -319,16 +311,28 @@
    (or (-> form error)
        (-> form :errors seq))))
 
+(defn- validate-form [form]
+  (if-let [f (-> form :validate)]
+    (if-let [error (f (values form))]
+      (assoc form :error error)
+      form)
+    form)
+  )
+
 (defn on-submit [form]
   (s/assert ::form form)
   ;; (log ::on-submit
   ;;      :form form)
-  (let [form (assoc form :error nil)]
-    (->> form
-         :fields
-         (map :id)
-         (reduce validate-field form)
-         coerce-values)))
+  (let [form (assoc form :error nil)
+        form (->> form
+                  :fields
+                  (map :id)
+                  (reduce validate-field form)
+                  coerce-values)
+        form (if (-> form :error)
+               form
+               (validate-form form))]
+    form))
 
 (comment
   (on-submit {:fields [{:id :f1}]
@@ -339,7 +343,6 @@
 
 (defn waiting? [form]
   (-> form :waiting?))
-
 
 (defn set-submitted [form]
   (-> form
