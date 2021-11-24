@@ -85,6 +85,10 @@
         (-> m .isPositive)))
     false))
 
+(defn pos-or-zero? [m]
+  (or (pos? m)
+      (zero? m)))
+
 (comment
   (pos? "23")
   (pos? "-23")
