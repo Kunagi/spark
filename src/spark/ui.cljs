@@ -1193,7 +1193,7 @@
                         context)
         command  (u/trampoline-if command)
         command  (when command (-> command upgrade-legacy-command complete-command))
-        text     (or text (-> command :label) ":text missing")
+        text     (or text (-> command :label))
         icon     (when-let [icon (or icon (-> command :icon))]
                    (cond
                      (string? icon)  (d/div {:class "material-icons"} icon)
@@ -1224,27 +1224,48 @@
         size (if (keyword? size) (name size) size)]
     (if to
       (let [to (coerce-link-to to)]
-        ($ mui/Button
-           {:to        to
-            :component router/Link
+        (if (and icon (not text))
+          ($ mui/IconButton
+             {:to        to
+              :component router/Link
+              :id        id
+              :variant   (or variant "contained")
+              :color     (or color "primary")
+              :size      size
+              :className classes}
+             icon)
+          ($ mui/Button
+             {:to        to
+              :component router/Link
+              :id        id
+              :variant   (or variant "contained")
+              :color     (or color "primary")
+              :startIcon icon
+              :size      size
+              :className classes}
+             text)))
+      (if (and icon (not text))
+        ($ mui/IconButton
+           {:onClick   on-click
             :id        id
+            :href      href
+            :target    target
+            :variant   (or variant "contained")
+            :color     (or color "primary")
+            :size      size
+            :className classes}
+           icon)
+        ($ mui/Button
+           {:onClick   on-click
+            :id        id
+            :href      href
+            :target    target
             :variant   (or variant "contained")
             :color     (or color "primary")
             :startIcon icon
             :size      size
             :className classes}
-           text))
-      ($ mui/Button
-         {:onClick   on-click
-          :id        id
-          :href      href
-          :target    target
-          :variant   (or variant "contained")
-          :color     (or color "primary")
-          :startIcon icon
-          :size      size
-          :className classes}
-         text))))
+           text)))))
 
 (defnc IconButton [{:keys [onClick on-click
                            icon color size command theme className
