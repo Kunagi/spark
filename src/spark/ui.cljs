@@ -676,6 +676,18 @@
 ;;; common components
 ;;;
 
+(defnc ScrollToTop [{:keys []}]
+  (let [location (use-location)]
+
+    (use-effect
+     [location]
+     ;; (log ::ScrollToTop--scroll)
+     (js/window.scrollTo 0 0)
+
+     nil)
+
+    (div {:id "ScrollToTop"})))
+
 (defnc Spacer [{:keys [width height]}]
   (let [theme (mui-styles/useTheme)]
     (d/div
@@ -1570,6 +1582,7 @@
           ($ AuthCompletedGuard
              {:padding 4}
              ($ router/BrowserRouter {}
+                ($ ScrollToTop)
                 ($ PageSwitch {:spa spa}
                    children)))))))
 
