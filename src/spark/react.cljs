@@ -1,6 +1,7 @@
 (ns spark.react
   (:require-macros [spark.react])
   (:require
+   ["react" :as react]
    [helix.core :as helix]
    [helix.hooks :as helix-hooks]))
 
@@ -24,3 +25,5 @@
         #(remove-watch ATOM watch-key))
 
        (transformator value)))))
+
+(def create-ref react/createRef)

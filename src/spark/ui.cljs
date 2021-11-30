@@ -62,6 +62,9 @@
 
 ;; * Misc
 
+;; (def create-ref js/React.createRef)
+(def create-ref spark-react/create-ref)
+
 (def reg-showcase showcase/reg-showcase)
 (def reg-page pages/reg-page)
 
@@ -616,6 +619,36 @@
    (div
     {:width  width
      :height height})))
+
+(defn rect-in-viewport? [rect]
+  (and (>= js/window.screen.height (-> rect .-bottom))
+       (>= js/window.screen.width (-> rect .-right))
+       (>= (-> rect .-bottom) 0)
+       (>= (-> rect .-right) 0)))
+
+(defn element-in-viewport? [^js element]
+  (-> element .getBoundingClientRect rect-in-viewport?))
+
+(defn use-screen-enter [^js ref callback]
+  (let [[in set-in] (use-state false)
+        activate (fn []
+                   ;; (js/console.log "!!!!! scroll")
+                   (when (-> ref .-current)
+                     (if (-> ref .-current .getBoundingClientRect rect-in-viewport?)
+                       (when-not in
+                         (set-in true)
+                         (callback))
+                       (when in
+                         (set-in false))
+                       )))]
+
+    (use-effect
+     :always
+     (js/document.addEventListener "scroll" activate)
+     #(js/document.removeEventListener "scroll" activate))
+
+    )
+  )
 
 ;; * test helpers
 

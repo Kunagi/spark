@@ -109,6 +109,9 @@
          [props style] (if-let [id (-> style :id)]
                          [(assoc props :id id) (dissoc style :id)]
                          [props style])
+         [props style] (if-let [k (-> style :ref)]
+                         [(assoc props :ref k) (dissoc style :ref)]
+                         [props style])
          [props style] (if-let [v (-> style :tab-index)]
                          [(assoc props :tab-index v) (dissoc style :tab-index)]
                          [props style])
