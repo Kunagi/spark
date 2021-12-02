@@ -12,8 +12,7 @@
    [projekt.story :as story]
    [projekt.sprint :as sprint]
    [projekt.projekt :as projekt]
-   [projekt.commands :as commands]
-   ))
+   [projekt.commands :as commands]))
 
 (def-ui Task [task]
   ($ :div
@@ -27,7 +26,6 @@
      ($ :div
         {:style {:margin-top "4px"}}
         (-> task :bez))))
-
 
 (def-ui StoryCard [story]
   {:wrap-memo-props [story]}
@@ -50,7 +48,8 @@
                    (-> story :bez))
                 (when-let [beschreibung (-> story :beschreibung)]
                   ($ :div
-                     {:style {:text-align "center"}}
+                     {:style {:text-align "center"
+                              :white-space "pre-wrap"}}
                      beschreibung))
                 (when-let [tasks (story/parse-tasks story)]
                   ($ :div
@@ -60,7 +59,8 @@
                            :task task}))))
                 (when-let [voraussetzungen (-> story :voraussetzungen)]
                   ($ :div
-                     ($ :span {:className "b"}
+                     ($ :span {:className "b"
+                               :style {:white-space "pre-wrap"}}
                         "Voraussetzungen: ")
                      (-> voraussetzungen)))
                 ($ :div
@@ -75,11 +75,11 @@
                            aufwand " Std geschätzt")))
                    ($ :div
                       (when-let [aufwand (-> story :aufwand)]
-                        ($ :span aufwand " Std geleistet")))
-                   )
+                        ($ :span aufwand " Std geleistet"))))
                 (when-let [klaerungsbedarf (-> story :klaerungsbedarf)]
                   ($ :div
-                     {:style {:color (-> ^js theme .-palette .-primary .-main)}}
+                     {:style {:color (-> ^js theme .-palette .-primary .-main)
+                              :white-space "pre-wrap"}}
                      ($ :span {:className "b"}
                         "Klärungsbedarf: ")
                      (-> klaerungsbedarf))))
@@ -91,7 +91,6 @@
        ($ StoryCard
           {:key (-> story :id)
            :story story}))))
-
 
 (defn sprint-card [sprint projekt storys uid expand]
   (let [sprint-id (-> sprint :id)
@@ -110,8 +109,7 @@
                                         (let [story-aufwand (-> story :aufwand)]
                                           (+ aufwand story-aufwand))
                                         aufwand)))
-                                  0 storys)
-        ]
+                                  0 storys)]
     ($ mui/Card
        {:className "StoryMap-SprintCard"}
        ;; (ui/data sprint)
@@ -159,7 +157,6 @@
                  :context {:projekt projekt
                            :sprint sprint}}))))))))
 
-
 (defn features-row [projekt uid {:keys [feature-ids]} sprint-id]
   ($ :tr
      (for [feature-id feature-ids]
@@ -167,20 +164,19 @@
           ($ mui/Card
              {:className "StoryMap-FeatureCard"}
              ($ :div
-              {:style {:display "flex"
-                       :justify-content "space-between"
-                       :align-items "center"
-                       :padding "0 1rem"}}
-              ($ :div feature-id)
-              (when (projekt/developer-uid? projekt uid)
-                ($ ui/CommandButton
-                   {:command commands/add-story
-                    :context {:form-defaults
-                              {:sprint-id sprint-id
-                               :feature-id feature-id}}
-                    :as-icon? true
-                    :size "small"}))))))))
-
+                {:style {:display "flex"
+                         :justify-content "space-between"
+                         :align-items "center"
+                         :padding "0 1rem"}}
+                ($ :div feature-id)
+                (when (projekt/developer-uid? projekt uid)
+                  ($ ui/CommandButton
+                     {:command commands/add-story
+                      :context {:form-defaults
+                                {:sprint-id sprint-id
+                                 :feature-id feature-id}}
+                      :as-icon? true
+                      :size "small"}))))))))
 
 (def-ui Storymap [projekt uid]
   {:from-context [projekt uid]}
@@ -206,8 +202,7 @@
            (for [sprint-id sprints-ids]
              (let [sprint (or (-> projekt :sprints (get sprint-id))
                               {:id sprint-id
-                               :db/ref [(-> projekt :db/ref) :sprints sprint-id]
-                               })
+                               :db/ref [(-> projekt :db/ref) :sprints sprint-id]})
                    expanded? (or (contains? expanded-sprint-ids sprint-id)
                                  (not (-> sprint sprint/closed?)))]
                (<>
@@ -237,7 +232,6 @@
         {:style {:display "none"}}
         ($ :textarea
            {:default-value (u/->edn projekt)})))))
-
 
 (def-page storymap-page
   {:path "/ui/projekt/storymap"
