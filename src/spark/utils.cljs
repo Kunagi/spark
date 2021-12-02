@@ -308,6 +308,11 @@
   (when-not (str/blank? s)
     s))
 
+(defn split-lines [s]
+  (when s
+    (when-not (str/blank? s)
+      (str/split-lines s))))
+
 (defn string-pad-left [s min-len padding]
   (when s
     (let [s       (if (string? s) s (str s))
