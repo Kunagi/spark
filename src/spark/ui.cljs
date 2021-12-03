@@ -1800,7 +1800,7 @@
           (stack
            (when label
              ($ FieldLabel {:text label}))
-           (div
+           (<>
             ($ HiddenStorageUploadField
                {:id           id
                 :accept       "image/jpeg"
@@ -1810,14 +1810,15 @@
               ($ mui/CircularProgress)
               (if url
                 (if img-style
-                  ($ :img
-                     {:src   url
-                      :style img-style})
+                  (center
+                   ($ :img
+                      {:src   url
+                       :style img-style}))
                   ($ mui/Avatar
                      {:src url}))
                 (div
-                 {:class "MuiButtonBase-root MuiButton-root MuiButton-contained"}
-                 (or upload-text "Bild auswählen..."))))))))))
+                  {:class "MuiButtonBase-root MuiButton-root MuiButton-contained"}
+                  (or upload-text "Bild auswählen..."))))))))))
 
 (def-ui StorageFileButton [path idx]
   (let [url (use-storage-url path)]
