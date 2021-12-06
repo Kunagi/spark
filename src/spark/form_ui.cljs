@@ -377,7 +377,7 @@
                       (update-form_ form/set-waiting waiting?))
 
         set-submitted (fn []
-                      (update-form_ form/set-submitted))
+                        (update-form_ form/set-submitted))
 
         update-form (fn [f & args]
                       (let [result (apply f (into [form] args))]
@@ -413,7 +413,9 @@
                                :values values)
                           (when-let [submit (get form :submit)]
                             (set-waiting true)
-                            (let [p (u/as> (submit values))]
+                            (let [p (u/as> (submit values))
+                                  optimistic? (-> form :optimistic-submit)]
+                              (when optimistic? (close p))
                               (-> p
                                   (.then (fn [result]
                                            (close result)))
@@ -443,7 +445,7 @@
           ;;      (u/->edn (-> form :values))))
           #_($ :pre (-> context keys str))
           ($ :div
-             {:style { ;; :width     "500px"
+             {:style {;; :width     "500px"
                       ;; :max-width "100%"
                       }}
 
@@ -499,7 +501,8 @@
                ($ mui/LinearProgress))))))))
 
 (defnc FormDialog [{:keys [form]}]
-  (let [on-close (fn []
+  (let [open? (-> form :open? boolean)
+        on-close (fn []
                    (close-form-dialog (-> form :id)))
         [form set-form] (hooks/use-state form)]
     (d/div
@@ -509,12 +512,14 @@
                        (name max-width)
                        max-width)]
        ($ mui/Dialog
-          {:open      (-> form :open? boolean)
+          {:open      open?
            :className @DIALOG-CLASS
            :fullWidth true
            :maxWidth max-width
             ;; :onClose close
            }
+
+          ;; ($ :pre (-> open? u/->edn))
 
           (when-let [title (-> form :title)]
             ($ mui/DialogTitle
