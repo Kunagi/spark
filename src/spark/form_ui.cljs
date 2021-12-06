@@ -413,15 +413,19 @@
                                :values values)
                           (when-let [submit (get form :submit)]
                             (set-waiting true)
-                            (let [p (u/as> (submit values))
-                                  optimistic? (-> form :optimistic-submit)]
-                              (when optimistic? (close p))
-                              (-> p
-                                  (.then (fn [result]
-                                           (close result)))
-                                  (.catch (fn [error]
-                                            (update-form (fn [_]
-                                                           (form/set-error form error))))))))))))]
+                            (try
+                              (let [p (u/as> (submit values))
+                                    optimistic? (-> form :optimistic-submit)]
+                                (when optimistic? (close p))
+                                (-> p
+                                    (.then (fn [result]
+                                             (close result)))
+                                    (.catch (fn [error]
+                                              (update-form (fn [_]
+                                                             (form/set-error form error)))))))
+                              (catch :default ex
+                                (update-form (fn [_]
+                                               (form/set-error form (u/exception-as-text ex)))))))))))]
     (r/provider
      {:context HIDE_DIALOG
       :value   close}

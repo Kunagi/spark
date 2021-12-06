@@ -53,6 +53,32 @@
 
 ;; Errors and Exceptions
 
+(defn exception-as-text [ex]
+  (cond
+
+    (nil? ex)
+    nil
+
+    (string? ex)
+    ex
+
+    (instance? js/Error ex)
+    (str (-> ^js ex .-message)
+         (when-let [c (ex-cause ex)]
+           (str "\n"
+                (exception-as-text c))))
+
+    (map? ex)
+    (if-let [message (-> ex :message)]
+      (str message
+           (when-let [c (ex-cause ex)]
+             (str "\n"
+                  (exception-as-text c))))
+      "Error")
+
+    :else
+    (->edn ex)))
+
 (defn exception-as-data [ex]
   (cond
 
