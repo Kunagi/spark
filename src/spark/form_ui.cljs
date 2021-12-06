@@ -415,7 +415,7 @@
                             (set-waiting true)
                             (try
                               (let [p (u/as> (submit values))
-                                    optimistic? (-> form :optimistic-submit)]
+                                    optimistic? (get form :optimistic-submit true)]
                                 (when optimistic? (close p))
                                 (-> p
                                     (.then (fn [result]
