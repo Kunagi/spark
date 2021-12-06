@@ -639,16 +639,12 @@
                          (set-in true)
                          (callback))
                        (when in
-                         (set-in false))
-                       )))]
+                         (set-in false)))))]
 
     (use-effect
      :always
      (js/document.addEventListener "scroll" activate)
-     #(js/document.removeEventListener "scroll" activate))
-
-    )
-  )
+     #(js/document.removeEventListener "scroll" activate))))
 
 ;; * test helpers
 
@@ -1766,7 +1762,8 @@
 
 (defnc StorageImageActionArea
   [{:keys [id storage-path upload-text
-           img-style on-url-changed
+           img-style div-style
+           on-url-changed
            label]}]
   (let [[url set-url_] (use-state :loading)
         set-url        (fn [new-url]
@@ -1809,16 +1806,23 @@
             (if (= :loading url)
               ($ mui/CircularProgress)
               (if url
-                (if img-style
-                  (center
-                   ($ :img
-                      {:src   url
-                       :style img-style}))
-                  ($ mui/Avatar
-                     {:src url}))
+                (cond
+                  div-style ($ :div
+                               {:style (merge
+                                        {:background-image    (str "url(" url ")")
+                                         :background-repeat   "no-repeat"
+                                         :background-position "center"
+                                         :background-size     "cover"}
+                                        div-style)})
+                  img-style (center
+                             ($ :img
+                                {:src   url
+                                 :style img-style}))
+                  :else ($ mui/Avatar
+                           {:src url}))
                 (div
-                  {:class "MuiButtonBase-root MuiButton-root MuiButton-contained"}
-                  (or upload-text "Bild auswählen..."))))))))))
+                 {:class "MuiButtonBase-root MuiButton-root MuiButton-contained"}
+                 (or upload-text "Bild auswählen..."))))))))))
 
 (def-ui StorageFileButton [path idx]
   (let [url (use-storage-url path)]
