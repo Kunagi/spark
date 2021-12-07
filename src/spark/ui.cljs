@@ -1918,6 +1918,7 @@
                           (display value)
                           (when value
                             (div
+                             {:white-space :pre-wrap}
                              (cond
                                (or (set? value)
                                    (vector? value)
