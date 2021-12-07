@@ -47,6 +47,8 @@
    "a.Link--no-styles" {:text-decoration :none
                         :color           :unset
                         :display         :block}
+
+   ".CursorPointer" {:cursor :pointer}
    })
 
 (def attr-with-px?

@@ -2044,7 +2044,8 @@
                                      (keyword "record-index" (str row-idx)))
                             :hover true
                             :onClick (when record-on-click
-                                       #(record-on-click record))}
+                                       #(record-on-click record))
+                            :className (when record-on-click "CursorPointer")}
                            (for [[col-idx col] (map-indexed vector cols)]
                              (let [record-key (-> col :record-key)
                                    value (cond
