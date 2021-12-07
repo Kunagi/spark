@@ -1953,6 +1953,26 @@
          :entity entity
          :field  field}))))
 
+;; * Cards
+
+(defnc Card [{:keys [to on-click
+                     children padding highlight
+                     class]}]
+  (let [Card     ($ mui/Paper
+                    {:className (str (when highlight "HighlightOutline")
+                                     (when class
+                                       (str " " class)))}
+                    (div
+                     {:padding (or padding 16)
+                      :display :grid}
+                     children))]
+    (if (or to on-click)
+      ($ Link--no-styles
+         {:to       to
+          :on-click on-click}
+         Card)
+      Card)))
+
 ;; * DataTable
 
 (def-ui DataTable [table records
