@@ -147,6 +147,9 @@
 (defmacro center-text [& style-and-children]
   (html-element :div style-and-children "center-text" nil))
 
+(defmacro pre-wrap [& style-and-children]
+  (html-element :div style-and-children nil {:white-space :pre-wrap}))
+
 (defmacro icon [icon-name & style-and-children]
   (let [icon-name (if (keyword? icon-name)
                     (name icon-name)
