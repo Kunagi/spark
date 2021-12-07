@@ -2011,7 +2011,8 @@
                            {:label col
                             :format str
                             :record-key col}))))
-        CsvDownloadButton (when (seq records)
+        CsvDownloadButton (when (and csv-filename
+                                     (seq records))
                             ($ Button
                                {:text "Download CSV"
                                 :on-click #(browser/initiate-text-download
@@ -2056,6 +2057,18 @@
                                {:font-weight 900
                                 :text-align (-> col :align)}
                                (-> col :label))))))
+
+                   (when-let [rows (-> table :prefix-rows)]
+                     (for [[row-idx row] (map-indexed vector rows)]
+                       ($ mui/TableRow
+                          {:key row-idx}
+                          (for [[col-idx cell] (map-indexed vector row)]
+                            ($ mui/TableCell
+                               {:key col-idx}
+                               (when cell
+                                 (if-let [component (-> cell :component)]
+                                   component
+                                   (data cell))))))))
 
                    ($ mui/TableBody
                       (for [[row-idx record] (map-indexed vector records)]
