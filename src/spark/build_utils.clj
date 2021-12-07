@@ -83,9 +83,13 @@
   (process {:command-args ["clojure" "-M:shadow-cljs-release"
                            "--config-merge" (str "{:release-version \"v" version "\"}")]}))
 
-(defn firebase-deploy []
+(defn firebase-deploy [project-id]
   (print-action "firebase-deploy")
-  (process {:command-args ["firebase" "deploy"]
+  (process {:command-args (concat
+                           ["firebase"]
+                           (when project-id
+                             ["--project" project-id])
+                           ["deploy"])
             :dir "firebase"}))
 
 (defn update-references-to-build-artifacts []
@@ -96,12 +100,13 @@
 (defn release
   ([]
    (release {}))
-  ([{:keys [pre-deploy-hook post-deploy-hook]}]
+  ([{:keys [pre-deploy-hook post-deploy-hook
+            firebase-project-id]}]
    (print-action "release")
    ;; (assert-git-clean ".")
    ;; (assert-git-clean "../spark")
    (release-build)
    (update-references-to-build-artifacts)
    (when pre-deploy-hook (pre-deploy-hook))
-   (firebase-deploy)
+   (firebase-deploy firebase-project-id)
    (when post-deploy-hook (post-deploy-hook))))
