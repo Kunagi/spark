@@ -93,12 +93,15 @@
   (replace-in-file "firebase/public/index.html" "index.js" (str "index.js?v=" version))
   (replace-in-file "firebase/public/index.js" "main.js" (str "main.v" version ".js")))
 
-(defn release [{:keys [pre-deploy-hook post-deploy-hook]}]
-  (print-action "release")
-  ;; (assert-git-clean ".")
-  ;; (assert-git-clean "../spark")
-  (release-build)
-  (update-references-to-build-artifacts)
-  (when pre-deploy-hook (pre-deploy-hook))
-  (firebase-deploy)
-  (when post-deploy-hook (post-deploy-hook)))
+(defn release
+  ([]
+   (release {}))
+  ([{:keys [pre-deploy-hook post-deploy-hook]}]
+   (print-action "release")
+   ;; (assert-git-clean ".")
+   ;; (assert-git-clean "../spark")
+   (release-build)
+   (update-references-to-build-artifacts)
+   (when pre-deploy-hook (pre-deploy-hook))
+   (firebase-deploy)
+   (when post-deploy-hook (post-deploy-hook))))
