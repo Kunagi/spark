@@ -14,6 +14,8 @@
 
    [nano-id.core :as nano-id]
 
+   [flatland.ordered.map :as ordered.map]
+
    [spark.rct :refer [tests]]))
 
 ;; http://weavejester.github.io/medley/medley.core.html
@@ -300,6 +302,33 @@
   (v-assoc-last [0 1] :x)
   (v-assoc-last [0] :x)
   (v-assoc-last nil :x))
+
+;; * keytable
+
+(defn- keytable-element-label-from-value [v]
+  (cond
+    (string? v) v
+    (keyword? v) (name v)
+    :else (str v)))
+
+(defn- enrich-keytable-element [element]
+  (-> element
+      (assoc-if-missing :label (keytable-element-label-from-value (-> element :value)))))
+
+(defn keytable [elements]
+  (->> elements
+       (map (fn [element]
+              (if (map? element)
+                element
+                {:value element
+                 :label (keytable-element-label-from-value element)})))
+       (map enrich-keytable-element)
+       (reduce (fn [m element]
+                 (assoc m
+                        (-> element :value)
+                        element)
+                 )
+               (ordered.map/ordered-map))))
 
 ;; * functions
 
