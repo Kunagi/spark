@@ -238,5 +238,6 @@
    :max-width false
    :content Storymap
    :wait-for [:projekt]
+   :title "Project StoryMap"
    :update-context (fn [context]
                      (assoc context :projekt (ui/use-singleton-doc projekt/Projekt)))})
