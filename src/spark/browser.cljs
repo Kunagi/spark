@@ -70,7 +70,6 @@
 
 ;; TODO replace with navigator.userAgentData
 (defn apple? []
-  (js/console.log "hallo")
   (or (ios-platforms (-> js/navigator.platform))
       (js/navigator.userAgent.includes "Mac")
       ))
