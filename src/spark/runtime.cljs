@@ -80,8 +80,8 @@
   (log ::execute-command>
        :command command
        :context context)
-  (validate-command command)
-  (validate-command-context command context)
+  ;; (validate-command command)
+  ;; (validate-command-context command context)
   (js/console.log "[DEBUG] runtime/execute-command>--after-validation")
   (let [f (get command :f)
         result (f context)]
