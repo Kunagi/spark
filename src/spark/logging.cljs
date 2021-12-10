@@ -1,7 +1,10 @@
 (ns spark.logging
+  (:require-macros [spark.logging :refer [log]])
   (:require
    [cljs.pprint :refer [pprint]]
    [spark.env-config :as env-config]))
+
+(def logger js/console)
 
 (defn format-clojure-value [data]
   (when data
@@ -57,30 +60,30 @@
   (conform-event-data {:a "a"})
   (conform-event-data {:a nil}))
 
-(defn log [event-keyword & {:as event-data}]
-  (let [[event-namespace event-name message extra-data]
-        (cond
+;; (defn log [event-keyword & {:as event-data}]
+;;   (let [[event-namespace event-name message extra-data]
+;;         (cond
 
-          (instance? js/Error event-keyword)
-          ["?" "ERROR" (-> ^js event-keyword .-message) (ex-data event-keyword)]
+;;           (instance? js/Error event-keyword)
+;;           ["?" "ERROR" (-> ^js event-keyword .-message) (ex-data event-keyword)]
 
-          (qualified-keyword? event-keyword)
-          [(namespace event-keyword)
-           (name event-keyword)]
+;;           (qualified-keyword? event-keyword)
+;;           [(namespace event-keyword)
+;;            (name event-keyword)]
 
-          :else
-          (if (keyword? event-keyword)
-            ["?" (name event-keyword)]
-            ["?" (str event-keyword)]))
+;;           :else
+;;           (if (keyword? event-keyword)
+;;             ["?" (name event-keyword)]
+;;             ["?" (str event-keyword)]))
 
-        event-data (conform-event-data event-data)
-        event-data (if message
-                     (assoc event-data :message message)
-                     event-data)
-        event-data (if extra-data
-                     (merge extra-data event-data)
-                     event-data)]
-    (@WRITER event-namespace event-name event-data)))
+;;         event-data (conform-event-data event-data)
+;;         event-data (if message
+;;                      (assoc event-data :message message)
+;;                      event-data)
+;;         event-data (if extra-data
+;;                      (merge extra-data event-data)
+;;                      event-data)]
+;;     (@WRITER event-namespace event-name event-data)))
 
 (comment
   (type (ex-info "hallo" {:x 1}))
