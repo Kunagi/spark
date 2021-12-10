@@ -1920,6 +1920,10 @@
                             (div
                              {:white-space :pre-wrap}
                              (cond
+
+                               (-> field (get 1) :keytable)
+                               (str (-> field (get 1) :keytable (get value) :label))
+
                                (or (set? value)
                                    (vector? value)
                                    (list? value))

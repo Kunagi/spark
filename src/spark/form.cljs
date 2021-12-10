@@ -28,6 +28,12 @@
         (-> field :id)
         (-> field :attr/key))))
 
+(defn- initialize-option [option]
+  (if (map? option)
+    option
+    {:value option
+     :label (str option)}))
+
 (defn- initialize-field [form idx field]
   (let [field         (if (spark/field-schema? field)
                         (spark/field-schema-as-form-field field)
@@ -59,13 +65,10 @@
                               (name id)
                               (str id))))
 
-        options (when-let [options (-> field :options)]
-                  (->> options
-                       (mapv (fn [option]
-                               (if (map? option)
-                                 option
-                                 {:value option
-                                  :label (str option)})))))]
+        options (or (when-let [keytable (-> field :keytable)]
+                      (->> keytable vals (mapv initialize-option)))
+                    (when-let [options (-> field :options)]
+                      (->> options (mapv initialize-option))))]
     (assoc field
            :id id
            :auto-focus? (= 0 idx)
@@ -316,8 +319,7 @@
     (if-let [error (f (values form))]
       (assoc form :error error)
       form)
-    form)
-  )
+    form))
 
 (defn on-submit [form]
   (s/assert ::form form)
