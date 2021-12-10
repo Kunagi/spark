@@ -1106,9 +1106,10 @@
   ([command context]
    (execute-command> command context nil))
   ([command context then]
-   (log ::execute-command>
-        :command command
-        :then then)
+   ;; (log ::execute-command>
+   ;;      :command command
+   ;;      :then then)
+   (js/console.log "[DEBUG] ui/execute-command>")
    (-> (runtime/execute-command> command context)
        (.then (or then identity))
        (.catch show-error))))
@@ -1123,8 +1124,8 @@
              _       (runtime/validate-command-context command context)
              form    (complete-form form context)
              submit  (fn [values]
-                       (log ::new-command-on-click--form-submit
-                            :values values)
+                       ;; (log ::new-command-on-click--form-submit
+                       ;;      :values values)
                        (execute-command>
                         command
                         (assoc context :values values)

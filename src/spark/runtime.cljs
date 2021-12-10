@@ -3,9 +3,7 @@
    [spark.logging :refer [log]]
    [spark.utils :as u]
    [spark.core :as spark]
-   [spark.repository :as repository]
-    ))
-
+   [spark.repository :as repository]))
 
 (def $Query
   [:map
@@ -23,7 +21,6 @@
                     {:command command
                      :explain explain}))))
 
-
 (defn- context-arg->malli [arg]
   (if-let [malli (get-in arg [1 :$])]
     (assoc arg 1 malli)
@@ -36,8 +33,8 @@
 
 (defn validate-command-context [command context]
   (when-let [args (-> command :context-args)]
-    (log ::validate-command-context
-         :args args)
+    ;; (log ::validate-command-context
+    ;;      :args args)
     (when-let [explain (u/malli-explain (context-args->malli args) context)]
       (throw (ex-info (str  "Invalid command context: "
                             (u/malli-explain->user-message explain (context-args->malli args)))
@@ -60,7 +57,6 @@
                            :context-value v
                            :explain explain})))))))
 
-
 (defn post-process-query-result [query context result]
   (if-let [f (-> query spark/query-process)]
     (f result context)
@@ -78,21 +74,22 @@
       (.then (fn [result]
                (u/resolve> (post-process-query-result query context result))))))
 
-
 (defn execute-command>
   [command context]
+  (js/console.log "[DEBUG] runtime/execute-command>")
   (log ::execute-command>
        :command command
        :context context)
   (validate-command command)
   (validate-command-context command context)
+  (js/console.log "[DEBUG] runtime/execute-command>--after-validation")
   (let [f (get command :f)
         result (f context)]
+    (js/console.log "[DEBUG] runtime/execute-command>--after-f")
     (when-not (instance? js/Promise result)
       (log ::execute-command>--WARN-result-is-not-a-promise
            :result result))
     (u/as> result)))
-
 
 (defn report-error [error]
   (js/console.log error)
