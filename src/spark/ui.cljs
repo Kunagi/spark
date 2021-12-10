@@ -1120,6 +1120,8 @@
              _       (runtime/validate-command-context command context)
              form    (complete-form form context)
              submit  (fn [values]
+                       (log ::new-command-on-click--form-submit
+                            :values values)
                        (execute-command>
                         command
                         (assoc context :values values)
