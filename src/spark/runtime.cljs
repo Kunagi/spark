@@ -76,16 +76,13 @@
 
 (defn execute-command>
   [command context]
-  (js/console.log "[DEBUG] runtime/execute-command>")
   ;; (log ::execute-command>
   ;;      :command command
   ;;      :context context)
   ;; (validate-command command)
   ;; (validate-command-context command context)
-  (js/console.log "[DEBUG] runtime/execute-command>--after-validation")
   (let [f (get command :f)
         result (f context)]
-    (js/console.log "[DEBUG] runtime/execute-command>--after-f")
     (when-not (instance? js/Promise result)
       (log ::execute-command>--WARN-result-is-not-a-promise
            :result result))
