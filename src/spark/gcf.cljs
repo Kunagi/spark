@@ -107,7 +107,7 @@
                                    (format-response (str %)))))))
        (catch :default ex
          (log ::request-hander-failed
-              ex)
+              :exception ex)
          (-> res
              (.set "Access-Control-Allow-Origin" "*")
              (.status 500)

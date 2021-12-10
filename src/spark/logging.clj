@@ -6,7 +6,7 @@
     (if event-data
       `(if goog.DEBUG
          (-> logger (.log ~event ~event-data))
-         (-> logger (.log ~event (clj->js ~event-data))))
+         (-> logger (.log ~event (cljs.core/clj->js ~event-data))))
       `(-> logger (.log ~event))))
 
   #_(let [event (str event-keyword)]
