@@ -1770,7 +1770,8 @@
   [{:keys [id storage-path upload-text
            img-style div-style
            on-url-changed
-           label]}]
+           label
+           children]}]
   (let [[url set-url_] (use-state :loading)
         set-url        (fn [new-url]
                          (when (not= url new-url)
@@ -1800,17 +1801,18 @@
     ($ mui/CardActionArea
        {:onClick on-click}
        ($ mui/CardContent
-          (stack
-           (when label
-             ($ FieldLabel {:text label}))
-           (<>
-            ($ HiddenStorageUploadField
-               {:id           id
-                :accept       "image/jpeg"
-                :storage-path storage-path
-                :then         set-url})
+          (div
+           ($ HiddenStorageUploadField
+              {:id           id
+               :accept       "image/jpeg"
+               :storage-path storage-path
+               :then         set-url})
+           (stack
+            (when label
+              ($ FieldLabel {:text label}))
+
             (if (= :loading url)
-              ($ mui/CircularProgress)
+              (center ($ mui/CircularProgress))
               (if url
                 (cond
                   div-style ($ :div
@@ -1828,7 +1830,8 @@
                            {:src url}))
                 (div
                  {:class "MuiButtonBase-root MuiButton-root MuiButton-contained"}
-                 (or upload-text "Bild auswählen..."))))))))))
+                 (or upload-text "Bild auswählen..."))))
+            children))))))
 
 (def-ui StorageFileButton [path idx]
   (let [url (use-storage-url path)]
