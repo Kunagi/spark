@@ -1111,7 +1111,7 @@
        (.catch show-error))))
 
 (defn new-command-on-click [command context then]
-  (runtime/validate-command command)
+  ;; (runtime/validate-command command)
   (let [ui-context (use-spark-context)
         form       (-> command :form)]
     (if-not form
@@ -1125,7 +1125,7 @@
                         (assoc context :values values)
                         then))
              form    (assoc form :submit submit)]
-         (show-form-dialog form)))))
+         (show-form-dialog> form)))))
 
 (defnc CommandButton [{:keys [command context then
                               icon as-icon? icon-theme
