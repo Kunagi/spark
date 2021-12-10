@@ -413,16 +413,12 @@
                                :values values)
                           (when-let [submit (get form :submit)]
                             (set-waiting true)
-                            (log ::Form--on-submit-2)
                             (try
                               (let [p (u/as> (submit values))
                                     optimistic? (get form :optimistic-submit true)]
-                                (log ::Form--on-submit-3
-                                     :optimistic? optimistic?)
                                 (when optimistic? (close p))
                                 (-> p
                                     (.then (fn [result]
-                                             (log ::Form--on-submit-4)
                                              (close result)))
                                     (.catch (fn [error]
                                               (update-form (fn [_]

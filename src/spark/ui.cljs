@@ -1106,6 +1106,9 @@
   ([command context]
    (execute-command> command context nil))
   ([command context then]
+   (log ::execute-command>
+        :command command
+        :then then)
    (-> (runtime/execute-command> command context)
        (.then (or then identity))
        (.catch show-error))))
