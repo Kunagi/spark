@@ -255,7 +255,7 @@ Bitte gib hier den empfangenen Code ein.")
       :else
       (ui/stack-3
        (ui/center
-        (ui/div "Welchen Dienst möchtest Du zur Identifizierung nutzen?"))
+        (ui/div "Welchen Dienst möchtest Du zur Identifizierung verwenden?"))
        (ui/stack
         (when google
           ($ ui/Button
@@ -290,7 +290,7 @@ Bitte gib hier den empfangenen Code ein.")
   (log ::show-sign-in-selector-dialog
        :options options)
   (ui/show-dialog {:id      "sign-in"
-                   :title   "Identifizierung"
+                   ;; :title   "Identifizierung"
                    :content ($ LoginSelector
                                {:email     (-> options :email)
                                 :telephone (-> options :telephone)
