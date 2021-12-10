@@ -77,9 +77,9 @@
 (defn execute-command>
   [command context]
   (js/console.log "[DEBUG] runtime/execute-command>")
-  (log ::execute-command>
-       :command command
-       :context context)
+  ;; (log ::execute-command>
+  ;;      :command command
+  ;;      :context context)
   ;; (validate-command command)
   ;; (validate-command-context command context)
   (js/console.log "[DEBUG] runtime/execute-command>--after-validation")
