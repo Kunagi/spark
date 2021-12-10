@@ -1,7 +1,7 @@
 (ns spark.logging
   )
 
-(defmacro log2 [event-keyword & {:as event-data}]
+(defmacro log [event-keyword & {:as event-data}]
   (let [event (str event-keyword)]
     (if event-data
       `(if goog.DEBUG
