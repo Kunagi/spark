@@ -129,7 +129,7 @@
 
 (defn nano-id []
   (let [id (nano-id/nano-id)]
-    (if (re-matches #"[a-zA-Z].*" id)
+    (if (re-matches #"[a-zA-Z][a-zA-Z0-9]*" id)
       id
       (nano-id))))
 
