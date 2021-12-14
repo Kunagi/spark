@@ -74,7 +74,7 @@
                                    (<= new-value max-value)))
                       ((:on-change field) new-value))))
         start-adornment (or (-> field :start-adornment)
-                            #_(when (-> field :plusminus-adronments)
+                            #_(when (-> field :plusminus-adornments)
                                 ($ mui/Button
                                    {:onClick #(inc-dec -1)
                                     :variant "contained"
@@ -86,7 +86,7 @@
                              {:style {:margin-right "8px"}}
                              start-adornment))
         end-adornment (or (-> field :end-adornment)
-                          (when (-> field :plusminus-adronments)
+                          (when (-> field :plusminus-adornments)
                             ($ :div
                                {:style {:display "grid"
                                         :grid-template-columns "max-content max-content"
