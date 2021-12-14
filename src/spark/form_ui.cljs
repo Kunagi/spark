@@ -60,7 +60,8 @@
                            "text")))
 
 (defmethod create-input "text" [field]
-  (let [inc-dec (fn [amount]
+  (let [step (-> field :step)
+        inc-dec (fn [amount]
                   (let [value (-> field :value)
                         new-value (+ value amount)
                         min-value (-> field :min)
@@ -91,13 +92,15 @@
                                         :grid-template-columns "max-content max-content"
                                         :grid-gap "8px"}}
                                ($ mui/Button
-                                  {:onClick #(inc-dec -1)
+                                  {:onClick #(inc-dec (if step
+                                                        (- 0 step)
+                                                        -1))
                                    :variant "contained"
                                    :size "small"
                                    :className "FormPlusMinusAdornmentButton"}
                                   "-")
                                ($ mui/Button
-                                  {:onClick #(inc-dec 1)
+                                  {:onClick #(inc-dec (or step 1))
                                    :variant "contained"
                                    :size "small"
                                    :className "FormPlusMinusAdornmentButton"}
@@ -108,6 +111,10 @@
                            end-adornment))
         input-props (or (-> field :input-props)
                         {})
+        input-props (if (and step
+                             (not (-> input-props :step)))
+                      (assoc input-props :step step) input-props
+                      )
         InputProps  {:startAdornment start-adornment
                      :endAdornment end-adornment}]
     ($ :div
