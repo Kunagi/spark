@@ -231,3 +231,14 @@
 
 (comment
   (webkit-post-message "test" "hallo"))
+
+;; online / offline
+
+(defonce OFFLINE (atom (not js/window.navigator.onLine)))
+
+(defonce _offline
+  (do
+    (js/window.addEventListener "online" #(reset! OFFLINE false))
+    (js/window.addEventListener "offline" #(reset! OFFLINE true))
+    :done
+    ))

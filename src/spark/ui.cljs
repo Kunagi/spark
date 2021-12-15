@@ -792,6 +792,8 @@
 ;;; SPA
 ;;;
 
+(def use-offline (atom-hook browser/OFFLINE))
+
 (defonce SPA (atom nil))
 (def use-spa (atom-hook SPA))
 
