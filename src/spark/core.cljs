@@ -2,6 +2,7 @@
   (:require-macros [spark.core :refer [def-test]])
   (:require
    [clojure.string :as str]
+   [malli.core :as m]
    [spark.firestore :as firestore]
    [camel-snake-kebab.core :as csk]))
 
@@ -94,6 +95,7 @@
 ;;;
 
 (defn init-doc-schema [Doc]
+  ;; (m/schema Doc)
   (let [col-id (-> Doc schema-opts :firestore/collection)]
     (when-not col-id
       (js/console.error "Missing :firestore/collection in" Doc))
@@ -101,6 +103,11 @@
       (reg-def :doc-schema (get Doc :doc-schema/id) Doc))
     (firestore/reg-doc-schema col-id Doc))
   Doc)
+
+(comment
+  (m/schema [:map
+             ""
+             [ :string]]))
 
 (defn doc-schema? [thing]
   (schema-type-of? :doc-schema thing))
