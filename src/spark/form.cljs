@@ -68,10 +68,12 @@
         options (or (when-let [keytable (-> field :keytable)]
                       (->> keytable vals (mapv initialize-option)))
                     (when-let [options (-> field :options)]
-                      (->> options (mapv initialize-option))))]
+                      (->> options (mapv initialize-option))))
+        auto-focus-first-field? (get form :auto-focus-first-field? true)]
     (assoc field
            :id id
-           :auto-focus? (= 0 idx)
+           :auto-focus? (boolean (and auto-focus-first-field?
+                                      (= 0 idx)))
            :name field-name
            :label (or (-> field :label)
                       (-> field :name)
