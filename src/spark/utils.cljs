@@ -452,13 +452,33 @@
     (nil? thing)              nil
     (number? thing)           thing
     (instance? js/Date thing) (-> thing .getTime)
+    (tick/date-time? thing) (js/Date.parse (tick/inst thing))
+    (tick/zoned-date-time? thing) (js/Date.parse (tick/inst thing))
     :else                     (js/Date.parse thing)))
 
 (comment
+  (js/Date.)
   (js/Date. (millis (tick/instant)))
+  (js/Date. (millis (tick/date-time)))
+  (js/Date. (millis (tick/zoned-date-time (tick/date-time))))
   (js/Date. (millis "2020-01-01"))
   (js/Date. (millis 1577870520000))
   (js/Date. (millis (js/Date.))))
+
+(def millis-in-second 1000)
+(def millis-in-minute (* millis-in-second 60))
+(def millis-in-hour (* millis-in-minute 60))
+
+(defn millis->hours-minutes [millis]
+  (when millis
+    (let [hours (quot millis millis-in-hour)
+          millis (rem millis millis-in-hour)
+          minutes (quot millis millis-in-minute)]
+      (str hours ":" (string-pad-left minutes 2 "0")))))
+
+(comment
+  (millis->hours-minutes 1910000)
+  (millis->hours-minutes 110000))
 
 (defn timespans-overlapping? [a-start a-end b-start b-end]
   (not
