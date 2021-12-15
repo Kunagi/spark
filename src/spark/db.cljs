@@ -221,4 +221,6 @@
   (add-child> "devtest/db-1" :group {:id   "g2"
                                      :name "Group #2"})
 
-  (add-child> {:db/ref ["devtest/db-1" :group "g2"]} :people {:name "Olga"}))
+  (add-child> {:db/ref ["devtest/db-1" :group "g2"]} :people {:name "Olga"})
+
+  (update> "devtest/ts-array" {:arr-mit-ts [:db/array-union [:db/timestamp]]}))

@@ -70,6 +70,7 @@
                                    elements (mapv (fn [v]
                                                     (cond
                                                       (map? v) (inject-FieldValues v)
+                                                      (= :db/timestamp v) (timestamp)
                                                       :else v))
                                                   elements)]
                                (array-union elements))
