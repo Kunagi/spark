@@ -274,7 +274,7 @@
   (if (< n 2)
     [coll]
     (let [coll-size (count coll)
-          partition-size (js/Math.round (/ (count coll) n))
+          partition-size (js/Math.ceil (/ (count coll) n))
           needed-coll-size (* n partition-size)
           coll (if (< coll-size needed-coll-size)
                  (take needed-coll-size (concat coll (repeat nil)))
