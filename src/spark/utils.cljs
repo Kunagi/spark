@@ -268,6 +268,31 @@
   (seq-position #{:b} [:a])
   (seq-position #{:b} nil))
 
+(defn distribute
+  "Like `partition` but with distributed elements."
+  [n coll]
+  (if (< n 2)
+    [coll]
+    (let [coll (concat coll (take (rem (count coll) n) (repeat nil)))
+          rows (partition-all n coll)
+          interleaved (apply interleave rows
+                             )
+          partitions (partition-all (/ (count coll) n) interleaved)
+          partitions (map #(remove nil? %) partitions)
+          partitions (remove empty? partitions)]
+      partitions
+      )))
+
+(comment
+  (interleave [:a :c] (concat  [:b] (repeat nil)))
+  (distribute 2 [:a :b :c :d :e :f]) ; [[:a :c :e][:b :d :f]]
+  (distribute 2 [:a :b :c :d :e])
+  (distribute 1 [:a :b :c :d :e])
+  (distribute 2 [])
+  (distribute 3 [:a])
+  ;;
+  )
+
 ;; ** vectors
 
 (defn v-contains?
