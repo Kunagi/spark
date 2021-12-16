@@ -273,20 +273,27 @@
   [n coll]
   (if (< n 2)
     [coll]
-    (let [coll (concat coll (take (rem (count coll) n) (repeat nil)))
-          rows (partition-all n coll)
-          interleaved (apply interleave rows
-                             )
-          partitions (partition-all (/ (count coll) n) interleaved)
+    (let [coll-size (count coll)
+          partition-size (js/Math.round (/ (count coll) n))
+          needed-coll-size (* n partition-size)
+          coll (if (< coll-size needed-coll-size)
+                 (take needed-coll-size (concat coll (repeat nil)))
+                 coll)
+          rows (partition n coll)
+          interleaved (apply interleave rows)
+          partitions (partition-all partition-size interleaved)
           partitions (map #(remove nil? %) partitions)
           partitions (remove empty? partitions)]
-      partitions
-      )))
+      partitions)))
 
 (comment
+  (/ 5 2)
+  (interleave [:a :b] [:c :d] [:e :f])
   (interleave [:a :c] (concat  [:b] (repeat nil)))
   (distribute 2 [:a :b :c :d :e :f]) ; [[:a :c :e][:b :d :f]]
-  (distribute 2 [:a :b :c :d :e])
+  (distribute 2 [:a :b :c :d :e]) ; [[:a :c :e] [:b :d]]
+  (distribute 3 [:a :b :c :d :e :f])
+  (distribute 3 [:a :b :c :d :e]) ; [[:a :d] [:b :e] [:c]]
   (distribute 1 [:a :b :c :d :e])
   (distribute 2 [])
   (distribute 3 [:a])
