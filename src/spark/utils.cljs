@@ -326,8 +326,7 @@
        (reduce (fn [m element]
                  (assoc m
                         (-> element :value)
-                        element)
-                 )
+                        element))
                (ordered.map/ordered-map))))
 
 ;; * functions
@@ -468,6 +467,9 @@
 (def millis-in-second 1000)
 (def millis-in-minute (* millis-in-second 60))
 (def millis-in-hour (* millis-in-minute 60))
+
+(defn millis->minutes [millis]
+  (quot millis millis-in-minute))
 
 (defn millis->hours-minutes [millis]
   (when millis
