@@ -235,10 +235,19 @@
 ;; online / offline
 
 (defonce OFFLINE (atom (not js/window.navigator.onLine)))
-
-(defonce _offline
+(defonce _offline-event-listener
   (do
     (js/window.addEventListener "online" #(reset! OFFLINE false))
     (js/window.addEventListener "offline" #(reset! OFFLINE true))
-    :done
+    :registered
+    ))
+
+(defonce WIDTH (atom js/window.innerWidth))
+(defonce _width-event-listener
+  (do
+    (js/window.addEventListener "resize" (fn []
+                                           (let [width js/window.innerWidth]
+                                             (when (not= width @WIDTH)
+                                               (reset! WIDTH width)))))
+    :registered
     ))
