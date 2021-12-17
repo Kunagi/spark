@@ -1,15 +1,14 @@
 (ns spark.firestore
   (:require
    [clojure.spec.alpha :as s]
-[clojure.string :as str]
+   [clojure.string :as str]
    [goog.object :as gobj]
    [promesa.core :as p]
    [cljs-bean.core :as cljs-bean]
 
    [spark.env-config :as env-config]
    [spark.logging :refer [log]]
-   [spark.utils :as u]
-   ))
+   [spark.utils :as u]))
 
 ;; https://firebase.google.com/docs/reference/js/firebase.firestore
 
@@ -92,6 +91,8 @@
           data data))
 
 (defn remove-metadata [data]
+  ;; (log ::remove-metadata
+  ;;      :data data)
   (let [data (dissoc data
                      :firestore/schema
                      :firestore/doc-path
@@ -390,6 +391,8 @@
   ([m]
    (flatten-entity-map nil nil m))
   ([doc prefix m]
+   ;; (log ::flatten-entity-map
+   ;;      :m m)
    (let [m (remove-metadata m)]
      (reduce (fn [doc [k v]]
                (let [k (encode-field-key k)
@@ -402,6 +405,8 @@
              doc m))))
 
 (comment
+  (flatten-entity-map {:skills {"java" "good"}
+                       :ts-updated (timestamp)})
   (flatten-entity-map {:id     "1"
                        :name   "witek"
                        :skills {"java"    {:id   "java"
@@ -487,24 +492,28 @@
                  (-> tx-data :db/ref))
         ref  (ref path)
         create? (-> tx-data :firestore/create)
-        data (unwrap-doc tx-data)]
+        tx-data (if create?
+               tx-data
+               (flatten-entity-map tx-data))
+        js-data (unwrap-doc tx-data)]
+
     (u/=> (if autocreate?
             (if transaction
               (if create?
-                (.set transaction ref data)
-                (.update transaction ref data))
+                (.set transaction ref js-data)
+                (.update transaction ref js-data))
               ;; (u/=> (get> transaction path)
               ;;       (fn [doc]
               ;;         (if doc
               ;;           (.update transaction ref data)
               ;;           (.set transaction ref data (clj->js {:merge true}))     )))
               ;;
-              (-> (.update ref data)
+              (-> (.update ref js-data)
                   (.catch (fn [_err]
-                            (.set ref data (clj->js {:merge true}))))))
+                            (.set ref js-data (clj->js {:merge true}))))))
             (if transaction
-              (u/resolve> (.update transaction ref data))
-              (.update ref data)))
+              (u/resolve> (.update transaction ref js-data))
+              (.update ref js-data)))
           (fn [_] tx-data))))
 
 (defn- set>--delete-doc> [^js transaction tx-data]
@@ -544,6 +553,8 @@
   ([tx-data]
    (set> nil tx-data))
   ([^js transaction tx-data]
+   ;; (log ::set>
+   ;;      :tx-data tx-data)
    (if (sequential? tx-data)
      (u/all-in-sequence> (map #(set> transaction %) tx-data))
      (if-not tx-data
