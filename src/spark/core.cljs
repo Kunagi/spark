@@ -3,6 +3,8 @@
   (:require
    [clojure.string :as str]
    [malli.core :as m]
+
+   [spark.logging :refer [log]]
    [spark.firestore :as firestore]
    [camel-snake-kebab.core :as csk]))
 
@@ -95,7 +97,7 @@
 ;;;
 
 (defn init-doc-schema [Doc]
-  ;; (m/schema Doc)
+  (m/schema Doc)
   (let [col-id (-> Doc schema-opts :firestore/collection)]
     (when-not col-id
       (js/console.error "Missing :firestore/collection in" Doc))
@@ -105,6 +107,9 @@
   Doc)
 
 (comment
+  (m/schema [:map-of
+             {}
+             :string :string])
   (m/schema [:map
              ""
              [ :string]]))
