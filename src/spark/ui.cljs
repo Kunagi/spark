@@ -281,19 +281,25 @@
                                 (map (fn [doc-id]
                                        (let [path (str collection-id "/" doc-id)
                                              ref         (firestore/ref path)
+                                             ;; _ (log ::use-docs
+                                             ;;        :path path
+                                             ;;        :ref ref)
+                                             add-doc (fn [doc]
+                                                       (swap! DOCS conj doc)
+                                                       (when (= (count docs-ids) (count @DOCS))
+                                                         (set-docs @DOCS)))
                                              on-snapshot (fn [doc-snapshot]
                                                            (let [doc (firestore/wrap-doc doc-snapshot)]
                                                              ;; (log ::use-docs--doc-snapshot-received
                                                              ;;      :path path
-                                                             ;;      :doc doc
-                                                             ;;      :docs docs)
-                                                             (swap! DOCS conj doc)
-                                                             (when (= (count docs-ids) (count @DOCS))
-                                                               (set-docs @DOCS))))
+                                                             ;;      ;; :doc doc
+                                                             ;;      :docs (count docs))
+                                                             (add-doc doc)))
                                              on-error    (fn [^js error]
-                                                           (log ::doc-atom-error
+                                                           (log ::use-docs--error
                                                                 :path path
-                                                                :exception error))
+                                                                :exception error)
+                                                           (add-doc nil))
                                              unsubscribe (.onSnapshot ref on-snapshot on-error)]
 
                                          unsubscribe)))
