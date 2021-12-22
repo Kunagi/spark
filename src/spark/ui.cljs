@@ -252,9 +252,10 @@
                               ;;      :doc doc)
                               (set-doc doc)))
               on-error    (fn [^js error]
-                            (log ::doc-atom-error
+                            (log ::use-doc--error
                                  :path path
-                                 :exception error))
+                                 :exception error)
+                            )
               unsubscribe (.onSnapshot ref on-snapshot on-error)]
 
           unsubscribe)))
