@@ -21,7 +21,9 @@
 
     (vector? path)
     (reduce (fn [^js ref path-element]
-              (.child ref (str path-element)))
+              (when ref
+                (when path-element
+                  (.child ref (str path-element)))))
             (storage-ref) path)
 
     :else

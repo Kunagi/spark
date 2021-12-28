@@ -454,7 +454,7 @@
    (let [cache (use-storage-urls-cache)]
 
      (use-effect
-      :always
+      [path]
       (when path
         (when-not (get cache path)
           (log ::use-storage-url--load
