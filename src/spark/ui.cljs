@@ -254,8 +254,7 @@
               on-error    (fn [^js error]
                             (log ::use-doc--error
                                  :path path
-                                 :exception error)
-                            )
+                                 :exception error))
               unsubscribe (.onSnapshot ref on-snapshot on-error)]
 
           unsubscribe)))
@@ -881,9 +880,22 @@
   (let [hide (use-hide-dialog)]
     (stack-3
      message
-     (center ($ mui/Button
-                {:onClick hide}
-                "OK")))))
+     (if (seq options)
+       (center
+        (stack
+         (for [option options]
+           ($ mui/Button
+              {:key (or (-> option :id)
+                        (-> option :text))
+               :variant "contained"
+               :color "primary"
+               :onClick (fn []
+                          (hide)
+                          ((-> option :on-click)))}
+              (-> option :text)))))
+       (center ($ mui/Button
+                  {:onClick hide}
+                  "OK"))))))
 
 (defn show-message-dialog
   ([message]
@@ -1843,8 +1855,21 @@
                  (or upload-text "Bild auswählen..."))))
             children))))))
 
-(def-ui StorageFileButton [path idx text]
-  (let [url (use-storage-url path)]
+(def-ui StorageFileButton [path idx text edit-options]
+  (let [url (use-storage-url path)
+        open-on-click #(js/window.open url "_blank")
+        on-click (if (seq edit-options)
+                   #(show-message-dialog
+                     nil
+                     (into
+                      [{:text "Anzeigen"
+                        :on-click open-on-click}]
+                      (->> edit-options
+                           (map (fn [edit-option]
+                                  (assoc edit-option
+                                         :on-click (fn []
+                                                     ((-> edit-option :on-click) path))))))))
+                   open-on-click)]
     (if-not url
       ($ mui/CircularProgress)
       (let [text (str (or text "Datei") " " (inc idx))]
@@ -1852,17 +1877,19 @@
            {:key url
             :text text
             :color :secondary
-            :href url
-            :target "_blank"})))))
+            ;; :href url
+            ;; :target "_blank"
+            :on-click on-click})))))
 
-(def-ui StorageFilesButtons [paths text]
+(def-ui StorageFilesButtons [paths text edit-options]
   (flex
    (for [[idx path] (map-indexed vector paths)]
      ($ StorageFileButton
         {:key path
          :path path
          :idx idx
-         :text text}))))
+         :text text
+         :edit-options edit-options}))))
 
 (defnc StorageFilesUploader
   [{:keys [id storage-path upload-text
@@ -1898,7 +1925,14 @@
         ($ mui/CircularProgress)
         (stack
          ($ StorageFilesButtons
-            {:paths storage-files})
+            {:paths storage-files
+             :edit-options [{:text (local/text :delete)
+                             :on-click (fn [path]
+                                         (u/=> (storage/delete> path)
+                                               (fn []
+                                                 (js/setTimeout
+                                                  #(reload-storage-files)
+                                                  500))))}]})
          (flex
           ($ Button
              {:text (or upload-text "Datei hinzufügen...")
