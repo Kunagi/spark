@@ -1855,7 +1855,7 @@
                  (or upload-text "Bild auswählen..."))))
             children))))))
 
-(def-ui StorageFileButton [path idx text edit-options]
+(def-ui StorageFileButton [path idx text texts edit-options]
   (let [url (use-storage-url path)
         open-on-click #(js/window.open url "_blank")
         on-click (if (seq edit-options)
@@ -1872,16 +1872,17 @@
                    open-on-click)]
     (if-not url
       ($ mui/CircularProgress)
-      (let [text (str (or text "Datei") " " (inc idx))]
+      (let [text (or (get texts idx)
+                     (str (or text "Datei") " " (inc idx)))]
         ($ Button
            {:key url
             :text text
             :color :secondary
-            ;; :href url
-            ;; :target "_blank"
+             ;; :href url
+             ;; :target "_blank"
             :on-click on-click})))))
 
-(def-ui StorageFilesButtons [paths text edit-options]
+(def-ui StorageFilesButtons [paths text texts edit-options]
   (flex
    (for [[idx path] (map-indexed vector paths)]
      ($ StorageFileButton
@@ -1889,6 +1890,7 @@
          :path path
          :idx idx
          :text text
+         :texts texts
          :edit-options edit-options}))))
 
 (defnc StorageFilesUploader
