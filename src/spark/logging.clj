@@ -1,6 +1,5 @@
 (ns spark.logging
   (:require
-   [clojure.pprint :refer [pprint]]
    [spark.utils :as u])
   )
 
@@ -13,7 +12,7 @@
     (if event-data
       (case log-format
 
-          :edn `(-> logger (.log ~event (u/->edn ~event-data)))
+          :edn `(-> logger (.log ~event (with-out-str (cljs.pprint/pprint ~event-data))))
           :js `(-> logger (.log ~event (cljs.core/clj->js ~event-data)))
 
           `(if goog.DEBUG
