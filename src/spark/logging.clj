@@ -13,7 +13,7 @@
     (if event-data
       (case log-format
 
-          :edn `(-> logger (.log ~event (spark.utils/->edn ~event-data)))
+          :edn `(-> logger (.log ~event (u/->edn ~event-data)))
           :js `(-> logger (.log ~event (cljs.core/clj->js ~event-data)))
 
           `(if goog.DEBUG
