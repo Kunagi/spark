@@ -1,12 +1,25 @@
 (ns spark.logging
+  (:require
+   [clojure.pprint :refer [pprint]]
+   [spark.utils :as u])
   )
 
 (defmacro log [event-keyword & {:as event-data}]
-  (let [event (str event-keyword)]
+  ;; (prn &env)
+  (let [event (str event-keyword)
+        log-format (u/compiler-option :spark-log-format)
+        ;; s (with-out-str (pprint &env))
+        ]
     (if event-data
-      `(if goog.DEBUG
-         (-> logger (.log ~event ~event-data))
-         (-> logger (.log ~event (cljs.core/clj->js ~event-data))))
+      (case log-format
+
+          :edn `(-> logger (.log ~event (spark.utils/->edn ~event-data)))
+          :js `(-> logger (.log ~event (cljs.core/clj->js ~event-data)))
+
+          `(if goog.DEBUG
+             (-> logger (.log ~event ~event-data))
+             (-> logger (.log ~event (cljs.core/clj->js ~event-data)))))
+
       `(-> logger (.log ~event))))
 
   #_(let [event (str event-keyword)]

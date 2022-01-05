@@ -48,7 +48,22 @@
   (pprint [:a :b])
   (macroexpand '(assert :x)))
 
-;; * edn
+;; JSON
+
+(defn js->json [js-obj]
+  (when js-obj
+    (try
+      (js/JSON.stringify js-obj)
+      (catch :default _ex
+        (str js-obj)))))
+
+(defn ->json [o]
+  (when o
+    (-> o
+        clj->js
+        js->json)))
+
+;; * EDN
 
 (defn ->edn [data]
   (with-out-str (pprint data)))
