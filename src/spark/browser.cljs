@@ -1,7 +1,8 @@
 (ns spark.browser
   (:require
    [spark.logging :refer [log]]
-   [spark.utils :as u]))
+   [spark.utils :as u]
+   [clojure.string :as str]))
 
 ;; * Loading Scripts
 
@@ -60,8 +61,7 @@
           (let [replace-state (.bind replace-state js/history)]
             (replace-state state title url)
             (reset! URL_PARAMS (url-params)))))
-  (js/window.addEventListener "popstate" #(reset! URL_PARAMS (url-params)))
-  )
+  (js/window.addEventListener "popstate" #(reset! URL_PARAMS (url-params))))
 
 ;; * Platforms
 
@@ -71,8 +71,29 @@
 ;; TODO replace with navigator.userAgentData
 (defn apple? []
   (or (ios-platforms (-> js/navigator.platform))
-      (js/navigator.userAgent.includes "Mac")
-      ))
+      (js/navigator.userAgent.includes "Mac")))
+
+;; * E-Mail
+
+(defn email-href [to fields]
+  (str "mailto:" to
+       (when fields
+         (str "?"
+              (->> fields
+                   (map (fn [[k v]]
+                          (str (name k) "="
+                               (js/encodeURIComponent v))))
+                   (str/join "&"))))))
+
+(comment
+  (email-href "wi@koczewskilde" {:subject "Hallo Welt" :body "Hey Du"}))
+
+(defn trigger-email [to fields]
+  (-> js/window.location.href (set! (email-href to fields))))
+
+(comment
+  (trigger-email "wi@koczewski.de" {:subject "Hallo Welt" :body "Here We Go"})
+  (trigger-email nil {:subject "no to" :body "Here We Go"}))
 
 ;; * Downloads
 
@@ -80,29 +101,29 @@
   (let [a        (js/document.createElement "a")
         uri-data (js/encodeURIComponent text)]
     (-> a .-style .-display (set! "none"))
-    (-> a ( .setAttribute "href", (str "data:text/plain;charset=utf-8,"
-                                       uri-data)))
+    (-> a (.setAttribute "href", (str "data:text/plain;charset=utf-8,"
+                                      uri-data)))
     (-> a (.setAttribute "download" filename))
-    ( js/document.body.appendChild a)
+    (js/document.body.appendChild a)
     (-> a .click)
     (js/document.body.removeChild a)))
 
 (defn initiate-bloburl-download [filename blob-url]
   (let [a        (js/document.createElement "a")]
     (-> a .-style .-display (set! "none"))
-    (-> a ( .setAttribute "href", blob-url))
+    (-> a (.setAttribute "href", blob-url))
     (-> a (.setAttribute "download" filename))
-    ( js/document.body.appendChild a)
+    (js/document.body.appendChild a)
     (-> a .click)
     (js/document.body.removeChild a)))
 
 (defn initiate-pdf-bloburl-download [filename blob-url]
   (let [a        (js/document.createElement "a")]
     (-> a .-style .-display (set! "none"))
-    (-> a ( .setAttribute "href", blob-url))
+    (-> a (.setAttribute "href", blob-url))
     (-> a (.setAttribute "type" "application/pdf"))
     (-> a (.setAttribute "download" filename))
-    ( js/document.body.appendChild a)
+    (js/document.body.appendChild a)
     (-> a .click)
     (js/document.body.removeChild a)))
 
@@ -120,10 +141,8 @@
                     (.drawImage image 0 0))
                 (-> canvas
                     (.toDataURL "image/png")
-                    resolve)
-                ))
-       (set! (.-src image) image-url)
-       ))))
+                    resolve)))
+       (set! (.-src image) image-url)))))
 
 (defn fetch-to-blob-url> [url]
   (-> (js/fetch (js/Request. url))
@@ -144,8 +163,7 @@
   (js/setTimeout (fn []
                    (if (-> window .-closed)
                      (callback window)
-                     (callback-on-window-closed window callback))
-                   )
+                     (callback-on-window-closed window callback)))
                  300))
 
 (defn open-window> [url target]
@@ -155,8 +173,7 @@
 
 (comment
   (js/window.open "http://koczewski.de" "_blank")
-  (open-window> "http://koczewski.de" "_blank")
-  )
+  (open-window> "http://koczewski.de" "_blank"))
 
 ;; * Misc
 
@@ -179,8 +196,7 @@
 
 (comment
   (js/console.log "hello")
-  (play-sound "/snd/nachricht.ogg")
-  )
+  (play-sound "/snd/nachricht.ogg"))
 
 (defonce AUDIOS (atom {}))
 
@@ -195,8 +211,7 @@
                    (-> audio .-currentTime (set! 0)))))
       (swap! AUDIOS assoc k audio)
       (catch :default ex
-        (log ::activate-audio--failed :k k :url url :error ex))))
-  )
+        (log ::activate-audio--failed :k k :url url :error ex)))))
 
 (defn play-audio [k]
   (when-let [audio (get @AUDIOS k)]
@@ -239,8 +254,7 @@
   (do
     (js/window.addEventListener "online" #(reset! OFFLINE false))
     (js/window.addEventListener "offline" #(reset! OFFLINE true))
-    :registered
-    ))
+    :registered))
 
 (defonce WIDTH (atom js/window.innerWidth))
 (defonce _width-event-listener
@@ -249,5 +263,4 @@
                                            (let [width js/window.innerWidth]
                                              (when (not= width @WIDTH)
                                                (reset! WIDTH width)))))
-    :registered
-    ))
+    :registered))
