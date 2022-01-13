@@ -1980,6 +1980,9 @@
                                (-> field (get 1) :keytable)
                                (str (-> field (get 1) :keytable (get value) :label))
 
+                               (-> field (get 1) :type (= :eur))
+                               (local/format-eur value)
+
                                (or (set? value)
                                    (vector? value)
                                    (list? value))
