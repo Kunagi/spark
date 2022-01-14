@@ -149,6 +149,12 @@
 
 (defn add-tx [entity-type values]
   (let [id  (or (-> values :id)
+                (-> values :db/id)
+                (-> values :firestore/id)
+                ;; (when-let [ref (-> values :db/ref)]
+                ;;   (-> ref
+                ;;       (str/split #"/")
+                ;;       second))
                 (new-id))
         ref (entity-type->ref entity-type id)]
     (assoc values
