@@ -1,5 +1,5 @@
 (ns spark.firestore
-  (:require
+  (require
    [clojure.spec.alpha :as s]
    [clojure.string :as str]
    [goog.object :as gobj]
@@ -96,6 +96,8 @@
   (let [data (dissoc data
                      :firestore/schema
                      :firestore/doc-path
+                     :firestore/path
+                     :firestore/create
                      :db/ref)]
     (reduce (fn [data [k v]]
               (if (map? v)
