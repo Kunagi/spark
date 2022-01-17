@@ -1,5 +1,5 @@
 (ns spark.firestore
-  (require
+  (:require
    [clojure.spec.alpha :as s]
    [clojure.string :as str]
    [goog.object :as gobj]
@@ -495,8 +495,8 @@
         ref  (ref path)
         create? (-> tx-data :firestore/create)
         tx-data (if create?
-               tx-data
-               (flatten-entity-map tx-data))
+                  tx-data
+                  (flatten-entity-map tx-data))
         js-data (unwrap-doc tx-data)]
 
     (u/=> (if autocreate?
