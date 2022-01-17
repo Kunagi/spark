@@ -267,9 +267,12 @@
 
 ;; sharing
 
-(defn share [data]
+(defn share> [data]
   (u/assert (or (-> data :url)
                 (-> data :text)
                 (-> data :files)))
-  (js/navigator.share (clj->js data))
-  )
+  (js/navigator.share (clj->js data)))
+
+(defn share [data]
+  (share> data)
+  nil)
