@@ -264,3 +264,12 @@
                                              (when (not= width @WIDTH)
                                                (reset! WIDTH width)))))
     :registered))
+
+;; sharing
+
+(defn share [data]
+  (u/assert (or (-> data :url)
+                (-> data :text)
+                (-> data :files)))
+  (js/navigator.share (clj->js data))
+  )
