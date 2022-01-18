@@ -514,6 +514,10 @@
 (def millis-in-second 1000)
 (def millis-in-minute (* millis-in-second 60))
 (def millis-in-hour (* millis-in-minute 60))
+(def millis-in-day (* millis-in-hour 24))
+
+(defn millis->days [millis]
+  (quot millis millis-in-day))
 
 (defn millis->minutes [millis]
   (quot millis millis-in-minute))
