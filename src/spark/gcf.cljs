@@ -88,7 +88,10 @@
    (fn [req res]
      (-> (u/as> (handler> req))
          (.then #(-> res (.status 200) (.send %))
-                #(-> res (.status 500) (.send %)))))))
+                (fn [error]
+                  (log ::on-request>--error
+                       :error error)
+                  (-> res (.status 500) (.send error))))))))
 
 
 (defn on-request--format-output> [handler>]
