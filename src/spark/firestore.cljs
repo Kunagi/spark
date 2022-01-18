@@ -624,12 +624,11 @@
            (fn [^js transaction]
              (log ::transact>--2
                   :runtime (- (-> (js/Date.) .getTime) (-> starttime .getTime)))
-             (u/=> (transaction> {:get> (partial get> transaction)
-                                  :set> (partial set> transaction)})
-                   (fn [result]
-                     ;; (log ::transact>--3
-                     ;;      :runtime (- (-> (js/Date.) .getTime) (-> starttime .getTime)))
-                     result)))))
+             (p/let [result (transaction> {:get> (partial get> transaction)
+                                           :set> (partial set> transaction)})]
+               (log ::transact>--fn-completed
+                    :result result)
+               result))))
       (set> transaction>))))
 
 (comment

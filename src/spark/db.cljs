@@ -1,6 +1,7 @@
 (ns spark.db
   (:require
    [clojure.string :as str]
+   [promesa.core :as p]
 
    [spark.utils :as u]
    [spark.core :as spark]
@@ -164,6 +165,22 @@
 
 (defn add> [entity-type values]
   (transact> (add-tx entity-type values)))
+
+(defn get-or-add> [entity-type id constructor]
+  (p/let [entity (transact> (fn [{:keys [get> set>]}]
+                              (p/let [ref (entity-type->ref entity-type id)
+                                      entity (get> ref)]
+                                (if entity
+                                  entity
+                                  (p/let [values (if constructor
+                                                   (constructor)
+                                                   {})
+                                          values (assoc values :id id)
+                                          _ (set> (add-tx entity-type values))]
+                                    nil)))))]
+    (if entity
+      entity
+      (get-or-add> entity-type id constructor))))
 
 (defn update-tx [thing values]
   (when (seq values)
