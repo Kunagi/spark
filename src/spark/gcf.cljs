@@ -89,8 +89,7 @@
      (-> (u/as> (handler> req))
          (.then #(-> res (.status 200) (.send %))
                 (fn [error]
-                  (log ::on-request>--error
-                       :error error)
+                  (js/console.error error)
                   (-> res (.status 500) (.send error))))))))
 
 
