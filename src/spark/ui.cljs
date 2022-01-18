@@ -1403,10 +1403,11 @@
      {:title "example title"}
      "Example content."))
 
-(defnc CardRow [{:keys [children]}]
+(defnc CardRow [{:keys [gap children]}]
   (d/div
    {:style {:display :grid
-            :grid-template-columns (str "repeat(" (count children) ", auto)")}}
+            :grid-template-columns (str "repeat(" (count children) ", auto)")
+            :grid-gap gap}}
    children))
 
 (def FieldLabel form-ui/FieldLabel)
