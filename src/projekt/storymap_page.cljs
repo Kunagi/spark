@@ -13,13 +13,14 @@
    [projekt.sprint :as sprint]
    [projekt.projekt :as projekt]))
 
-(defn show-add-story-form> [projekt]
+(defn show-add-story-form> [projekt values]
   (ui/show-form-dialog>
    {:fields [story/Bez story/Beschreibung
              story/Tasks
              story/Voraussetzungen
              story/Feature-id story/Sprint-id
              story/Aufwandschaetzung]
+    :values values
     :submit (fn [values]
               (let [story (-> values
                               (assoc :id (projekt/next-story-id projekt)))]
@@ -221,7 +222,10 @@
                 ($ :div feature-id)
                 (when (projekt/developer-uid? projekt uid)
                   ($ ui/Button
-                     {:on-click #(show-add-story-form> projekt)
+                     {:on-click #(show-add-story-form>
+                                  projekt
+                                  {:feature-id feature-id
+                                   :sprint-id sprint-id})
                       :icon :add
                       :size "small"}))))))))
 
@@ -277,7 +281,9 @@
           ($ ui/Button
              {:text "Neue Story"
               :icon :add
-              :on-click #(show-add-story-form> projekt)})))
+              :on-click #(show-add-story-form>
+                          projekt
+                          {})})))
      ($ :div
         {:style {:display "none"}}
         ($ :textarea
