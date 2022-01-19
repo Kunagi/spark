@@ -735,34 +735,35 @@
                   (when theme (str "-" theme)))}
      name))
 
-(defnc ValueLoadGuard [{:keys [children value padding debug-info]}]
-  (let [theme   (mui-styles/useTheme)
-        padding (or padding 2)]
-    (if value
-      children
-      ($ :div
-         {:style {:display         :flex
-                  :padding         (when padding (-> theme (.spacing padding)))
-                  :justify-content "space-around"}}
-         (if (and goog.DEBUG debug-info)
-           (stack
-            ($ mui/CircularProgress)
-            (data debug-info))
-           ($ mui/CircularProgress))))))
+(defnc Loader [{:keys [message height]}]
+  (div
+   {:display :grid
+    :place-items :center
+    :place-content :center
+    :min-height (or height
+                    "100px")}
+   (stack
+    {:padding 16
+     :text-align :center
+     :color "rgba(0,0,0,0.4)"}
+    (center ($ mui/CircularProgress))
+    (when message
+      (center
+       (div {:max-width "300px"} message))))))
 
-(defnc ValuesLoadGuard [{:keys [children values padding]}]
-  (let [theme (mui-styles/useTheme)]
-    (if (reduce (fn [ret value]
-                  (and ret value))
-                true values)
-      children
-      ($ :div
-         {:style {:display :flex
-                  :padding (when padding (-> theme (.spacing padding)))
-                  :justify-content "space-around"}}
-         ($ mui/CircularProgress)
-         (when ^boolean goog.DEBUG
-           (data values))))))
+(defnc ValueLoadGuard [{:keys [children value message height]}]
+  (if value
+    children
+    ($ Loader {:message message
+               :height height})))
+
+(defnc ValuesLoadGuard [{:keys [children values message height]}]
+  (if (reduce (fn [ret value]
+                (and ret value))
+              true values)
+    children
+    ($ Loader {:message message
+               :height height})))
 
 (defnc Stack [{:keys [children spacing]}]
   (let [theme (mui-styles/useTheme)]
@@ -1427,8 +1428,9 @@
 (defnc PageContent []
   (let [page           (use-page)
         use-container? (get page :use-container true)
-        Content        ($ ValuesLoadGuard {:values  (-> page :data vals)
-                                           :padding 2}
+        Content        ($ ValuesLoadGuard {:values (-> page :data vals)
+                                           :height "60vh"
+                                           :message "Lade Seiteninhalte"}
                           ($ (-> page :content)))]
     (if use-container?
       ($ mui/Container
@@ -1558,16 +1560,20 @@
          (if-let [component (-> spa :sign-in-request-component)]
            ($ component)
            ($ DefaultAuthenticationRequired {:spa spa}))
-         ($ ValuesLoadGuard
-            {:values  (concat (mapv #(get context %) (-> page :wait-for))
-                              (vals docs))
-             :padding 4}
-            (if dev-sidebar?
-              ($ DevSidebarPageWrapper
-                 {:page    page
-                  :context context}
-                 children)
-              children)))
+         ($ ValuesLoadGuard {:values (mapv #(get context %) (-> page :wait-for))
+                             :message "Lade Seitendaten"
+                             :height "95vh"
+                             :full-page true}
+            ($ ValuesLoadGuard
+               {:values (vals docs)
+                :height "95vh"
+                :message "Lade Seitendaten"}
+               (if dev-sidebar?
+                 ($ DevSidebarPageWrapper
+                    {:page    page
+                     :context context}
+                    children)
+                 children))))
        ($ DialogsContainer)
        ($ ErrorDialog)
        ($ FormDialogsContainer))))))
@@ -1595,9 +1601,12 @@
      " · "
      (str (resource/inline "../spa/version-time.txt"))))
 
-(defnc AuthCompletedGuard [{:keys [children padding]}]
+(defnc AuthCompletedGuard [{:keys [children]}]
   (let [auth-completed (use-auth-completed)]
-    ($ ValueLoadGuard {:value auth-completed :padding padding}
+    ($ ValueLoadGuard {:value auth-completed
+                       :message "Prüfe Authentifizierung"
+                       :height "95vh"
+                       }
        children)))
 
 (def-ui-showcase ::stack
@@ -1640,7 +1649,6 @@
            :class  class
            :height "100%"}
           ($ AuthCompletedGuard
-             {:padding 4}
              ($ router/BrowserRouter {}
                 ($ ScrollToTop)
                 ($ PageSwitch {:spa spa}
