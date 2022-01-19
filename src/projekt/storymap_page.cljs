@@ -49,7 +49,8 @@
      {:fields fields
       :values story
       :submit #(db/update> story %)
-      :extra-buttons ($ StoryDeleteButton {:story story})})))
+      :extra-buttons (when (projekt/developer-uid? projekt uid)
+                       ($ StoryDeleteButton {:story story}))})))
 
 (defn show-update-sprint> [sprint]
   (let [fields [sprint/Entwickler
