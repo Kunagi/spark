@@ -929,7 +929,13 @@
   (let [promise (f>)]
     (when (instance? js/Promise promise)
       (show-dialog
-       {:content ($ PromiseProgress {:promise promise})}))
+       {:content (div
+                  {:min-width "100px"
+                   :min-height "100px"
+                   :display :grid
+                   :place-items :center
+                   :place-content :center}
+                  ($ PromiseProgress {:promise promise}))}))
     promise))
 
 (defn with-progress-dialog [f]
