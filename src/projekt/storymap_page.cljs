@@ -25,6 +25,16 @@
                               (assoc :id (projekt/next-story-id projekt)))]
                 (db/add-child> projekt [:storys] story)))}))
 
+(def-ui StoryDeleteButton [story]
+  (let [hide-dialog (ui/use-hide-form-dialog)]
+    ($ ui/Button
+       {:text "Löschen"
+        :icon :delete
+        :color :default
+        :on-click (fn []
+                    (db/update> story {:deleted true})
+                    (hide-dialog))})))
+
 (defn show-update-story-form> [projekt story uid]
   (let [fields (if (projekt/developer-uid? projekt uid)
                  [story/Bez story/Beschreibung
@@ -38,7 +48,8 @@
     (ui/show-form-dialog>
      {:fields fields
       :values story
-      :submit #(db/update> story %)})))
+      :submit #(db/update> story %)
+      :extra-buttons ($ StoryDeleteButton {:story story})})))
 
 (defn show-update-sprint> [sprint]
   (let [fields [sprint/Entwickler
@@ -215,7 +226,7 @@
 
 (def-ui Storymap [projekt uid]
   {:from-context [projekt uid]}
-  (let [storys (-> projekt :storys vals)
+  (let [storys (-> projekt projekt/storys)
         storymap (core/storymap projekt storys)
         feature-ids (->> storymap :feature-ids)
         sprints-ids (-> storymap :sprints-ids)

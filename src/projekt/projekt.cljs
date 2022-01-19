@@ -5,8 +5,7 @@
    [spark.core :as spark :refer [def-doc def-test def-field]]
 
    [projekt.story :as story]
-   [projekt.sprint :as sprint]
-   ))
+   [projekt.sprint :as sprint]))
 
 (def-field Storys
   [:map-of
@@ -28,7 +27,6 @@
   (u/assert-malli
    Projekt
    {:storys {"a" {:id "a"}}}))
-
 
 (defn issues-attr-id [type]
   (-> type name (str "s") keyword))
@@ -52,10 +50,15 @@
     (u/v-contains? uids uid)
     true))
 
+(defn all-storys [this]
+  (->> this
+       :storys
+       vals))
 
 (defn storys [this]
-  (-> this :storys vals))
-
+  (->> this
+       all-storys
+       (remove :deleted)))
 
 (defn next-story-id [this]
   (str
@@ -65,4 +68,4 @@
                   :id
                   js/parseInt
                   (max id)))
-            0 (storys this)))))
+            0 (all-storys this)))))
