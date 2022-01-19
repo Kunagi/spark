@@ -1404,11 +1404,13 @@
      "Example content."))
 
 (defnc CardRow [{:keys [gap children]}]
-  (d/div
-   {:style {:display :grid
-            :grid-template-columns (str "repeat(" (count children) ", auto)")
-            :grid-gap gap}}
-   children))
+  (let [children (->> children
+                      (remove nil?))]
+    (d/div
+     {:style {:display :grid
+              :grid-template-columns (str "repeat(" (count children) ", auto)")
+              :grid-gap gap}}
+     children)))
 
 (def FieldLabel form-ui/FieldLabel)
 (def Field form-ui/Field)
