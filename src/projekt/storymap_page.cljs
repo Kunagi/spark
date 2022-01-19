@@ -5,14 +5,52 @@
 
    [spark.logging :refer [log]]
    [spark.utils :as u]
-
+   [spark.db :as db]
    [spark.ui :as ui :refer [def-page def-ui $ <>]]
 
    [projekt.core :as core]
    [projekt.story :as story]
    [projekt.sprint :as sprint]
-   [projekt.projekt :as projekt]
-   [projekt.commands :as commands]))
+   [projekt.projekt :as projekt]))
+
+(defn show-add-story-form> [projekt]
+  (ui/show-form-dialog>
+   {:fields [story/Bez story/Beschreibung
+             story/Tasks
+             story/Voraussetzungen
+             story/Feature-id story/Sprint-id
+             story/Aufwandschaetzung]
+    :submit (fn [values]
+              (let [story (-> values
+                              (assoc :id (projekt/next-story-id projekt)))]
+                (db/add-child> projekt [:storys] story)))}))
+
+(defn show-update-story-form> [projekt story uid]
+  (let [fields (if (projekt/developer-uid? projekt uid)
+                 [story/Bez story/Beschreibung
+                  story/Tasks
+                  story/Voraussetzungen
+                  story/Klaerungsbedarf
+                  story/Feature-id story/Sprint-id
+                  story/Aufwandschaetzung
+                  story/Aufwand]
+                 [story/Klaerungsbedarf])]
+    (ui/show-form-dialog>
+     {:fields fields
+      :values story
+      :submit #(db/update> story %)})))
+
+(defn show-update-sprint> [sprint]
+  (let [fields [sprint/Entwickler
+                sprint/Datum-abgeschlossen]]
+    (ui/show-form-dialog>
+     {:fields fields
+      :values sprint
+      :submit (fn [values]
+                (log ::update-sprint
+                     :sprint sprint
+                     :values values)
+                (db/update> sprint values))})))
 
 (def-ui Task [task]
   ($ :div
@@ -27,15 +65,16 @@
         {:style {:margin-top "4px"}}
         (-> task :bez))))
 
-(def-ui StoryCard [story]
-  {:wrap-memo-props [story]}
+(def-ui StoryCard [story projekt uid]
+  {:from-context [uid]
+   :wrap-memo-props [story]}
   (log ::StoryCard--render
-       :story (-> story story/num))
+       :story (-> story story/num)
+       :projekt (-> projekt :id))
   (let [theme (ui/use-theme)]
     ($ mui/Card
-       ($ ui/CommandCardArea
-          {:command commands/update-story
-           :context {:story story}}
+       ($ mui/CardActionArea
+          {:onClick #(show-update-story-form> projekt story uid)}
           ($ mui/CardContent
              ($ ui/Stack
                 ($ :div
@@ -85,12 +124,13 @@
                      (-> klaerungsbedarf))))
              #_(ui/data story))))))
 
-(def-ui StoryCards [storys]
-  ($ ui/Stack
-     (for [story (->> storys (sort-by story/num))]
-       ($ StoryCard
-          {:key (-> story :id)
-           :story story}))))
+(def-ui StoryCards [storys projekt]
+  (ui/stack
+   (for [story (->> storys (sort-by story/num))]
+     ($ StoryCard
+        {:key (-> story :id)
+         :story story
+         :projekt projekt}))))
 
 (defn sprint-card [sprint projekt storys uid expand]
   (let [sprint-id (-> sprint :id)
@@ -149,13 +189,11 @@
                :color "#eee"}
               "Abgeschlossen am " datum))
            (when (projekt/developer-uid? projekt uid)
-             ($ ui/CommandButton
-                {:as-icon? true
+             ($ ui/Button
+                {:icon :edit
                  :color "default"
                  :size "small"
-                 :command commands/update-sprint
-                 :context {:projekt projekt
-                           :sprint sprint}}))))))))
+                 :on-click #(show-update-sprint> sprint)}))))))))
 
 (defn features-row [projekt uid {:keys [feature-ids]} sprint-id]
   ($ :tr
@@ -170,12 +208,9 @@
                          :padding "0 1rem"}}
                 ($ :div feature-id)
                 (when (projekt/developer-uid? projekt uid)
-                  ($ ui/CommandButton
-                     {:command commands/add-story
-                      :context {:form-defaults
-                                {:sprint-id sprint-id
-                                 :feature-id feature-id}}
-                      :as-icon? true
+                  ($ ui/Button
+                     {:on-click #(show-add-story-form> projekt)
+                      :icon :add
                       :size "small"}))))))))
 
 (def-ui Storymap [projekt uid]
@@ -223,11 +258,14 @@
                           ($ StoryCards
                              {:storys (get-in storymap
                                               [:storys-by-sprint-and-feature
-                                               [sprint-id feature-id]])}))))))))))
+                                               [sprint-id feature-id]])
+                              :projekt projekt}))))))))))
      ($ :div
         (when (projekt/developer-uid? projekt uid)
-          ($ ui/CommandButton
-             {:command commands/add-story})))
+          ($ ui/Button
+             {:text "Neue Story"
+              :icon :add
+              :on-click #(show-add-story-form> projekt)})))
      ($ :div
         {:style {:display "none"}}
         ($ :textarea
