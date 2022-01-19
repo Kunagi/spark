@@ -9,6 +9,8 @@
    :.center {:display :grid :place-items "center"}
    :.center-text {:text-align "center"}
 
+   :.right {:display :grid :place-items "end"}
+
    :.grid-0 {:display :grid}
    :.grid-1 {:display :grid :grid-gap (-> theme (.spacing 1))}
    :.grid-2 {:display :grid :grid-gap (-> theme (.spacing 2))}

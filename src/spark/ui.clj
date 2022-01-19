@@ -141,6 +141,9 @@
 (defmacro center [& style-and-children]
   (html-element :span style-and-children "center" nil))
 
+(defmacro right [& style-and-children]
+  (html-element :div style-and-children "right" nil))
+
 (defmacro center-div [& style-and-children]
   (html-element :div style-and-children "center" nil))
 
