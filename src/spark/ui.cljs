@@ -1640,12 +1640,13 @@
         (map$ Button :text)
         (grid ["1fr" "2fr" "1fr"]))))
 
-(defnc AppFrame-inner [{:keys [children spa]}]
+(defnc AppFrame-inner [{:keys [children spa background-color]}]
   (let [class (use-app-styles-class)]
     (reset! form-ui/DIALOG-CLASS class)
     (<>
      ($ mui/CssBaseline)
      (div {:id     "AppFrame.inner"
+           :background-color background-color
            :class  class
            :height "100%"}
           ($ AuthCompletedGuard
@@ -1654,7 +1655,7 @@
                 ($ PageSwitch {:spa spa}
                    children)))))))
 
-(defnc AppFrame [{:keys [children]}]
+(defnc AppFrame [{:keys [children background-color]}]
   ;; (log ::render-AppFrame)
   (let [spa                (use-spa)
         uid                (use-uid)
@@ -1670,7 +1671,8 @@
         {:context SPARK_CONTEXT
          :value   spark-context}
         ($ ErrorBoundary
-           ($ AppFrame-inner {:spa spa}
+           ($ AppFrame-inner {:spa spa
+                              :background-color background-color}
               children))))))
 
 (defn load-spa [spa]
