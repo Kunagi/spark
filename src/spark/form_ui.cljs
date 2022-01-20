@@ -113,8 +113,7 @@
                         {})
         input-props (if (and step
                              (not (-> input-props :step)))
-                      (assoc input-props :step step) input-props
-                      )
+                      (assoc input-props :step step) input-props)
         InputProps  {:startAdornment start-adornment
                      :endAdornment end-adornment}]
     ($ :div
@@ -439,6 +438,9 @@
      (if (-> form :submitted?)
        (-> form :submitted-content)
        ($ :div
+          {:style {:display "grid"
+                   :grid-gap "16px"}}
+
           (when goog.DEBUG
             (when-let [data (-> form :debug-data)]
               ($ :div
@@ -447,34 +449,22 @@
                           :color            "#6F6"
                           :font-family      "monospace"}}
                  (u/->edn data))))
-          ;; (when goog.DEBUG
-          ;;   ($ :div
-          ;;      {:style {:padding          "8px"
-          ;;               :background-color "black"
-          ;;               :color            "#6F6"
-          ;;               :font-family      "monospace"}}
-          ;;      (u/->edn (-> form :values))))
-          #_($ :pre (-> context keys str))
-          ($ :div
-             {:style {;; :width     "500px"
-                      ;; :max-width "100%"
-                      }}
 
+          ($ :div
              (for [field (get form :fields)]
                ($ FormField
                   {:key         (-> field :id)
                    :field       field
                    :form        form
                    :on-submit   on-submit
-                   :update-form update-form}))
+                   :update-form update-form})))
 
-             (get form :content))
+          (get form :content)
           ;; (ui/data form)
 
           (when-let [error (-> form form/error)]
             ($ :div
-               {:style {:margin "16px"
-                        :padding "16px"
+               {:style {:padding "16px"
                         :background-color "red"
                         :color "white"
                         :font-weight 900
@@ -482,8 +472,7 @@
                (str error)))
 
           ($ :div
-             {:style {:padding               "16px"
-                      :display               "grid"
+             {:style {:display               "grid"
                       :grid-template-columns "max-content auto max-content"
                       :grid-gap              "8px"}}
              ($ :div
@@ -506,9 +495,9 @@
                    (or (-> form :submit-button-text)
                        "Ok"))))
 
-          ($ :div
-             {:style {:min-height "4px"}}
-             (when (-> form :waiting?)
+          (when (-> form :waiting?)
+            ($ :div
+               {:style {:min-height "4px"}}
                ($ mui/LinearProgress))))))))
 
 (defnc FormDialog [{:keys [form]}]
