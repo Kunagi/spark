@@ -156,7 +156,11 @@
    :continue "Weiter"
    :error "Fehler"
    :delete "Löschen"
+
    :delete-image? "Bild löschen?"
+
+   :authentication-required "Anmeldung erforderlich"
+   :sign-in "Anmelden"
 
    :form-field-input-required "Eingabe erforderlich"})
 

@@ -1530,11 +1530,11 @@
      {:font-size "120%"
       ;; :font-weight 900
       :color     "#666"}
-     "Authentication required"))
+     (local/text :authentication-required)))
    (center
     (flex
      ($ Button
-        {:text     "Sign in"
+        {:text     (local/text :sign-in)
          :icon     "login"
          :on-click auth/sign-in})))))
 
