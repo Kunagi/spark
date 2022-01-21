@@ -181,8 +181,6 @@
                          ;; :on-change on-change
                          ))))
 
-
-
 (defmethod create-input "int" [field]
   (let [input-props (-> field :input-props)
         pattern (or (-> input-props :pattern)
@@ -193,12 +191,10 @@
         input-props (assoc input-props
                            :min min-value
                            :max max-value)]
-    ($ :div
-       ($ :pre (u/->edn {:field field}))
-       (create-input (assoc field
-                            :type "text"
-                            :input-type "number"
-                            :input-props input-props)))))
+    (create-input (assoc field
+                         :type "text"
+                         :input-type "number"
+                         :input-props input-props))))
 
 (defmethod create-input "number" [field]
   (create-input (assoc field :type "int")))
