@@ -181,23 +181,27 @@
                          ;; :on-change on-change
                          ))))
 
-(defmethod create-input "number" [field]
-  (let [pattern (or (-> field :input-props :pattern)
-                    "[0-9]*")]
-    (create-input (assoc field
-                         :type "text"
-                         :input-type "number"
-                         :input-props (assoc (-> field :input-props)
-                                             :pattern pattern)))))
+
 
 (defmethod create-input "int" [field]
-  (let [pattern (or (-> field :input-props :pattern)
-                    "[0-9]*")]
-    (create-input (assoc field
-                         :type "text"
-                         :input-type "number"
-                         :input-props (assoc (-> field :input-props)
-                                             :pattern pattern)))))
+  (let [input-props (-> field :input-props)
+        pattern (or (-> input-props :pattern)
+                    "[0-9]*")
+        input-props (assoc input-props :pattern pattern)
+        min-value (-> field :min)
+        max-value (-> field :max)
+        input-props (assoc input-props
+                           :min min-value
+                           :max max-value)]
+    ($ :div
+       ($ :pre (u/->edn {:field field}))
+       (create-input (assoc field
+                            :type "text"
+                            :input-type "number"
+                            :input-props input-props)))))
+
+(defmethod create-input "number" [field]
+  (create-input (assoc field :type "int")))
 
 (defmethod create-input "select" [field]
   (let [html-id     (str "select_" (-> field :id) "_input")
