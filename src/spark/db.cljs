@@ -126,11 +126,6 @@
            (map conform-tx-data-entity)
            (remove nil?)))))
 
-(defn transact> [tx-data]
-  (firestore/transact> (if (fn? tx-data)
-                         tx-data
-                         (conform-tx-data tx-data))))
-
 (defn ->ref [thing]
   (when thing
     (cond
@@ -163,6 +158,35 @@
            :db/ref ref
            :firestore/create true)))
 
+(defn update-tx [thing values]
+  (when (seq values)
+    (assoc values :db/ref (->ref thing))))
+
+(comment
+  (update-tx {:db/ref "some/entity"} {:change "this"}))
+
+(defn transact> [tx-data]
+  (firestore/transact>
+   (if (fn? tx-data)
+     (fn [{:keys [get> set>] :as ops}]
+       (tx-data (assoc ops
+                       :get> (fn _get>
+                               ([path]
+                                (get> path))
+                               ([entity-type id]
+                                (get> (entity-type->ref entity-type id))))
+                       :add> (fn _add> [entity-type values]
+                               (set> (add-tx entity-type values)))
+                       :update> (fn _update> [thing values]
+                                  (set> (update-tx thing values))))))
+     (conform-tx-data tx-data))))
+
+(comment
+  (u/tap>
+   (transact>
+    (fn [{:keys [update>]}]
+      (update> "devtest/db-1" {:name "hogi"})))))
+
 (defn add> [entity-type values]
   (transact> (add-tx entity-type values)))
 
@@ -181,13 +205,6 @@
     (if entity
       entity
       (get-or-add> entity-type id constructor))))
-
-(defn update-tx [thing values]
-  (when (seq values)
-    (assoc values :db/ref (->ref thing))))
-
-(comment
-  (update-tx {:db/ref "some/entity"} {:change "this"}))
 
 (defn update> [thing values]
   (transact> (update-tx thing values)))
