@@ -820,6 +820,21 @@
        (map csv-record)
        (str/join "\n")))
 
+;; * Links / href
+
+(defn ->href [link]
+  (when link
+    (cond
+
+      (or (-> link (.startsWith "http:"))
+          (-> link (.startsWith "https:"))
+          (-> link (.startsWith "mailto:"))
+          (-> link (.startsWith "tel:")))
+      link
+
+      :else
+      (str "http://" link))))
+
 ;; * malli
 
 (defn malli-explain->user-message [explain schema]
