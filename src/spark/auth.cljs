@@ -94,14 +94,17 @@
                (u/=> (get> doc-path)
                      (fn [db-user]
                        (let [user (merge db-user
-                                         {:db/ref            doc-path
+                                         {:db/ref doc-path
                                           :firestore/create  (nil? db-user)
-                                          :id                uid
-                                          :uid               uid
-                                          :auth-email        email
-                                          :auth-domain       (email-domain email)
+                                          :id uid
+                                          :uid uid
+                                          :auth-email email
+                                          :auth-domain (email-domain email)
                                           :auth-display-name (-> auth-user :display-name)
-                                          :auth-timestamp    [:db/timestamp]})
+                                          :auth-timestamp [:db/timestamp]
+                                          :auth-ts-creation (-> auth-user :ts-creation)
+                                          :auth-ts-last-sign-in (-> auth-user :ts-last-sign-in)
+                                          })
                              device (when messaging-token
                                       {:id messaging-token
                                        :disabled false
@@ -125,7 +128,9 @@
      :phone-number (-> u .-phoneNumber)
      :photo-url (-> u .-photoURL)
      :tenant-id (-> u .-tenantId)
-     :uid (-> u .-uid)}))
+     :uid (-> u .-uid)
+     :ts-last-sign-in (-> u .-metadata .-lastSignInTime js/Date.)
+     :ts-creation (-> u .-metadata .-creationTime js/Date.)}))
 
 (defn initialize [{:keys [user-doc-schema update-user set-user sign-in error-handler
                           messaging-vapid-key]}]
