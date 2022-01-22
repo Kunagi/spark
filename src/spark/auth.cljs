@@ -13,6 +13,7 @@
 
 (defonce SIGN_IN-F (atom nil))
 (defonce AUTH_COMPLETED (atom false))
+(defonce AUTH_STATUS_MESSAGE (atom "nicht gestartet"))
 (defonce AUTH_USER (atom nil))
 
 (defn auth-completed? []
@@ -103,8 +104,7 @@
                                           :auth-display-name (-> auth-user :display-name)
                                           :auth-timestamp [:db/timestamp]
                                           :auth-ts-creation (-> auth-user :ts-creation)
-                                          :auth-ts-last-sign-in (-> auth-user :ts-last-sign-in)
-                                          })
+                                          :auth-ts-last-sign-in (-> auth-user :ts-last-sign-in)})
                              device (when messaging-token
                                       {:id messaging-token
                                        :disabled false
@@ -138,19 +138,24 @@
        :doc-schema user-doc-schema)
   (reset! SIGN_IN-F sign-in)
 
+  (reset! AUTH_STATUS_MESSAGE "gestartet")
+
   (when-not (fn? (-> ^js firebase .-auth))
     (js/setTimeout
      #(js/window.location.reload)
      1000))
 
-  (let [ auth (-> firebase .auth)]
+  (let [auth (-> firebase .auth)]
+    (reset! AUTH_STATUS_MESSAGE "gestartet")
     (-> auth (.useDeviceLanguage))
     (-> auth
         ;; https://firebase.google.com/docs/reference/js/firebase.auth.Auth#onauthstatechanged
         (.onAuthStateChanged
          (fn [^js google-js-user]
            (js/console.log "AUTH" google-js-user)
+           (reset! AUTH_STATUS_MESSAGE "AuthState empfangen")
            (let [user (import-user google-js-user)]
+             (reset! AUTH_STATUS_MESSAGE "Benutzerdaten empfangen")
              (log ::auth-state-changed
                   :user user)
              (let [auth-completed? (auth-completed?)]
@@ -160,21 +165,30 @@
                  (when auth-completed?
                    (log ::user-changed :user user)
                    (when-not user
+                     (reset! AUTH_STATUS_MESSAGE "Umleitung zur Startseite")
                      (redirect-to-home)))
                  (reset! AUTH_USER user)
                  (when user
                    (when user-doc-schema
+                     (reset! AUTH_STATUS_MESSAGE "Aktualisiere Benutzer Datensatz")
                      (update-user-doc user-doc-schema user update-user messaging-vapid-key)))
                  (when set-user
                    (set-user user)))
                (when-not auth-completed?
+                 (reset! AUTH_STATUS_MESSAGE "abgeschlossen")
                  (reset! AUTH_COMPLETED true)))))))
 
+    (reset! AUTH_STATUS_MESSAGE "prüfe custom token")
     (process-sign-in-with-custom-token-from-url error-handler)
 
+    (reset! AUTH_STATUS_MESSAGE "prüfe redirect")
     (process-sign-in-with-redirect error-handler)
 
-    (process-sign-in-with-email-link error-handler)))
+    (reset! AUTH_STATUS_MESSAGE "prüfe email link")
+    (process-sign-in-with-email-link error-handler)
+
+    (reset! AUTH_STATUS_MESSAGE "initialisierung abgeschlossen")
+    nil))
 
 (defn provider-sign-in> [^js provider]
   (-> firebase .auth (.signInWithRedirect provider))

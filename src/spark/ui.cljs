@@ -1610,10 +1610,19 @@
      " · "
      (str (resource/inline "../spa/version-time.txt"))))
 
+(def use-auth-status-message (atom-hook auth/AUTH_STATUS_MESSAGE))
+
+(defnc AuthStatusMessage []
+  (let [message (use-auth-status-message)]
+    ($ :span
+       message)))
+
 (defnc AuthCompletedGuard [{:keys [children]}]
   (let [auth-completed (use-auth-completed)]
     ($ ValueLoadGuard {:value auth-completed
-                       :message "Prüfe Authentifizierung"
+                       :message ($ :span
+                                   "Authentifizierung: "
+                                   ($ AuthStatusMessage))
                        :height "95vh"
                        }
        children)))

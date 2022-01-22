@@ -9,7 +9,6 @@
 ))
 
 (def use-auth-user (ui/atom-hook auth/AUTH_USER))
-
 ;; * E-Mail
 
 (def use-email-sign-in (ui/atom-hook auth/EMAIL_SIGN_IN))
