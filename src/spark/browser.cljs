@@ -242,7 +242,7 @@
   (when (and (exists? js/webkit) (exists? js/webkit.messageHandlers))
     (when-let [message-handler (aget js/webkit.messageHandlers message-handler-name)]
       (-> ^js message-handler
-          (.postMessage message-body)))))
+          (.postMessage (clj->js message-body))))))
 
 (comment
   (webkit-post-message "test" "hallo"))
