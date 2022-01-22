@@ -39,11 +39,16 @@
     (when custom-token
       (log ::process-sign-in-with-custom-token-from-url
            :custom-token custom-token)
+      (reset! AUTH_STATUS_MESSAGE "Custom Token empfangen")
       (-> ^js (-> firebase .auth)
           (.signInWithCustomToken custom-token)
           (.catch (fn [^js error]
                     (log ::sign-in-with-redirect-failed
                          :error error)
+                    (reset! AUTH_STATUS_MESSAGE (str "Fehler mit Custom Token: "
+                                                     custom-token
+                                                     " "
+                                                     (str error)))
                     (when error-handler (error-handler error))))))))
 
 (defn process-sign-in-with-redirect [error-handler]
