@@ -13,7 +13,7 @@
 
 (defonce SIGN_IN-F (atom nil))
 (defonce AUTH_COMPLETED (atom false))
-(defonce AUTH_STATUS_MESSAGE (atom "nicht gestartet"))
+(defonce AUTH_STATUS_MESSAGE (atom "Initialisierung"))
 (defonce AUTH_USER (atom nil))
 
 (defn auth-completed? []
@@ -143,7 +143,7 @@
        :doc-schema user-doc-schema)
   (reset! SIGN_IN-F sign-in)
 
-  (reset! AUTH_STATUS_MESSAGE "gestartet")
+  (reset! AUTH_STATUS_MESSAGE "Initialisierung gestartet")
 
   (when-not (fn? (-> ^js firebase .-auth))
     (js/setTimeout
@@ -151,7 +151,7 @@
      1000))
 
   (let [auth (-> firebase .auth)]
-    (reset! AUTH_STATUS_MESSAGE "gestartet")
+    (reset! AUTH_STATUS_MESSAGE "Initialisierung 2 gestartet")
     (-> auth (.useDeviceLanguage))
     (-> auth
         ;; https://firebase.google.com/docs/reference/js/firebase.auth.Auth#onauthstatechanged
