@@ -279,32 +279,33 @@
         (let [DOCS (atom [])
               unsubscribes (->> docs-ids
                                 (map (fn [doc-id]
-                                       (let [path (str collection-id "/" doc-id)
-                                             ref         (firestore/ref path)
-                                             ;; _ (log ::use-docs
-                                             ;;        :path path
-                                             ;;        :ref ref)
-                                             add-doc (fn [doc]
-                                                       (swap! DOCS conj doc)
-                                                       (when (= (count docs-ids) (count @DOCS))
-                                                         (set-docs @DOCS)))
-                                             on-snapshot (fn [doc-snapshot]
-                                                           (let [doc (firestore/wrap-doc doc-snapshot)]
-                                                             ;; (log ::use-docs--doc-snapshot-received
-                                                             ;;      :path path
-                                                             ;;      ;; :doc doc
-                                                             ;;      :docs (count docs))
-                                                             (add-doc doc)))
-                                             on-error    (fn [^js error]
-                                                           (log ::use-docs--error
-                                                                :path path
-                                                                :exception error)
-                                                           (add-doc nil))
-                                             unsubscribe (.onSnapshot ref on-snapshot on-error)]
+                                       (when doc-id
+                                         (let [path (str collection-id "/" doc-id)
+                                               ref         (firestore/ref path)
+                                               ;; _ (log ::use-docs
+                                               ;;        :path path
+                                               ;;        :ref ref)
+                                               add-doc (fn [doc]
+                                                         (swap! DOCS conj doc)
+                                                         (when (= (count docs-ids) (count @DOCS))
+                                                           (set-docs @DOCS)))
+                                               on-snapshot (fn [doc-snapshot]
+                                                             (let [doc (firestore/wrap-doc doc-snapshot)]
+                                                               ;; (log ::use-docs--doc-snapshot-received
+                                                               ;;      :path path
+                                                               ;;      ;; :doc doc
+                                                               ;;      :docs (count docs))
+                                                               (add-doc doc)))
+                                               on-error    (fn [^js error]
+                                                             (log ::use-docs--error
+                                                                  :path path
+                                                                  :exception error)
+                                                             (add-doc nil))
+                                               unsubscribe (.onSnapshot ref on-snapshot on-error)]
 
-                                         unsubscribe)))
+                                           unsubscribe))))
                                 doall)]
-          #(doseq [unsubscribe unsubscribes]
+          #(doseq [unsubscribe (->> unsubscribes (remove nil?))]
              (unsubscribe)))))
 
      docs)))
@@ -1623,8 +1624,7 @@
                        :message ($ :span
                                    "Authentifizierung: "
                                    ($ AuthStatusMessage))
-                       :height "95vh"
-                       }
+                       :height "95vh"}
        children)))
 
 (def-ui-showcase ::stack
