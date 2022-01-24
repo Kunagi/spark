@@ -304,6 +304,30 @@
             :label "Nein"
             :control ($ mui/Radio)}))))
 
+(defmethod create-input "checkbox" [field]
+  (log ::create-input
+       :field field)
+  ($ mui/FormControl
+     {:component "fieldset"
+      :error (-> field :error boolean)}
+     ($ mui/FormGroup
+        ($ :div {:style {:margin-top "8px"}})
+        #_($ mui/FormLabel
+             {:component "legend"}
+             ($ :div
+                {:style {:font-size "16px"}}
+                (-> field :label)))
+        ($ mui/FormControlLabel
+           {:label   (-> field :label)
+            :control ($ mui/Checkbox
+                        {:name     (name (-> field :id))
+                         :checked  (boolean (-> field :value))
+                         :onChange #(let [checked? (-> % .-target .-checked)
+                                          value (boolean checked?)]
+                                      ((-> field :on-change) value))})})
+        (when-let [error (-> field :error)]
+          ($ mui/FormHelperText error)))))
+
 (defmethod create-input "checkboxes" [field]
   (log ::create-input
        :field field)

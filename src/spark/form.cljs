@@ -254,7 +254,10 @@
   (let [field     (field-by-id form field-id)
         value     (field-value form field-id)
         value     (coerce-value value form field-id)
-        error     (when (and  (-> field :required?) (nil? value))
+        error     (when (and  (-> field :required?)
+                              (if (-> field :type (= :checkbox))
+                                (not value)
+                                (nil? value)))
                     (local/text :form-field-input-required))
         validator (field-validator form field-id)
         error     (or error
@@ -266,6 +269,11 @@
                                  :field field
                                  :form form)
                             (str ex)))))]
+    (log ::validate-field
+         :field-id field-id
+         :type (-> field :type)
+         :value value
+         :error error)
     (if error
       (assoc-in form [:errors field-id] error)
       (update form :errors dissoc field-id))))
