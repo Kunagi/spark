@@ -259,7 +259,9 @@
 
           unsubscribe)))
 
-     doc)))
+     (when (and path
+                (not (u/seq-contains-nil? path)))
+       doc))))
 
 (defn use-docs
   "React hook for multiple documents."
