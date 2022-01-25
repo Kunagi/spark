@@ -607,7 +607,8 @@
   (d/div
    {:class "FieldLabel"
     :style {:color "grey"}}
-   text))
+   ;; TODO (->component text)
+   (str text)))
 
 (defnc Field [{:keys [label children]}]
   ($ :div
