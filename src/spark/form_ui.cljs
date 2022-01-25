@@ -190,6 +190,11 @@
                          ;; :on-change on-change
                          ))))
 
+(defmethod create-input "email" [field]
+  (create-input (assoc field
+                       :type "text"
+                       :input-type "email")))
+
 (defmethod create-input "int" [field]
   (let [input-props (-> field :input-props)
         pattern (or (-> input-props :pattern)

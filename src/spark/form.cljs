@@ -194,12 +194,22 @@
           (and min-value (money/< value min-value)) (str "Minimum: " (local/format-eur min-value))
           (and max-value (money/> value max-value)) (str "Maximum: " (local/format-eur max-value)))))))
 
+(defn default-email-validator [form field]
+  (fn [value form]
+    (when value
+      (when-not (and (-> value (str/includes? "@"))
+                     (-> value (str/includes? "."))
+                     (-> value (str/includes? " ") not))
+        (local/text :invalid-input))
+      )))
+
 (defn default-field-validator [form field-id]
   (let [field (field-by-id form field-id)]
     (case (-> field :type)
       :number (default-number-validator form field)
       :int (default-number-validator form field)
       :eur (default-eur-validator form field)
+      :email (default-email-validator form field)
       nil)))
 
 (defn field-validator [form field-id]

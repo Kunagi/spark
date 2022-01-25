@@ -157,11 +157,13 @@
    :error "Fehler"
    :delete "Löschen"
 
+
    :delete-image? "Bild löschen?"
 
    :authentication-required "Anmeldung erforderlich"
    :sign-in "Anmelden"
 
+   :invalid-input "Ungültige Eingabe"
    :form-field-input-required "Eingabe erforderlich"})
 
 ;; * texts
