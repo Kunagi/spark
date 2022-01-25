@@ -20,6 +20,15 @@
    [spark.react :as react]
    [spark.db :as db]))
 
+(defn DEBUG [v]
+  (when goog.DEBUG
+    ($ :div
+       {:style {:background-color "black"
+                :color "#9f9"
+                :font-family "monospace"
+                :padding "8px"}}
+       (u/->edn v))))
+
 (defonce DIALOG_FORMS (atom {}))
 
 (defn close-form-dialog [form-id]
@@ -328,20 +337,36 @@
         (when-let [error (-> field :error)]
           ($ mui/FormHelperText error)))))
 
-(defmethod create-input "checkboxes" [field]
-  (log ::create-input
-       :field field)
-  (let [value (into #{} (-> field :value))]
+
+
+(defnc CheckboxesInput [{:keys [field]}]
+  (let [value (into #{} (-> field :value))
+        options-expand-limit (-> field :options-expand-limit)
+        options (-> field :options)
+        expandable? (and options-expand-limit
+                         (> (count options) options-expand-limit))
+        [expanded? set-expanded] (hooks/use-state (when expandable?
+                                                    (reduce (fn [ret option]
+                                                              (or ret
+                                                                  (value (-> option :value))))
+                                                            false options)))
+        visible-options (if (or expanded?
+                                (not expandable?))
+                          options
+                          (take options-expand-limit options))]
     ($ mui/FormControl
        {:component "fieldset"}
        ($ mui/FormGroup
           ($ :div {:style {:margin-top "8px"}})
+          ;; (DEBUG {:expandable expandable?
+          ;;         :expanded? expanded?
+          ;;         :limit options-expand-limit})
           ($ mui/FormLabel
              {:component "legend"}
              ($ :div
                 {:style {:font-size "16px"}}
                 (-> field :label)))
-          (for [option (-> field :options)]
+          (for [option visible-options]
             ($ mui/FormControlLabel
                {:key     (-> option :value)
                 :label   (or (-> option :label)
@@ -354,7 +379,18 @@
                                               value    (if checked?
                                                          (conj value (-> option :value))
                                                          (disj value (-> option :value)))]
-                                          ((-> field :on-change) value))})}))))))
+                                          ((-> field :on-change) value))})}))
+          (when (and expandable?
+                     (not expanded?))
+            ($ :a
+               {:onClick #(set-expanded true)
+                :style {:cursor "pointer"}}
+               "Mehr anzeigen..."))))))
+
+(defmethod create-input "checkboxes" [field]
+  (log ::create-input
+       :field field)
+  ($ CheckboxesInput {:field field}))
 
 (defmethod create-input "ui" [field]
   ($ :div
