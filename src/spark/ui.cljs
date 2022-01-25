@@ -2052,6 +2052,16 @@
 
 ;; * Cards
 
+(defnc CardContent [{:keys [to on-click children]}]
+  (if (or to on-click)
+    ($ mui/CardActionArea
+       {:onClick on-click
+        :href (coerce-link-to to)}
+       ($ mui/CardContent
+          children))
+    ($ mui/CardContent
+       children)))
+
 (defnc Card [{:keys [to on-click
                      children padding highlight
                      class]}]
