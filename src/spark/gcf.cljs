@@ -75,6 +75,9 @@
 (defn region--europe-west1 []
   (-> functions (.region "europe-west1")))
 
+(defn region--us-central1 []
+  (-> functions (.region "us-central1")))
+
 ;; * on-request
 
 (defn on-request [handler]
