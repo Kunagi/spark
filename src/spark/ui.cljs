@@ -2057,7 +2057,8 @@
   (if (or to on-click)
     ($ mui/CardActionArea
        {:onClick on-click
-        :href (coerce-link-to to)}
+        :to (coerce-link-to to)
+        :component router/Link}
        ($ mui/CardContent
           children))
     ($ mui/CardContent
