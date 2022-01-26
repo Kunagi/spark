@@ -2053,14 +2053,29 @@
 
 ;; * Cards
 
-(defnc CardContent [{:keys [to on-click children]}]
-  (if (or to on-click)
+(defnc CardContent [{:keys [to on-click href children]}]
+  (cond
+
+    on-click
     ($ mui/CardActionArea
-       {:onClick on-click
-        :to (coerce-link-to to)
+       {:onClick on-click}
+       ($ mui/CardContent
+          children))
+
+    to
+    ($ mui/CardActionArea
+       {:to (coerce-link-to to)
         :component router/Link}
        ($ mui/CardContent
           children))
+
+    href
+    ($ mui/CardActionArea
+       {:href href}
+       ($ mui/CardContent
+          children))
+
+    :else
     ($ mui/CardContent
        children)))
 
