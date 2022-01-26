@@ -1420,7 +1420,8 @@
       (let [children (->> children
                           (remove nil?))]
         (d/div
-         {:style {:display :grid
+         {:class "CardRow"
+          :style {:display :grid
                   :grid-template-columns (str "repeat(" (count children) ", auto)")
                   :grid-gap gap}}
          children)))))
