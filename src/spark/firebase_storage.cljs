@@ -36,9 +36,12 @@
 (defn url> [path]
   (js/Promise.
    (fn [resolve _reject]
-     (-> ^js (ref path)
-         .getDownloadURL
-         (.then resolve #(resolve nil))))))
+     (let [^js ref (ref path)]
+       (if ref
+         (-> ref
+             .getDownloadURL
+             (.then resolve #(resolve nil)))
+         (resolve nil))))))
 
 
 (defn list-files> [path]
