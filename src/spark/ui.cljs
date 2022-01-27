@@ -2010,6 +2010,14 @@
                            {:white-space :pre-wrap}
                            (cond
 
+                             (-> field (get 1) :type (= :select))
+                             (let [options (-> field (get 1) :options)
+                                   option (->> options
+                                               (filter #(-> % :value (= value)))
+                                               first)]
+                               (or (-> option :label)
+                                   (str value)))
+
                              (-> field (get 1) :keytable)
                              (str (-> field (get 1) :keytable (get value) :label))
 
