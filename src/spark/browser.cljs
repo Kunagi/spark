@@ -271,7 +271,9 @@
   (u/assert (or (-> data :url)
                 (-> data :text)
                 (-> data :files)))
-  (js/navigator.share (clj->js data)))
+  (if js/navigator.share
+    (js/navigator.share (clj->js data))
+    (u/as> (js/alert (-> data :text)))))
 
 (defn share [data]
   (share> data)
