@@ -2006,25 +2006,24 @@
         value-component (if-let [display (or display
                                              (-> field spark/schema-opts :display))]
                           (display value)
-                          (when value
-                            (div
-                             {:white-space :pre-wrap}
-                             (cond
+                          (div
+                           {:white-space :pre-wrap}
+                           (cond
 
-                               (-> field (get 1) :keytable)
-                               (str (-> field (get 1) :keytable (get value) :label))
+                             (-> field (get 1) :keytable)
+                             (str (-> field (get 1) :keytable (get value) :label))
 
-                               (-> field (get 1) :type (= :eur))
-                               (local/format-eur value)
+                             (-> field (get 1) :type (= :eur))
+                             (local/format-eur value)
 
-                               (or (set? value)
-                                   (vector? value)
-                                   (list? value))
-                               (str/join ", " value)
+                             (or (set? value)
+                                 (vector? value)
+                                 (list? value))
+                             (str/join ", " value)
 
-                               :else (str value))
-                             (when value-suffix
-                               (str " " value-suffix)))))
+                             :else (str value))
+                           (when (and value value-suffix)
+                             (str " " value-suffix))))
         on-click        (or on-click
                             #(show-entity-form-dialog> entity [field]))]
     ($ mui/CardActionArea
