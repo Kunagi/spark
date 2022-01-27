@@ -18,7 +18,8 @@
    ;; [spark.mui :as ui]
    [spark.form :as form]
    [spark.react :as react]
-   [spark.db :as db]))
+   [spark.db :as db]
+   [clojure.string :as str]))
 
 (defn DEBUG [v]
   (when goog.DEBUG
@@ -228,7 +229,10 @@
                                                     (when (-> option :value str
                                                               (= selected-value))
                                                       (-> option :value))))
-                                              nil)))]
+                                              nil)))
+        nil-option-exists? (->> field :options
+                                (filter #(-> % :value str/blank?))
+                                seq)]
     ($ :div
        ;; ($ :pre "!" (-> field :error str) "!")
        ($ mui/FormControl
@@ -253,12 +257,14 @@
               :onChange     #((:on-change field)
                               (-> % .-target .-value get-value-from-options))
               :autoFocus    (-> field :auto-focus?)}
-             (when (or (nil? value) (not required?))
+             (when (and (not nil-option-exists?)
+                        (or (nil? value) (not required?)))
                ($ :option {:value nil} ""))
              (for [option (-> field :options)]
                ($ :option
                   {:key   (-> option :value)
-                   :value (-> option :value str)}
+                   :value (str (or (-> option :value)
+                                   ""))}
                   (or (-> option :label)
                       (-> option :value str)))))
           (when-let [error (-> field :error)]
@@ -341,8 +347,6 @@
                                       ((-> field :on-change) value))})})
         (when-let [error (-> field :error)]
           ($ mui/FormHelperText error)))))
-
-
 
 (defnc CheckboxesInput [{:keys [field]}]
   (let [value (into #{} (-> field :value))
