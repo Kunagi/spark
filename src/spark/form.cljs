@@ -43,7 +43,8 @@
         fields-values (-> form :fields-values)
         field-type    (let [type (-> field :type)]
                         (cond
-                          (nil? type)    :text
+                          (nil? type)    (or (when (-> field :keytable) :select)
+                                             :text)
                           (string? type) (keyword type)
                           :else          type))
         value         (or (get values id)
