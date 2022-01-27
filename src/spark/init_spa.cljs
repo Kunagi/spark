@@ -5,11 +5,21 @@
 
 (defn initialize []
 
-  ;; Firebase
+  (u/assert js/firebase "Firebase not loaded")
+
+  ;; Firebase Firestore
+  (u/assert js/firebase.firestore "Firebase Firestore not present")
   (let [firestore (-> js/firebase .firestore)]
-    (u/assert firestore "Firestore not initialized")
+    (u/assert firestore "Firebase Firestore not initialized")
     (when goog.DEBUG (-> firestore (.useEmulator "localhost" 8080)))
     (env-config/set! :firestore firestore))
+
+  ;; Firebase Storage
+  (u/assert js/firebase.storage "Firebase Storage not present")
+  (let [storage (-> js/firebase .storage)]
+    (u/assert storage "Firebase Storage not initialized")
+    (when goog.DEBUG (-> storage (.useEmulator "localhost" 9199)))
+    (env-config/set! :firebase-storage storage))
 
   ;;
   )

@@ -32,6 +32,7 @@
   ;; Firebase
   (-> admin .initializeApp)
   (env-config/set! :firestore (-> admin .firestore))
+  (env-config/set! :firebase-storage (-> admin .storage))
 
   ;;
   )

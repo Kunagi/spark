@@ -1,19 +1,20 @@
 (ns spark.firebase-storage
   (:require
-   [spark.logging :refer [log]]))
+   [spark.logging :refer [log]]
+   [spark.env-config :as env-config]
+   ))
 
 ;; https://firebase.google.com/docs/reference/js/firebase.storage.Reference
 
 (defn storage []
-  (let [storage (-> js/firebase .storage)]
-    (when goog.DEBUG
-      (-> ^js storage (.useEmulator "localhost" 9199)))
-    storage))
+  (if-let [storage (env-config/get! :firebase-storage)]
+    storage
+    (throw (js/Error. "FIREBASE_STORAGE atom not initialized!")))
 
+  )
 
 (defn storage-ref []
   (-> ^js (storage) .ref))
-
 
 (defn ref [path]
   (cond
@@ -29,9 +30,8 @@
     :else
     path ; asuming it is already a ref
     #_(throw (ex-info "Unsupported path type"
-                    {:path path
-                     :type (type path)}))))
-
+                      {:path path
+                       :type (type path)}))))
 
 (defn url> [path]
   (js/Promise.
@@ -43,10 +43,8 @@
              (.then resolve #(resolve nil)))
          (resolve nil))))))
 
-
 (defn list-files> [path]
   (-> ^js (ref path) .listAll))
-
 
 (defn upload-file> [file path]
   (log ::upload-file>
