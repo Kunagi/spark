@@ -403,8 +403,11 @@
 
 (defmethod create-input "ui" [field]
   ($ :div
-     ($ (-> field :component)
-        {:field field})))
+     (when-let [Component (-> field :component)]
+       ($ Component
+          {:field field}))
+     (when-let [content (-> field :content)]
+       content)))
 
 (defnc FormField [{:keys [field form on-submit update-form]}]
   (let [field-id (-> field :id)
