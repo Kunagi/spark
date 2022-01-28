@@ -2021,6 +2021,21 @@
                              (-> field (get 1) :keytable)
                              (str (-> field (get 1) :keytable (get value) :label))
 
+                             (-> field (get 1) :type (= :checkboxes))
+                             (let [options (-> field (get 1) :options)
+                                   options-by-value (->> options
+                                                       (reduce (fn [m option]
+                                                                 (assoc m
+                                                                        (-> option :value)
+                                                                        option))
+                                                               {}))]
+                               (->> value
+                                    (map (fn [option-value]
+                                           (or (get-in options-by-value [option-value :label])
+                                               (str option-value))))
+                                    sort
+                                    (str/join ", ")))
+
                              (-> field (get 1) :type (= :eur))
                              (local/format-eur value)
 
