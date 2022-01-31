@@ -1257,6 +1257,7 @@
 
 (defnc Button [{:keys [text icon
                        onClick on-click to href target
+                       pre-on-click
                        variant color size
                        command
                        context
@@ -1286,6 +1287,10 @@
 
         on-click (with-progress-dialog on-click)
         on-click (wrap-in-error-handler on-click)
+
+        [to on-click] (if (and to hide-dialog)
+                        [nil #(redirect to)]
+                        [to on-click])
 
         hide-dialog (use-hide-dialog)
         on-click    (if auto-hide-dialog
