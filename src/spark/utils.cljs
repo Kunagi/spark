@@ -516,11 +516,29 @@
 (def millis-in-hour (* millis-in-minute 60))
 (def millis-in-day (* millis-in-hour 24))
 
+(defn seconds->millis [seconds]
+  (when seconds
+    (* seconds millis-in-second)))
+
+(defn minutes->millis [minutes]
+  (when minutes
+    (* minutes millis-in-minute)))
+
+(defn hours->millis [hours]
+  (when hours
+    (* hours millis-in-hour)))
+
+(defn days->millis [days]
+  (when days
+    (* days millis-in-day)))
+
 (defn millis->days [millis]
-  (quot millis millis-in-day))
+  (when millis
+    (quot millis millis-in-day)))
 
 (defn millis->minutes [millis]
-  (quot millis millis-in-minute))
+  (when millis
+    (quot millis millis-in-minute)))
 
 (defn millis->hours-minutes [millis]
   (when millis
