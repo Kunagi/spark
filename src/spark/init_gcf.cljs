@@ -8,13 +8,7 @@
 
    [spark.env-config :as env-config]))
 
-(defn logging-prod-writer [event-namespace event-name event-data]
-  (try
-    (if event-data
-      (-> functions .-logger (.debug event-namespace event-name (clj->js event-data)))
-      (-> functions .-logger (.debug event-namespace event-name)))
-    (catch :default ex
-      (-> functions .-logger (.error "Failed to log" event-namespace event-name event-data ex)))))
+
 
 (defn initialize []
 
@@ -25,9 +19,9 @@
   ;; https://github.com/zelark/nano-id
   (set! js/crypto (Crypto.))
 
+
   ;; Logging
-  (when-not goog.DEBUG
-    (env-config/set! :logging-writer logging-prod-writer))
+  (set! js/_spark_logger (-> functions .-logger))
 
   ;; Firebase
   (-> admin .initializeApp)

@@ -1,7 +1,6 @@
 (ns spark.logging
   (:require
-   [spark.utils :as u])
-  )
+   [spark.utils :as u]))
 
 (defmacro log [event-keyword & {:as event-data}]
   ;; (prn &env)
@@ -12,19 +11,11 @@
     (if event-data
       (case log-format
 
-          :edn `(-> logger (.log ~event (with-out-str (cljs.pprint/pprint ~event-data))))
-          :js `(-> logger (.log ~event (cljs.core/clj->js ~event-data)))
+        :edn `(-> (or js/_spark_logger js/console) (.log ~event (with-out-str (cljs.pprint/pprint ~event-data))))
+        :js `(-> (or js/_spark_logger js/console) (.log ~event (cljs.core/clj->js ~event-data)))
 
-          `(if goog.DEBUG
-             (-> logger (.log ~event ~event-data))
-             (-> logger (.log ~event (cljs.core/clj->js ~event-data)))))
+        `(if goog.DEBUG
+           (-> (or js/_spark_logger js/console) (.log ~event ~event-data))
+           (-> (or js/_spark_logger js/console) (.log ~event (cljs.core/clj->js ~event-data)))))
 
-      `(-> logger (.log ~event))))
-
-  #_(let [event (str event-keyword)]
-    (try
-      (if event-data
-        (-> @LOGGER (.log event event-data #_(clj->js event-data)))
-        (-> @LOGGER (.log event)))
-      (catch :default ex
-        (-> @LOGGER (.error "Failed to log" event event-data ex))))))
+      `(-> (or js/_spark_logger js/console) (.log ~event)))))
