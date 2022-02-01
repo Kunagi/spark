@@ -2015,7 +2015,8 @@
                            {:white-space :pre-wrap}
                            (cond
 
-                             (-> field (get 1) :type (= :select))
+                             (and (-> field (get 1) :type (= :select))
+                                  (-> field (get 1) :options))
                              (let [options (-> field (get 1) :options)
                                    option (->> options
                                                (filter #(-> % :value (= value)))
@@ -2023,23 +2024,33 @@
                                (or (-> option :label)
                                    (str value)))
 
-                             (-> field (get 1) :keytable)
-                             (str (-> field (get 1) :keytable (get value) :label))
-
-                             (-> field (get 1) :type (= :checkboxes))
+                             (and (-> field (get 1) :type (= :checkboxes))
+                                  (-> field (get 1) :options))
                              (let [options (-> field (get 1) :options)
                                    options-by-value (->> options
-                                                       (reduce (fn [m option]
-                                                                 (assoc m
-                                                                        (-> option :value)
-                                                                        option))
-                                                               {}))]
+                                                         (reduce (fn [m option]
+                                                                   (assoc m
+                                                                          (-> option :value)
+                                                                          option))
+                                                                 {}))]
                                (->> value
                                     (map (fn [option-value]
                                            (or (get-in options-by-value [option-value :label])
                                                (str option-value))))
                                     sort
                                     (str/join ", ")))
+
+                             (and (-> field (get 1) :type (= :checkboxes))
+                                  (-> field (get 1) :keytable))
+                             (->> value
+                                  (map (fn [option-value]
+                                         (str (or (-> field (get 1) :keytable (get option-value) :label)
+                                                  option-value))))
+                                  sort
+                                  (str/join ", "))
+
+                             (-> field (get 1) :keytable)
+                             (str (-> field (get 1) :keytable (get value) :label))
 
                              (-> field (get 1) :type (= :eur))
                              (local/format-eur value)
