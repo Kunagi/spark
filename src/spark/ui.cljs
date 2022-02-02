@@ -268,7 +268,10 @@
   ([collection-id docs-ids]
    ;; (log ::use-doc
    ;;      :path path)
-   (let [docs-ids (into #{} docs-ids)
+   (let [collection-id (if (spark/doc-schema? collection-id)
+                         (spark/doc-schema-col-path collection-id)
+                         collection-id)
+         docs-ids (into #{} docs-ids)
          [docs set-docs] (use-state [])
          effect-signal (str collection-id (->> docs-ids str))]
 
