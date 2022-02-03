@@ -238,6 +238,9 @@
                           ;;            "search"))
                           ;;     )
 
+                          ;; Prevent Chrome Autocomplete
+                          (-> props .-inputProps .-autocomplete (set! "impp"))
+
                           (-> props .-InputLabelProps .-shrink (set! true))
 
                           ;; (js/console.log "!!! after" props)
