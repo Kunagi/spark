@@ -118,7 +118,9 @@
         remote?   (to-is-remote? to)
         applink? (to-is-applink? to)
 
-        on-click (when on-click
+        on-click (when (and on-click
+                            (not href)
+                            (not to))
                    (fn [^js event]
                      (-> event .preventDefault)
                      ;; (when (-> event .-stopImmediatePropagation)
@@ -803,18 +805,11 @@
         child)))))
 
 (defnc Link--no-styles [{:keys [to on-click children]}]
-  (let [on-click (when on-click
-                   (fn [^js event]
-                     (-> event .preventDefault)
-                     ;; (when (-> event .-stopImmediatePropagation)
-                     ;;   (-> event .stopImmediatePropagation))
-                     ;; (-> event .stopPropagation)
-                     (on-click)))]
-    ($ Link
-       {:to        to
-        :on-click  on-click
-        :className "Link--no-styles"}
-       children)))
+  ($ Link
+     {:to        to
+      :on-click  on-click
+      :className "Link--no-styles"}
+     children))
 
 ;;;
 ;;; SPA
