@@ -161,6 +161,127 @@
            :variant         "outlined"
            :fullWidth       true}))))
 
+(defmethod create-input "autocomplete" [field]
+  (let [;; start-adornment (or (-> field :start-adornment))
+        ;; start-adornment (when start-adornment
+        ;;                   ($ :div
+        ;;                      {:style {:margin-right "8px"}}
+        ;;                      start-adornment))
+        ;; end-adornment (or (-> field :end-adornment))
+        ;; end-adornment (when end-adornment
+        ;;                 ($ :div
+        ;;                    {:style {:margin-left "8px"}}
+        ;;                    end-adornment))
+        ;; input-props (or (-> field :input-props)
+        ;;                 {})
+        ;; InputProps  {:startAdornment start-adornment
+        ;;              :endAdornment end-adornment}
+        use-options (-> field :use-options)
+        options (or (when use-options
+                      (use-options))
+                    (-> field :options)
+                    [])]
+    ($ :div
+       ;; ($ :pre (-> field :on-change str))
+       ;; (when goog.DEBUG
+       ;;   ($ :div
+       ;;      {:style {:padding          "8px"
+       ;;               :background-color "black"
+       ;;               :color            "#6F6"
+       ;;               :font-family      "monospace"}}
+       ;;      (u/->edn (:value field))))
+
+       ($ mui-lab/Autocomplete
+          {;; :value           (or (-> field :value) "")
+           :inputValue (or (-> field :value) "")
+              ;; :label           (-> field :label)
+           ;; :inputProps      (clj->js input-props)
+           ;; :InputProps      (clj->js InputProps)
+           ;; :InputLabelProps #js {:shrink true}
+
+           :autoComplete true
+           :freeSolo true
+           ;; :includeInputInList true
+
+           :onInputChange #(do
+                             (when (and % (-> % .-target))
+                               ((:on-change field)
+                                (-> % .-target .-value))))
+
+           :onChange (fn [^js event ^js new-value]
+                       (when new-value
+                         ((:on-change field)
+                          (if (string? new-value)
+                            new-value
+                            (-> new-value .-value)))))
+
+           :onKeyPress      (when-not (-> field :multiline?)
+                              #(when (= "Enter" (-> ^js % .-nativeEvent .-code))
+                                 ((:on-submit field))))
+
+           :options (->> options clj->js)
+           :getOptionLabel   (fn [option]
+                               (when option
+                                 (if (string? option)
+                                   option
+                                   (-> option .-label))))
+
+           :renderInput (fn [^js props]
+
+                          ;; (js/console.log "!!! before" props)
+
+                          ;; Workaround fixes damaging of styles of other components
+                          (-> props .-InputProps .-endAdornment (set! js/undefined))
+
+                          ;; (-> props .-InputProps .-startAdornment
+                          ;;     (set! (ui/icon
+                          ;;            {:color "#9a958f"}
+                          ;;            "search"))
+                          ;;     )
+
+                          (-> props .-InputLabelProps .-shrink (set! true))
+
+                          ;; (js/console.log "!!! after" props)
+
+                          ($ mui/TextField
+                             {:id (-> field :id name)
+                              :name (-> field :name)
+                              :label (-> field :label)
+                              :required        (-> field :required?)
+                              ;; :placeholder "asldkj aslökdjf aslökjdf aöslkj faslökdfj "
+                              :type            (-> field :input-type)
+                              :autoFocus       (-> field :auto-focus?)
+                              :margin          "dense"
+                              :variant         "outlined"
+                              :fullWidth       true
+                              :error           (boolean (-> field :error))
+                              :helperText      (-> field :error)
+
+                              :&           props}))
+           ;; :options            (clj->js (conj options "powered-by-google")) ; warum manuell?
+           ;; :getOptionSelected  #(= (get %1 "place_id")
+           ;;                         (get %2 "place_id"))
+           ;; :onChange           (fn [^js event ^js new-value]
+           ;;                       (when (and new-value
+           ;;                                  (.hasOwnProperty new-value "description")
+           ;;                                  (-> new-value .-description))
+           ;;                         (update-input-value (.-description new-value))
+           ;;                         (when on-place-selected
+           ;;                           (on-place-selected
+           ;;                            {:place_id    (-> new-value .-place_id)
+           ;;                             :description (-> new-value .-description)}))))
+
+           ;; :onInputChange      (fn [^js _event new-input-value]
+           ;;                       (update-input-value new-input-value)
+           ;;                       (when-not (-> new-input-value str/blank?)
+           ;;                         (get-place-predictions-throtteled
+           ;;                          new-input-value set-options)))
+           ;; :renderOption render-google-option
+           }))))
+
+;; MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-marginDense MuiInputLabel-outlined Mui-required Mui-required
+;; MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink      MuiInputLabel-marginDense MuiInputLabel-outlined MuiFormLabel-filled Mui-required Mui-required
+
 (defmethod create-input "eur" [field]
   (create-input (assoc field
                        :type "text"
