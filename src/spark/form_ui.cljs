@@ -199,7 +199,6 @@
            ;; :InputProps      (clj->js InputProps)
            ;; :InputLabelProps #js {:shrink true}
 
-           :autoComplete true
            :freeSolo true
            ;; :includeInputInList true
 
