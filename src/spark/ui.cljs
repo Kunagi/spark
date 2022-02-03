@@ -116,7 +116,15 @@
   (let [to        (or to href)
         className (or class className)
         remote?   (to-is-remote? to)
-        applink? (to-is-applink? to)]
+        applink? (to-is-applink? to)
+
+        on-click (when on-click
+                   (fn [^js event]
+                     (-> event .preventDefault)
+                     ;; (when (-> event .-stopImmediatePropagation)
+                     ;;   (-> event .stopImmediatePropagation))
+                     ;; (-> event .stopPropagation)
+                     (on-click)))]
     (if (or remote? applink? (nil? to))
       ($ :a
          {:href      to
@@ -795,11 +803,18 @@
         child)))))
 
 (defnc Link--no-styles [{:keys [to on-click children]}]
-  ($ Link
-     {:to        to
-      :on-click  on-click
-      :className "Link--no-styles"}
-     children))
+  (let [on-click (when on-click
+                   (fn [^js event]
+                     (-> event .preventDefault)
+                     ;; (when (-> event .-stopImmediatePropagation)
+                     ;;   (-> event .stopImmediatePropagation))
+                     ;; (-> event .stopPropagation)
+                     (on-click)))]
+    ($ Link
+       {:to        to
+        :on-click  on-click
+        :className "Link--no-styles"}
+       children)))
 
 ;;;
 ;;; SPA
@@ -1168,6 +1183,7 @@
              form    (assoc form :submit submit)]
          (show-form-dialog> form)))))
 
+;; TODO deprecated
 (defnc CommandButton [{:keys [command context then
                               icon as-icon? icon-theme
                               variant color size
@@ -1299,6 +1315,14 @@
         on-click    (if auto-hide-dialog
                       (wrap-on-click-in-hide-dialog on-click hide-dialog)
                       on-click)
+
+        on-click (when on-click
+                   (fn [^js event]
+                     (-> event .preventDefault)
+                     ;; (when (-> event .-stopImmediatePropagation)
+                     ;;   (-> event .stopImmediatePropagation))
+                     ;; (-> event .stopPropagation)
+                     (on-click)))
 
         variant      (if (keyword? variant) (name variant) variant)
         color        (if (keyword? color) (name color) color)
