@@ -118,7 +118,7 @@
         remote?   (to-is-remote? to)
         applink? (to-is-applink? to)
 
-        on-click (when (and on-click
+        on-click (if (and on-click
                             (not href)
                             (not to))
                    (fn [^js event]
@@ -126,7 +126,8 @@
                      ;; (when (-> event .-stopImmediatePropagation)
                      ;;   (-> event .stopImmediatePropagation))
                      ;; (-> event .stopPropagation)
-                     (on-click)))]
+                     (on-click))
+                   on-click)]
     (if (or remote? applink? (nil? to))
       ($ :a
          {:href      to
