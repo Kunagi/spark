@@ -15,11 +15,12 @@
     (env-config/set! :firestore firestore))
 
   ;; Firebase Storage
-  (u/assert js/firebase.storage "Firebase Storage not present")
-  (let [storage (-> js/firebase .storage)]
-    (u/assert storage "Firebase Storage not initialized")
-    (when goog.DEBUG (-> storage (.useEmulator "localhost" 9199)))
-    (env-config/set! :firebase-storage storage))
+  ;; (u/assert js/firebase.storage "Firebase Storage not present")
+  (when js/firebase.storage
+    (when-let [storage (-> js/firebase .storage)]
+      (u/assert storage "Firebase Storage not initialized")
+      (when goog.DEBUG (-> storage (.useEmulator "localhost" 9199)))
+      (env-config/set! :firebase-storage storage)))
 
   ;;
   )
@@ -31,7 +32,7 @@
       (catch :default ex
         (js/console.error "spark.init-spa failed" ex)
         (js/setTimeout
-         (fn []
-           (js/window.location.reload))
-         1000)))
+           (fn []
+             (js/window.location.reload))
+           3000)))
     true))
