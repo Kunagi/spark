@@ -254,7 +254,7 @@ Bitte gib hier den empfangenen Code ein.")
       :else
       (ui/stack-3
        (ui/center
-        (ui/div "Welchen Dienst möchtest Du zur Identifizierung verwenden?"))
+        (ui/div "Welchen Dienst möchtest Du zur Anmeldung verwenden?"))
        (ui/stack
         (when google
           ($ ui/Button
