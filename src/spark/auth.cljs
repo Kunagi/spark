@@ -39,9 +39,11 @@
     (when custom-token
       (log ::process-sign-in-with-custom-token-from-url
            :custom-token custom-token)
-      (reset! AUTH_STATUS_MESSAGE "Custom Token empfangen")
+      (reset! AUTH_STATUS_MESSAGE (str "Custom Token empfangen: " custom-token))
       (-> ^js (-> firebase .auth)
           (.signInWithCustomToken custom-token)
+          (.then (fn [_]
+                   (reset! AUTH_STATUS_MESSAGE "Mit Custon Token angemeldet")))
           (.catch (fn [^js error]
                     (log ::sign-in-with-redirect-failed
                          :error error)
@@ -183,16 +185,14 @@
                  (reset! AUTH_STATUS_MESSAGE "abgeschlossen")
                  (reset! AUTH_COMPLETED true)))))))
 
-    (reset! AUTH_STATUS_MESSAGE "prüfe custom token")
+    (reset! AUTH_STATUS_MESSAGE "initialisierung abgeschlossen")
+
     (process-sign-in-with-custom-token-from-url error-handler)
 
-    (reset! AUTH_STATUS_MESSAGE "prüfe redirect")
     (process-sign-in-with-redirect error-handler)
 
-    (reset! AUTH_STATUS_MESSAGE "prüfe email link")
     (process-sign-in-with-email-link error-handler)
 
-    (reset! AUTH_STATUS_MESSAGE "initialisierung abgeschlossen")
     nil))
 
 (defn provider-sign-in> [^js provider]
