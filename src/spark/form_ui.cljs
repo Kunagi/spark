@@ -490,7 +490,8 @@
        {:component "fieldset"}
        ($ mui/FormGroup
           ($ :div {:style {:margin-top "8px"}})
-          ;; (DEBUG {:expandable expandable?
+          ;; (DEBUG {:count (count options)
+          ;;         :expandable expandable?
           ;;         :expanded? expanded?
           ;;         :limit options-expand-limit})
           ($ mui/FormLabel
@@ -514,7 +515,12 @@
                                           ((-> field :on-change) value))})}))
           (when (and expandable?
                      (not expanded?))
-            ($ :a
+            ($ mui/Button
+               {:onClick #(set-expanded true)
+                :variant "contained"
+                :size "small"}
+               "Mehr anzeigen")
+            #_($ :a
                {:onClick #(set-expanded true)
                 :style {:cursor "pointer"}}
                "Mehr anzeigen..."))))))
