@@ -119,8 +119,8 @@
         applink? (to-is-applink? to)
 
         on-click (if (and on-click
-                            (not href)
-                            (not to))
+                          (not href)
+                          (not to))
                    (fn [^js event]
                      (-> event .preventDefault)
                      ;; (when (-> event .-stopImmediatePropagation)
@@ -2016,8 +2016,7 @@
                          (map (fn [field]
                                 (if (map? field)
                                   (-> field :id)
-                                  (spark/field-schema-field-id field))
-                                )
+                                  (spark/field-schema-field-id field)))
                               fields))
     :submit (fn [values]
               (when values
@@ -2287,15 +2286,21 @@
                            {:key footer-idx}
                            (for [col cols]
                              (let [footer (-> col :footers (get footer-idx))
+                                   record-key (-> col :record-key)
                                    type (-> col :type)
                                    value (-> footer :value)
                                    value (cond
                                            (fn? value)
                                            (value records)
 
+                                           (-> footer :type (= :count))
+                                           (->> records
+                                                (remove (fn [record]
+                                                          (nil? (get record record-key))))
+                                                count)
+
                                            (-> footer :type (= :sum))
-                                           (let [record-key (-> col :record-key)
-                                                 aggregator (cond
+                                           (let [aggregator (cond
 
                                                               (= type :eur)
                                                               money/+
@@ -2311,7 +2316,9 @@
                                   {:key (or (-> col :id) (-> col :label))}
                                   (div
                                    {:font-weight 900
-                                    :text-align (-> col :align)}
+                                    :text-align (cond
+                                                  (-> footer :type (= :count)) "right"
+                                                  :else (-> col :align))}
                                    value)))))))))
 
              (when CsvDownloadButton
