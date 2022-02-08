@@ -2009,13 +2009,16 @@
 (defn show-entity-form-dialog> [entity fields]
   (log ::show-entity-form-dialog>
        :entity entity
-       :fields fields
-       :values (select-keys entity
-                            (map spark/field-schema-field-id fields)))
+       :fields fields)
   (show-form-dialog>
    {:fields fields
     :values (select-keys entity
-                         (map spark/field-schema-field-id fields))
+                         (map (fn [field]
+                                (if (map? field)
+                                  (-> field :id)
+                                  (spark/field-schema-field-id field))
+                                )
+                              fields))
     :submit (fn [values]
               (when values
                 (db-update> entity values)))}))
@@ -2026,30 +2029,32 @@
                                           label children
                                           entity field
                                           value-suffix display]}]
-  (let [label           (or label
-                            (when field
-                              (spark/field-schema-label field)))
-        field-id        (when field (spark/field-schema-field-id field))
+  (let [field (cond
+                (map? field) field
+                (spark/field-schema? field) (get field 1))
+        label           (or label
+                            (-> field :label))
+        field-id        (-> field :id)
         value           (when field-id (get entity field-id))
         value-component (if-let [display (or display
-                                             (-> field spark/schema-opts :display))]
+                                             (-> field :display))]
                           (display value)
                           (div
                            {:white-space :pre-wrap}
                            (cond
 
-                             (and (-> field (get 1) :type (= :select))
-                                  (-> field (get 1) :options))
-                             (let [options (-> field (get 1) :options)
+                             (and (-> field :type (= :select))
+                                  (-> field :options))
+                             (let [options (-> field :options)
                                    option (->> options
                                                (filter #(-> % :value (= value)))
                                                first)]
                                (or (-> option :label)
                                    (str value)))
 
-                             (and (-> field (get 1) :type (= :checkboxes))
-                                  (-> field (get 1) :options))
-                             (let [options (-> field (get 1) :options)
+                             (and (-> field :type (= :checkboxes))
+                                  (-> field :options))
+                             (let [options (-> field :options)
                                    options-by-value (->> options
                                                          (reduce (fn [m option]
                                                                    (assoc m
@@ -2063,19 +2068,19 @@
                                     sort
                                     (str/join ", ")))
 
-                             (and (-> field (get 1) :type (= :checkboxes))
-                                  (-> field (get 1) :keytable))
+                             (and (-> field :type (= :checkboxes))
+                                  (-> field :keytable))
                              (->> value
                                   (map (fn [option-value]
-                                         (str (or (-> field (get 1) :keytable (get option-value) :label)
+                                         (str (or (-> field :keytable (get option-value) :label)
                                                   option-value))))
                                   sort
                                   (str/join ", "))
 
-                             (-> field (get 1) :keytable)
-                             (str (-> field (get 1) :keytable (get value) :label))
+                             (-> field :keytable)
+                             (str (-> field :keytable (get value) :label))
 
-                             (-> field (get 1) :type (= :eur))
+                             (-> field :type (= :eur))
                              (local/format-eur value)
 
                              (or (set? value)
