@@ -159,6 +159,8 @@
         ;; https://firebase.google.com/docs/reference/js/firebase.auth.Auth#onauthstatechanged
         (.onAuthStateChanged
          (fn [^js google-js-user]
+           (js/localStorage.setItem "spark.uid" (when google-js-user
+                                                  (-> google-js-user .-uid)))
            (js/console.log "AUTH" google-js-user)
            (reset! AUTH_STATUS_MESSAGE "AuthState empfangen")
            (let [user (import-user google-js-user)]
@@ -250,6 +252,7 @@
     (sign-in-f)))
 
 (defn sign-out> []
+  (js/localStorage.removeItem "spark.uid")
   (u/=> (-> firebase .auth .signOut)
         (fn [result]
           (browser/webkit-post-message "iosapp" "logout")

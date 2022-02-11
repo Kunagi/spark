@@ -44,18 +44,20 @@
        :options options)
   (js/Promise.
    (fn [resolve reject]
-     (-> js/navigator
-         .-serviceWorker
-         .getRegistration
-         (.then (fn [registration]
-                  (log ::show-via-service-worker>--2
-                       :title title
-                       :options options)
-                  (if registration
-                    (-> registration
-                        (.showNotification title (clj->js options))
-                        (.then #(resolve true)))
-                    (reject "No registration for ServiceWorker"))))))))
+     (if-not js/navigator.serviceWorker
+       (reject "js/navigator.serviceWorker does not exist")
+       (-> js/navigator
+           .-serviceWorker
+           .getRegistration
+           (.then (fn [registration]
+                    (log ::show-via-service-worker>--2
+                         :title title
+                         :options options)
+                    (if registration
+                      (-> registration
+                          (.showNotification title (clj->js options))
+                          (.then #(resolve true)))
+                      (reject "No registration for ServiceWorker")))))))))
 
 
 (defn show> [title options]
