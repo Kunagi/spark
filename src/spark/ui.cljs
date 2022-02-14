@@ -570,6 +570,9 @@
     :style {:white-space      "pre-wrap"
             :word-break "break-all"
             :font-family      "monospace"
+            :font-size        "13px"
+            :font-weight      400
+            :font-style       "normal"
             :overflow         "auto"
             :width            "100%"
             :background-color background-color
