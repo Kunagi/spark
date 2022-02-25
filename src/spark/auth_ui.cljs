@@ -5,8 +5,7 @@
    [spark.logging :refer [log]]
    [spark.utils :as u]
    [spark.ui :as ui :refer [def-ui $]]
-   [spark.auth :as auth]
-))
+   [spark.auth :as auth]))
 
 (def use-auth-user (ui/atom-hook auth/AUTH_USER))
 ;; * E-Mail
@@ -14,7 +13,8 @@
 (def use-email-sign-in (ui/atom-hook auth/EMAIL_SIGN_IN))
 
 (def-ui EmailProcess []
-  (let [email-sign-in       (use-email-sign-in)
+  (let [hide-dialog (ui/use-hide-dialog)
+        email-sign-in       (use-email-sign-in)
         [email set-email]   (ui/use-state (-> email-sign-in :email))
         continue-with-email (fn []
                               (when-not (str/blank? email)
@@ -22,14 +22,15 @@
                                        :email email
                                        :status :sending-email)
                                 (auth/send-sign-in-link-to-email
-                                 email (-> email-sign-in :url)))
-                              )
+                                 email (-> email-sign-in :url))))
 
         CancelButton ($ ui/Button
-                        {:text     "Abbrechen"
+                        {:text     "Anmeldevorgang Abbrechen"
                          :variant  "text"
-                         :on-click #(reset! auth/EMAIL_SIGN_IN nil)})
-        ]
+                         :color "default"
+                         :on-click (fn []
+                                     (when hide-dialog (hide-dialog))
+                                     (reset! auth/EMAIL_SIGN_IN nil))})]
     (ui/stack
      ;; (when goog.DEBUG (ui/data email-sign-in))
 
@@ -43,13 +44,27 @@
        (ui/stack
 
         (when (= :waiting-for-email (-> email-sign-in :status))
-          (ui/stack
-           (ui/div "Öffne deine E-Mail und Klicke den Link!")
-           (ui/center CancelButton)))
+          (ui/stack-2
+           (ui/center-text "Wir haben dir eine E-Mail geschickt.")
+           (ui/center-text
+            {:font-weight 900
+             :font-size "120%"
+             :class "Color--Primary"}
+            "Öffne deine E-Mail und klicke den Link!")
+           (ui/center
+            (ui/flex ($ ui/Button
+                        {:text "OK"
+                         :variant "text"
+                         :color "default"
+                         :on-click (fn []
+                                     (when hide-dialog (hide-dialog))
+                                     (reset! auth/EMAIL_SIGN_IN nil))})
+                     CancelButton))))
 
         (when (= :sending-email (-> email-sign-in :status))
           (ui/stack
-           (ui/div "E-Mail wird versendet...")
+           (ui/center ($ mui/CircularProgress))
+           (ui/center-text "E-Mail wird versendet...")
            (ui/center CancelButton)))
 
         (when (= :input-email (-> email-sign-in :status))
@@ -78,10 +93,7 @@ Bitte E-Mail Adresse eingeben.")
             CancelButton
             ($ ui/Button
                {:text     "Link anfordern"
-                :on-click continue-with-email}))
-           ))))
-
-     )))
+                :on-click continue-with-email})))))))))
 
 ;; * Telephone
 
@@ -104,10 +116,7 @@ Bitte E-Mail Adresse eingeben.")
    (initialize-telephone-sign-in)
    nil)
 
-  (ui/div { :id "recaptcha-container"})
-  )
-
-
+  (ui/div {:id "recaptcha-container"}))
 
 (defn coerce-telephone [s]
   (let [s (str/replace s " " "")
@@ -148,14 +157,12 @@ Bitte E-Mail Adresse eingeben.")
                                (swap! auth/TELEPHONE_SIGN_IN assoc
                                       :code code
                                       :status :checking-code)
-                               (auth/sign-in-with-telephone-code code))
-                             )
+                               (auth/sign-in-with-telephone-code code)))
 
         CancelButton ($ ui/Button
                         {:text     "Abbrechen"
                          :variant  "text"
-                         :on-click #(reset! auth/TELEPHONE_SIGN_IN nil)})
-        ]
+                         :on-click #(reset! auth/TELEPHONE_SIGN_IN nil)})]
     (ui/stack
      ($ RecaptchaContainer)
      (when goog.DEBUG (ui/data status))
@@ -202,8 +209,7 @@ Bitte mobile Telefonnummer eingeben.")
             CancelButton
             ($ ui/Button
                {:text     "SMS anfordern"
-                :on-click continue-with-telephone}))
-           ))
+                :on-click continue-with-telephone}))))
 
         (when (= :input-code (-> status :status))
           (ui/stack-3
@@ -232,12 +238,7 @@ Bitte gib hier den empfangenen Code ein.")
             CancelButton
             ($ ui/Button
                {:text     "Anmelden"
-                :on-click continue-with-code}))
-           ))))
-
-     )))
-
-
+                :on-click continue-with-code})))))))))
 
 ;; * Selector
 
@@ -277,8 +278,7 @@ Bitte gib hier den empfangenen Code ein.")
            ($ ui/Button
               {:text     "Mobiltelefon / SMS"
                :id       "telephone-sign-in-button"
-               :on-click auth/sign-in-with-telephone
-               })))
+               :on-click auth/sign-in-with-telephone})))
         (when email
           ($ ui/Button
              {:text     "E-Mail"
