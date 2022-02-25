@@ -835,19 +835,29 @@
 
 (def use-dialogs (atom-hook DIALOGS))
 
+(defn show-dialog> [dialog]
+  (u/promise>
+   (fn [resolve _reject]
+     (let [id     (or (-> dialog :id)
+                      (str "dialog_" (u/nano-id)))
+           dialog (assoc dialog
+                         :id id
+                         :open? true
+                         :on-close resolve)]
+       (swap! DIALOGS assoc id dialog)
+       id))))
+
 (defn show-dialog [dialog]
-  (let [id     (or (-> dialog :id)
-                   (str "dialog_" (u/nano-id)))
-        dialog (assoc dialog :id id)]
-    (swap! DIALOGS assoc id (assoc dialog
-                                   :id id
-                                   :open? true))
-    id))
+  (show-dialog> dialog)
+  nil)
 
 (defn hide-dialog [id]
   (log ::hide-dialog
        :id id)
-  (swap! DIALOGS assoc-in [id :open?] false)
+  (swap! DIALOGS update id (fn [dialog]
+                             (when-let [on-close (-> dialog :on-close)]
+                               (on-close))
+                             (assoc dialog :open? false)))
   (js/setTimeout #(swap! DIALOGS dissoc id)
                  1000))
 
