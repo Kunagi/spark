@@ -1,5 +1,6 @@
 (ns spark.browser
   (:require
+   [promesa.core :as p]
    [spark.logging :refer [log]]
    [spark.utils :as u]
    [clojure.string :as str]))
@@ -149,6 +150,11 @@
       (.then (fn [^js response]
                (-> response
                    .blob)))))
+
+(defn fetch-to-file> [url file-name file-type]
+  (p/let [blob (fetch-to-blob> url)
+          file (js/File. [blob] file-name (clj->js {:type file-type}))]
+    file))
 
 (defn fetch-to-blob-url> [url]
   (-> (js/fetch (js/Request. url))
