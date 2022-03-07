@@ -144,6 +144,12 @@
                     resolve)))
        (set! (.-src image) image-url)))))
 
+(defn fetch-to-blob> [url]
+  (-> (js/fetch (js/Request. url))
+      (.then (fn [^js response]
+               (-> response
+                   .blob)))))
+
 (defn fetch-to-blob-url> [url]
   (-> (js/fetch (js/Request. url))
       (.then (fn [^js response]
@@ -273,7 +279,9 @@
                 (-> data :files)))
   (if js/navigator.share
     (js/navigator.share (clj->js data))
-    (u/as> (js/alert (-> data :text)))))
+    (u/as> (js/alert (or (-> data :text)
+                         (-> data :title)
+                         (-> data :url))))))
 
 (defn share [data]
   (share> data)
