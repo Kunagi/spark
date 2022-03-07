@@ -279,6 +279,9 @@
 
 ;; sharing
 
+(defn share-available? []
+  (-> js/navigator.share boolean))
+
 (defn share> [data]
   (u/assert (or (-> data :url)
                 (-> data :text)
