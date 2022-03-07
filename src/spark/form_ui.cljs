@@ -642,14 +642,14 @@
           {:style {:display "grid"
                    :grid-gap "16px"}}
 
-          (when goog.DEBUG
-            (when-let [data (-> form :debug-data)]
-              ($ :div
-                 {:style {:padding          "8px"
-                          :background-color "black"
-                          :color            "#6F6"
-                          :font-family      "monospace"}}
-                 (u/->edn data))))
+          ;; (when goog.DEBUG
+          ;;   (when-let [data (-> form :debug-data)]
+          ;;     ($ :div
+          ;;        {:style {:padding          "8px"
+          ;;                 :background-color "black"
+          ;;                 :color            "#6F6"
+          ;;                 :font-family      "monospace"}}
+          ;;        (u/->edn data))))
 
           ($ :div
              (for [field (get form :fields)]
