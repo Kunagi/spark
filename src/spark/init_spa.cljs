@@ -2,9 +2,11 @@
   (:require
 
    ["firebase/compat/app" :default firebase]
+   ["firebase/compat/auth"]
    ["firebase/compat/firestore"]
    ["firebase/compat/storage"]
-   ["firebase/compat/auth"]
+   ["firebase/compat/functions"]
+   ["firebase/compat/messaging"]
 
    [spark.utils :as u]
    [spark.env-config :as env-config]))
