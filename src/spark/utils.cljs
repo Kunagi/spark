@@ -569,6 +569,9 @@
 (defn timestamp--now []
   (js/Date.))
 
+(defn millis--now []
+  (-> (js/Date.) .getTime))
+
 (defn date [date-or-string]
   (when date-or-string
     (let [ts (timestamp date-or-string)]
