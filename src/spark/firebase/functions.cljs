@@ -1,4 +1,4 @@
-(ns spark.firebase-functions
+(ns spark.firebase.functions
   (:require
    ["firebase/functions" :as firebase-functions]
    [spark.logging :refer [log]]
@@ -11,16 +11,10 @@
 (defn- initialize []
   (log ::initialize)
   (let [firebase-app (env-config/get! :firebase-app)
-        functions (firebase-functions/getFunctions firebase-app @REGION)
-        ;; functions (-> js/firebase
-        ;;               .app
-        ;;               (.functions @REGION))
-        ]
+        functions (firebase-functions/getFunctions firebase-app @REGION)]
     (when ^boolean goog.DEBUG
       (firebase-functions/connectFunctionsEmulator
-       functions "localhost" 5001)
-      ;; (-> functions (.useEmulator "localhost", 5001))
-      )
+       functions "localhost" 5001))
     functions))
 
 (def functions (memoize initialize))

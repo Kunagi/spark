@@ -4,7 +4,6 @@
    ["firebase/compat/app" :default firebase]
    ["firebase/compat/auth"]
    ["firebase/compat/firestore"]
-   ["firebase/compat/storage"]
    ["firebase/compat/messaging"]
 
    [spark.utils :as u]
@@ -18,16 +17,11 @@
     (env-config/set! :firebase firebase)
     (set! js/window.firebase firebase))
 
-;; Firebase Firestore
+  ;; Firebase Firestore
   (let [firestore (-> firebase .firestore)]
     (u/assert firestore "Firebase Firestore not initialized")
     (when goog.DEBUG (-> firestore (.useEmulator "localhost" 8080)))
-    (env-config/set! :firestore firestore))
-
-  ;; Firebase Storage
-  (when-let [storage (-> firebase .storage)]
-    (when goog.DEBUG (-> storage (.useEmulator "localhost" 9199)))
-    (env-config/set! :firebase-storage storage)))
+    (env-config/set! :firestore firestore)))
 
 #_(defonce initialized
     (do

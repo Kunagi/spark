@@ -7,7 +7,7 @@
    [spark.logging :refer [log]]
    [spark.utils :as u]
    [spark.ui :as ui :refer [def-ui def-page $]]
-   [spark.firebase-functions :as functions]
+   [spark.firebase.functions :as functions]
 
    ))
 
