@@ -10,7 +10,7 @@
    [spark.core :as spark]
    [spark.db :as db]
    [spark.browser :as browser]
-   [spark.firebase-messaging-spa :as messaging]))
+   [spark.firebase.messaging :as messaging]))
 
 ;; https://firebase.google.com/docs/auth/
 ;; https://firebase.google.com/docs/reference/js/firebase.auth.Auth

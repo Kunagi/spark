@@ -1,4 +1,4 @@
-(ns spark.firebase-messaging-spa
+(ns spark.firebase.messaging
   (:require
    [spark.logging :refer [log]]
    [spark.utils :as u]))
