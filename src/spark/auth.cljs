@@ -1,8 +1,12 @@
 (ns spark.auth
   (:require
 
+   ["firebase/auth" :as firebase-auth]
+
    [spark.logging :refer [log]]
    [spark.utils :as u]
+   [spark.env-config :as env-config]
+
    [spark.core :as spark]
    [spark.db :as db]
    [spark.browser :as browser]
@@ -26,7 +30,8 @@
   (when-let [auth-user (auth-user)]
     (-> ^js auth-user :uid)))
 
-(def ^js firebase (-> js/window .-firebase))
+(defn firebase-auth []
+  (-> (env-config/get! :firebase) .auth))
 
 (defn redirect [href]
   (js/window.location.replace href))
@@ -40,7 +45,7 @@
       (log ::process-sign-in-with-custom-token-from-url
            :custom-token custom-token)
       (reset! AUTH_STATUS_MESSAGE (str "Custom Token empfangen: " custom-token))
-      (-> ^js (-> firebase .auth)
+      (-> ^js (firebase-auth)
           (.signInWithCustomToken custom-token)
           (.then (fn [_]
                    (reset! AUTH_STATUS_MESSAGE "Mit Custon Token angemeldet")))
@@ -54,7 +59,7 @@
                     (when error-handler (error-handler error))))))))
 
 (defn process-sign-in-with-redirect [error-handler]
-  (let [auth (-> firebase .auth)]
+  (let [auth (firebase-auth)]
     (-> ^js auth
         .getRedirectResult
         (.catch (fn [^js error]
@@ -63,7 +68,7 @@
                   (when error-handler (error-handler error)))))))
 
 (defn process-sign-in-with-email-link [error-handler]
-  (let [auth (-> firebase .auth)
+  (let [auth (firebase-auth)
         href js/window.location.href]
     (when (-> auth (.isSignInWithEmailLink href))
       (log ::sign-in-with-email-link
@@ -147,12 +152,12 @@
 
   (reset! AUTH_STATUS_MESSAGE "Initialisierung gestartet")
 
-  (when-not (fn? (-> ^js firebase .-auth))
-    (js/setTimeout
-     #(js/window.location.reload)
-     1000))
+  ;; (when-not (fn? (-> ^js firebase .-auth))
+  ;;   (js/setTimeout
+  ;;    #(js/window.location.reload)
+  ;;    1000))
 
-  (let [auth (-> firebase .auth)]
+  (let [auth (firebase-auth)]
     (reset! AUTH_STATUS_MESSAGE "Initialisierung 2 gestartet")
     (-> auth (.useDeviceLanguage))
     (-> auth
@@ -198,13 +203,15 @@
     nil))
 
 (defn provider-sign-in> [^js provider]
-  (-> firebase .auth (.signInWithRedirect provider))
-  ;; (-> firebase .auth (.signInWithPopup provider))
-  )
+  (-> (firebase-auth) (.signInWithRedirect provider)))
+
+(comment
+  (js/console.log (-> (firebase-auth)))
+  (js/console.log firebase-auth/GoogleAuthProvider))
+
 (defn sign-in-with-google []
   (log ::sign-in-with-google)
-  (let [GoogleAuthProvider (-> firebase .-auth .-GoogleAuthProvider)
-        provider           (GoogleAuthProvider.)]
+  (let [provider           (firebase-auth/GoogleAuthProvider.)]
     (.addScope ^js provider "openid")
     (.addScope ^js provider "profile")
     (.addScope ^js provider "email")
@@ -219,13 +226,13 @@
   ;; pplication (client) ID: fc6ee63d-375e-432c-b3d9-2722eba6a0ee
   ;; Directory (tenant) ID: 088fc83d-8363-42a6-8b7f-02c6f326cb17
   ;; Object ID; 5275d8a6-c7de-4367-a67f-7955ff60c4d6
-  (let [AuthProvider (-> firebase .-auth .-OAuthProvider)
+  (let [AuthProvider firebase-auth/OAuthProvider
         provider     (AuthProvider. "microsoft.com")]
     (-> ^js provider (.setCustomParameters #js {:prompt "login"}))
     (provider-sign-in> provider)))
 
 (defn sign-in-with-apple []
-  (let [AuthProvider (-> firebase .-auth .-OAuthProvider)
+  (let [AuthProvider firebase-auth/OAuthProvider
         provider     (AuthProvider. "apple.com")]
     (.addScope ^js provider "name")
     (.addScope ^js provider "email")
@@ -236,7 +243,7 @@
   ;; https://firebase.google.com/docs/auth/web/facebook-login
   ;; https://developers.facebook.com
   ;; https://developers.facebook.com/docs/permissions/reference
-  (let [FacebookAuthProvider js/firebase.auth.FacebookAuthProvider
+  (let [FacebookAuthProvider firebase-auth/FacebookAuthProvider
         provider             (FacebookAuthProvider.)]
     (-> ^js provider (.addScope "email"))
     (-> (provider-sign-in> provider)
@@ -253,7 +260,7 @@
 
 (defn sign-out> []
   (js/localStorage.removeItem "spark.uid")
-  (u/=> (-> firebase .auth .signOut)
+  (u/=> (-> (firebase-auth) .signOut)
         (fn [result]
           (browser/webkit-post-message "iosapp" "logout")
           (redirect-to-home)
@@ -269,11 +276,10 @@
        :url url)
   (let [settings {:url             url
                   :handleCodeInApp true}]
-    (-> firebase
-        .auth
+    (-> (firebase-auth)
         (.sendSignInLinkToEmail email (clj->js settings))
         (.then #(do
-                  (js/window.localStorage.setItem "signInEmail" email)
+                  (js/localStorage.setItem "signInEmail" email)
                   (swap! EMAIL_SIGN_IN assoc
                          :email email
                          :status :waiting-for-email))
@@ -297,8 +303,7 @@
                              :url    (-> js/window.location.href)}))
 
 (defn send-sign-in-code-to-telephone [telephone]
-  (-> firebase
-      .auth
+  (-> (firebase-auth)
       (.signInWithPhoneNumber telephone js/window.recaptchaVerifier)
       (.then (fn [^js result]
                (log ::sign-in-code-sent-to-telephone

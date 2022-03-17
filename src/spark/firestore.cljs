@@ -5,6 +5,8 @@
    [goog.object :as gobj]
    [promesa.core :as p]
    [cljs-bean.core :as cljs-bean]
+   ["firebase/firestore" :as firebase-firestore]
+
 
    [spark.env-config :as env-config]
    [spark.logging :refer [log]]
@@ -29,8 +31,6 @@
                     :doc ::doc))
 (s/def ::opt-path (s/or :nil-path nil?
                         :non-nil-path ::path))
-
-(defonce FIRESTORE (atom nil))
 
 (defn ^js firestore []
   (if-let [firestore (env-config/get! :firestore)]
