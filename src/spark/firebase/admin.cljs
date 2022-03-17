@@ -1,4 +1,4 @@
-(ns spark.firebase-messaging
+(ns spark.firebase.admin
   (:require
    ["firebase-admin" :as admin]
 
@@ -6,6 +6,8 @@
    [spark.utils :as u]
 
    ))
+
+;; * Messaging
 
 (defn messaging-service []
   (-> ^js admin .messaging))

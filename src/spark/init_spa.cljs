@@ -5,18 +5,18 @@
    ["firebase/compat/auth"]
    ["firebase/compat/firestore"]
    ["firebase/compat/storage"]
-   ["firebase/compat/functions"]
    ["firebase/compat/messaging"]
 
    [spark.utils :as u]
    [spark.env-config :as env-config]))
 
 (defn initialize [app-config]
-  (-> firebase
-      (.initializeApp
-       (clj->js app-config)))
-  (env-config/set! :firebase firebase)
-  (set! js/window.firebase firebase)
+  (let [firebase-app (-> firebase
+                         (.initializeApp
+                          (clj->js app-config)))]
+    (env-config/set! :firebase-app firebase-app)
+    (env-config/set! :firebase firebase)
+    (set! js/window.firebase firebase))
 
 ;; Firebase Firestore
   (let [firestore (-> firebase .firestore)]

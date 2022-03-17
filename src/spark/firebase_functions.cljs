@@ -1,26 +1,37 @@
 (ns spark.firebase-functions
   (:require
-   [spark.logging :refer [log]]))
+   ["firebase/functions" :as firebase-functions]
+   [spark.logging :refer [log]]
+   [spark.env-config :as env-config]))
 
 ;; https://firebase.google.com/docs/functions/callable#call_the_function
-;;
 
 (defonce REGION (atom "europe-west1"))
 
-
-(defn functions []
-  (let [functions (-> js/firebase
-                      .app
-                      (.functions @REGION))]
+(defn- initialize []
+  (log ::initialize)
+  (let [firebase-app (env-config/get! :firebase-app)
+        functions (firebase-functions/getFunctions firebase-app @REGION)
+        ;; functions (-> js/firebase
+        ;;               .app
+        ;;               (.functions @REGION))
+        ]
     (when ^boolean goog.DEBUG
-      (-> functions (.useEmulator "localhost", 5001)))
+      (firebase-functions/connectFunctionsEmulator
+       functions "localhost" 5001)
+      ;; (-> functions (.useEmulator "localhost", 5001))
+      )
     functions))
+
+(def functions (memoize initialize))
 
 (defn call> [gcf-name data]
   (log ::call>
        :gcf-name gcf-name
        :data data)
-  (let [callable (-> (functions) (.httpsCallable gcf-name))]
+  (let [callable (firebase-functions/httpsCallable (functions) gcf-name)
+        ;; callable (-> (functions) (.httpsCallable gcf-name))
+        ]
     (js/Promise.
      (fn [resolve reject]
        (-> (callable (clj->js data))
