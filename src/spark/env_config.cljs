@@ -8,6 +8,10 @@
 
 (defn get!
   ([k]
-   (get @ENV k))
+   (if-let [v (get @ENV k)]
+     v
+     (throw (ex-info (str "spark.env-config: Missing value for key `" k "`")
+                     {:missing-key k
+                      :available-keys (keys @ENV)}))))
   ([k default-value]
    (get @ENV k default-value)))

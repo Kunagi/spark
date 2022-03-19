@@ -11,11 +11,11 @@
 (defn- initialize []
   (log ::initialize)
   (let [firebase-app (env-config/get! :firebase-app)
-        functions (firebase-functions/getFunctions firebase-app @REGION)]
+        service (firebase-functions/getFunctions firebase-app @REGION)]
     (when ^boolean goog.DEBUG
       (firebase-functions/connectFunctionsEmulator
-       functions "localhost" 5001))
-    functions))
+       service "localhost" 5001))
+    service))
 
 (def functions (memoize initialize))
 
