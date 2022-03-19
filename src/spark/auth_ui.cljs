@@ -1,6 +1,7 @@
 (ns spark.auth-ui
   (:require
    [clojure.string :as str]
+   ["firebase/auth" :as firebase-auth]
    ["@material-ui/core" :as mui]
    [spark.logging :refer [log]]
    [spark.utils :as u]
@@ -98,13 +99,15 @@ Bitte E-Mail Adresse eingeben.")
 ;; * Telephone
 
 (defn initialize-telephone-sign-in []
-  (log ::initialize-telephone-sign-in)
-  (let [verifier (js/firebase.auth.RecaptchaVerifier.
+  (log ::initialize-telephone-sign-in
+       :reCAPTCHA firebase-auth/RecaptchaVerifier)
+  (let [verifier (firebase-auth/RecaptchaVerifier.
                   "recaptcha-container"
                   (clj->js {:size     :invisible
                             :callback (fn [^js response]
                                         (log ::recaptcha-verivier-initialized
-                                             :response response))}))]
+                                             :response response))})
+                  (auth/auth))]
     (-> js/window .-recaptchaVerifier (set! verifier))))
 
 (def use-telephone-sign-in (ui/atom-hook auth/TELEPHONE_SIGN_IN))

@@ -11,10 +11,10 @@
 (defn- initialize []
   (log ::initialize)
   (let [firebase-app (env-config/get! :firebase-app)
-        storage (firebase-storage/getStorage firebase-app)]
+        service (firebase-storage/getStorage firebase-app)]
     (when ^boolean goog.DEBUG
-      (firebase-storage/connectStorageEmulator storage "localhost" 9199))
-    storage))
+      (firebase-storage/connectStorageEmulator service "localhost" 9199))
+    service))
 
 (def storage (memoize initialize))
 

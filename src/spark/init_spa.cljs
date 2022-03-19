@@ -2,7 +2,6 @@
   (:require
 
    ["firebase/compat/app" :default firebase]
-   ["firebase/compat/auth"]
    ["firebase/compat/firestore"]
 
    [spark.utils :as u]

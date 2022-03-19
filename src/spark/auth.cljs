@@ -6,14 +6,12 @@
    [spark.logging :refer [log]]
    [spark.utils :as u]
    [spark.env-config :as env-config]
+   [spark.firebase.auth :as spark.firebase.auth]
 
    [spark.core :as spark]
    [spark.db :as db]
    [spark.browser :as browser]
    [spark.firebase.messaging :as messaging]))
-
-;; https://firebase.google.com/docs/auth/
-;; https://firebase.google.com/docs/reference/js/firebase.auth.Auth
 
 (defonce SIGN_IN-F (atom nil))
 (defonce AUTH_COMPLETED (atom false))
@@ -30,8 +28,8 @@
   (when-let [auth-user (auth-user)]
     (-> ^js auth-user :uid)))
 
-(defn firebase-auth []
-  (-> (env-config/get! :firebase) .auth))
+(defn auth []
+  (spark.firebase.auth/auth))
 
 (defn redirect [href]
   (js/window.location.replace href))
@@ -45,8 +43,7 @@
       (log ::process-sign-in-with-custom-token-from-url
            :custom-token custom-token)
       (reset! AUTH_STATUS_MESSAGE (str "Custom Token empfangen: " custom-token))
-      (-> ^js (firebase-auth)
-          (.signInWithCustomToken custom-token)
+      (-> (firebase-auth/signInWithCustomToken (auth) custom-token)
           (.then (fn [_]
                    (reset! AUTH_STATUS_MESSAGE "Mit Custon Token angemeldet")))
           (.catch (fn [^js error]
@@ -59,26 +56,22 @@
                     (when error-handler (error-handler error))))))))
 
 (defn process-sign-in-with-redirect [error-handler]
-  (let [auth (firebase-auth)]
-    (-> ^js auth
-        .getRedirectResult
-        (.catch (fn [^js error]
-                  (log ::sign-in-with-redirect-failed
-                       :error error)
-                  (when error-handler (error-handler error)))))))
+  (-> (firebase-auth/getRedirectResult (auth))
+      (.catch (fn [^js error]
+                (log ::sign-in-with-redirect-failed
+                     :error error)
+                (when error-handler (error-handler error))))))
 
 (defn process-sign-in-with-email-link [error-handler]
-  (let [auth (firebase-auth)
-        href js/window.location.href]
-    (when (-> auth (.isSignInWithEmailLink href))
+  (let [href js/window.location.href]
+    (when (firebase-auth/isSignInWithEmailLink (auth) href)
       (log ::sign-in-with-email-link
            :href href)
-      (let [email (or (js/window.localStorage.getItem "signInEmail")
+      (let [email (or (js/localStorage.getItem "signInEmail")
                       (js/window.prompt "Bitte E-Mail zur Bestätigung eingeben"))]
-        (-> auth
-            (. signInWithEmailLink email href)
+        (-> (firebase-auth/signInWithEmailLink (auth) email href)
             (.then #(do
-                      (js/window.localStorage.removeItem "signInEmail")
+                      (js/localStorage.removeItem "signInEmail")
                       (redirect js/window.location.pathname))
                    #(do
                       (js/console.error %)
@@ -157,53 +150,52 @@
   ;;    #(js/window.location.reload)
   ;;    1000))
 
-  (let [auth (firebase-auth)]
-    (reset! AUTH_STATUS_MESSAGE "Initialisierung 2 gestartet")
-    (-> auth (.useDeviceLanguage))
-    (-> auth
-        ;; https://firebase.google.com/docs/reference/js/firebase.auth.Auth#onauthstatechanged
-        (.onAuthStateChanged
-         (fn [^js google-js-user]
-           (js/localStorage.setItem "spark.uid" (when google-js-user
-                                                  (-> google-js-user .-uid)))
-           (js/console.log "AUTH" google-js-user)
-           (reset! AUTH_STATUS_MESSAGE "AuthState empfangen")
-           (let [user (import-user google-js-user)]
-             (reset! AUTH_STATUS_MESSAGE "Benutzerdaten empfangen")
-             (log ::auth-state-changed
-                  :user user)
-             (let [auth-completed? (auth-completed?)]
-               (when-not auth-completed?
-                 (log ::auth-completed :user user))
-               (when-not (= user @AUTH_USER)
-                 (when auth-completed?
-                   (log ::user-changed :user user)
-                   (when-not user
-                     (reset! AUTH_STATUS_MESSAGE "Umleitung zur Startseite")
-                     (redirect-to-home)))
-                 (reset! AUTH_USER user)
-                 (when user
-                   (when user-doc-schema
-                     (reset! AUTH_STATUS_MESSAGE "Aktualisiere Benutzer Datensatz")
-                     (update-user-doc user-doc-schema user update-user messaging-vapid-key)))
-                 (when set-user
-                   (set-user user)))
-               (when-not auth-completed?
-                 (reset! AUTH_STATUS_MESSAGE "abgeschlossen")
-                 (reset! AUTH_COMPLETED true)))))))
+  (reset! AUTH_STATUS_MESSAGE "Initialisierung 2 gestartet")
+  (firebase-auth/useDeviceLanguage (auth))
+       ;; https://firebase.google.com/docs/reference/js/firebase.auth.Auth#onauthstatechanged
+  (-> (firebase-auth/onAuthStateChanged
+       (auth)
+       (fn [^js google-js-user]
+         (js/localStorage.setItem "spark.uid" (when google-js-user
+                                                (-> google-js-user .-uid)))
+         (js/console.log "AUTH" google-js-user)
+         (reset! AUTH_STATUS_MESSAGE "AuthState empfangen")
+         (let [user (import-user google-js-user)]
+           (reset! AUTH_STATUS_MESSAGE "Benutzerdaten empfangen")
+           (log ::auth-state-changed
+                :user user)
+           (let [auth-completed? (auth-completed?)]
+             (when-not auth-completed?
+               (log ::auth-completed :user user))
+             (when-not (= user @AUTH_USER)
+               (when auth-completed?
+                 (log ::user-changed :user user)
+                 (when-not user
+                   (reset! AUTH_STATUS_MESSAGE "Umleitung zur Startseite")
+                   (redirect-to-home)))
+               (reset! AUTH_USER user)
+               (when user
+                 (when user-doc-schema
+                   (reset! AUTH_STATUS_MESSAGE "Aktualisiere Benutzer Datensatz")
+                   (update-user-doc user-doc-schema user update-user messaging-vapid-key)))
+               (when set-user
+                 (set-user user)))
+             (when-not auth-completed?
+               (reset! AUTH_STATUS_MESSAGE "abgeschlossen")
+               (reset! AUTH_COMPLETED true)))))))
 
-    (reset! AUTH_STATUS_MESSAGE "initialisierung abgeschlossen")
+  (reset! AUTH_STATUS_MESSAGE "initialisierung abgeschlossen")
 
-    (process-sign-in-with-custom-token-from-url error-handler)
+  (process-sign-in-with-custom-token-from-url error-handler)
 
-    (process-sign-in-with-redirect error-handler)
+  (process-sign-in-with-redirect error-handler)
 
-    (process-sign-in-with-email-link error-handler)
+  (process-sign-in-with-email-link error-handler)
 
-    nil))
+  nil)
 
 (defn provider-sign-in> [^js provider]
-  (-> (firebase-auth) (.signInWithRedirect provider)))
+  (firebase-auth/signInWithRedirect (auth) provider))
 
 (comment
   (js/console.log (-> (firebase-auth)))
@@ -260,7 +252,7 @@
 
 (defn sign-out> []
   (js/localStorage.removeItem "spark.uid")
-  (u/=> (-> (firebase-auth) .signOut)
+  (u/=> (firebase-auth/signOut (auth))
         (fn [result]
           (browser/webkit-post-message "iosapp" "logout")
           (redirect-to-home)
@@ -276,8 +268,7 @@
        :url url)
   (let [settings {:url             url
                   :handleCodeInApp true}]
-    (-> (firebase-auth)
-        (.sendSignInLinkToEmail email (clj->js settings))
+    (-> (firebase-auth/sendSignInLinkToEmail (auth) email (clj->js settings))
         (.then #(do
                   (js/localStorage.setItem "signInEmail" email)
                   (swap! EMAIL_SIGN_IN assoc
@@ -303,8 +294,7 @@
                              :url    (-> js/window.location.href)}))
 
 (defn send-sign-in-code-to-telephone [telephone]
-  (-> (firebase-auth)
-      (.signInWithPhoneNumber telephone js/window.recaptchaVerifier)
+  (-> (firebase-auth/signInWithPhoneNumber (auth) telephone js/window.recaptchaVerifier)
       (.then (fn [^js result]
                (log ::sign-in-code-sent-to-telephone
                     :result result)
