@@ -4,9 +4,8 @@
    [clojure.string :as str]
    [goog.object :as gobj]
    [promesa.core :as p]
-   [cljs-bean.core :as cljs-bean]
-   ["firebase/firestore" :as firebase-firestore]
 
+   ;; must be compatible with admin sdk ["firebase/firestore" :as firebase-firestore]
 
    [spark.env-config :as env-config]
    [spark.logging :refer [log]]
