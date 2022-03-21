@@ -10,7 +10,12 @@
 (defn- initialize []
   (log ::initialize)
   (let [firebase-app (env-config/get! :firebase-app)
-        service (firebase-messaging/getMessaging firebase-app)]
+        service (try
+                  (firebase-messaging/getMessaging firebase-app)
+                  (catch :default ex
+                    (log ::initialize--error
+                         :error ex)
+                    nil))]
     ;; (when ^boolean goog.DEBUG
     ;;   (firebase-messaging/connectMessagingEmulator service "localhost" ?))
     service))
