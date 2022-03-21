@@ -4,7 +4,6 @@
    [spark.logging :refer [log]]
    [spark.utils :as u]
    [spark.money :as money]
-   [spark.firestore :as firestore]
    [spark.db :as db]
    [spark.gcf :as gcf]))
 
