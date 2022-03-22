@@ -1327,7 +1327,6 @@
 
         on-click (when on-click
                    (fn [^js event]
-                     (js/alert "clicked")
                      (-> event .preventDefault)
                      (when (-> event .-stopImmediatePropagation)
                        (-> event .stopImmediatePropagation))
