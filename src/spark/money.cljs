@@ -152,12 +152,18 @@
   (cond
     (and m1 m2) (-> (money m1) (.subtract (money m2)))
     m1 m1
-    m2 (multiply m2 -1)))
+    m2 m2))
 
 (comment
   (->str (subtract "10" 1))
   (->str (subtract "10" nil))
   (->str (subtract nil 2)))
+
+(defn add [m1 m2]
+  (cond
+    (and m1 m2) (-> (money m1) (.add (money m2)))
+    m1 m1
+    m2 m2))
 
 (defn sum [vals]
   (reduce (fn [ret val]
