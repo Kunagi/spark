@@ -193,6 +193,20 @@
 
 ;; * firebase
 
+(defn log-error [error]
+  (js/console.error error)
+  (let [message (-> error .-message)]
+    (js/setTimeout
+     (db/add> "errors" {:message message
+                        :error (str error)
+                        :stack (-> error .-stack)
+                        :url js/window.location.href
+                        :userAgent js/navigator.userAgent
+                        :timestamp :db/timestamp
+                        :uid (js/localStorage.getItem "spark.uid")})
+     1))
+  nil)
+
 (def call-server> firebase-functions/call>)
 
 (defn server-cmd> [cmd args]
@@ -263,6 +277,7 @@
                               ;;      :doc doc)
                               (set-doc doc)))
               on-error    (fn [^js error]
+                            (log-error error)
                             (log ::use-doc--error
                                  :path path
                                  :exception error))
@@ -313,6 +328,7 @@
                                                                ;;      :docs (count docs))
                                                                (add-doc doc)))
                                                on-error    (fn [^js error]
+                                                             (log-error error)
                                                              (log ::use-docs--error
                                                                   :path path
                                                                   :exception error)
@@ -364,7 +380,9 @@
                                 (map firestore/wrap-doc)
                                 set-docs))
              on-error    (fn [^js error]
-                           (js/console.error "Loading collection failed" path error))
+                           (js/console.error "Loading collection failed" path error)
+                           (log-error error)
+                           nil)
              unsubscribe (.onSnapshot col-ref on-snap on-error)]
 
          unsubscribe)))
