@@ -1454,7 +1454,8 @@
      {:title "example title"}
      "Example content."))
 
-(defnc CardRow [{:keys [gap children]}]
+(defnc CardRow [{:keys [gap children
+                        grid-template-columns]}]
   (when children
     (if-not (array? children)
       children
@@ -1463,7 +1464,8 @@
         (d/div
          {:class "CardRow"
           :style {:display :grid
-                  :grid-template-columns (str "repeat(" (count children) ", auto)")
+                  :grid-template-columns (or grid-template-columns
+                                             (str "repeat(" (count children) ", auto)"))
                   :grid-gap gap}}
          children)))))
 
