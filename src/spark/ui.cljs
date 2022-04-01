@@ -194,16 +194,18 @@
 ;; * firebase
 
 (defn log-error [error]
-  (js/console.error error)
   (let [message (-> error .-message)]
     (js/setTimeout
-     (db/add> "errors" {:message message
-                        :error (str error)
-                        :stack (-> error .-stack)
-                        :url js/window.location.href
-                        :userAgent js/navigator.userAgent
-                        :timestamp :db/timestamp
-                        :uid (js/localStorage.getItem "spark.uid")})
+     (try
+       (db/add> "errors" {:message message
+                          :error (str error)
+                          :stack (-> error .-stack)
+                          :url js/window.location.href
+                          :userAgent js/navigator.userAgent
+                          :timestamp :db/timestamp
+                          :uid (js/localStorage.getItem "spark.uid")})
+       (catch :default _ex
+         nil))
      1))
   nil)
 
