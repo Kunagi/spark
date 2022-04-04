@@ -39,6 +39,7 @@
    [spark.env :as env]
    [spark.money :as money]
    [spark.local :as local]
+   [spark.debug :as debug]
 
    [spark.firebase.storage :as storage]
    [spark.runtime :as runtime]
@@ -283,7 +284,12 @@
                             (log ::use-doc--error
                                  :path path
                                  :exception error))
-              unsubscribe (.onSnapshot ref on-snapshot on-error)]
+              debug-id [path (u/nano-id)]
+              _ (debug/reg-item :doc debug-id)
+              firestore-unsubscribe (.onSnapshot ref on-snapshot on-error)
+              unsubscribe (fn []
+                            (debug/unreg-item :doc debug-id)
+                            (firestore-unsubscribe))]
 
           unsubscribe)))
 
@@ -384,9 +390,13 @@
              on-error    (fn [^js error]
                            (js/console.error "Loading collection failed" path error)
                            (log-error error)
-                           nil)
-             unsubscribe (.onSnapshot col-ref on-snap on-error)]
-
+                           )
+             debug-id [path (u/nano-id)]
+             _ (debug/reg-item :col debug-id)
+             firestore-unsubscribe (.onSnapshot col-ref on-snap on-error)
+             unsubscribe (fn []
+                           (debug/unreg-item :col debug-id)
+                           (firestore-unsubscribe))]
          unsubscribe)))
 
     docs))
