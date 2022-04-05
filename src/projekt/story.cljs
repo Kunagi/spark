@@ -10,7 +10,7 @@
 (def-field Beschreibung
   [:string
    {:label "Beschreibung"
-    :rows 4}])
+    :rows 3}])
 
 (def-field Voraussetzungen
   [:string
@@ -19,12 +19,12 @@
 (def-field Tasks
   [:string
    {:label "ToDo's"
-    :rows 8}])
+    :rows 12}])
 
 (def-field Klaerungsbedarf
   [:string
    {:label "Klärungsbedarf (für Product Owner)"
-    :rows 4}])
+    :rows 8}])
 
 (def-field Feature-id
   [:string

@@ -40,14 +40,16 @@
 
 (defn show-update-story-form> [projekt story uid]
   (let [fields (if (projekt/developer-uid? projekt uid)
-                 [story/Bez story/Beschreibung
-                  story/Tasks
+                 [story/Bez
+                  story/Beschreibung
                   story/Voraussetzungen
-                  story/Klaerungsbedarf
                   story/Feature-id story/Sprint-id
                   story/Aufwandschaetzung
                   story/Aufwand
-                  story/Prio]
+                  story/Prio
+                  story/Klaerungsbedarf
+                  story/Tasks
+                  ]
                  [story/Prio
                   story/Klaerungsbedarf])]
     (ui/show-form-dialog>
