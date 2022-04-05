@@ -24,6 +24,9 @@
 (defn datum-abgeschlossen [this]
   (-> this :datum-abgeschlossen))
 
+(defn entwickler [this]
+  (-> this :entwickler))
+
 (defn closed? [this]
   (or (-> this datum-abgeschlossen boolean)
       (-> this id (> 99999))))

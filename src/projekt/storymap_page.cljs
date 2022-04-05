@@ -5,6 +5,7 @@
 
    [spark.logging :refer [log]]
    [spark.utils :as u]
+   [spark.local :as local]
    [spark.db :as db]
    [spark.ui :as ui :refer [def-page def-ui $ <>]]
 
@@ -145,9 +146,9 @@
          :story story
          :projekt projekt}))))
 
-(defn sprint-card [sprint projekt storys uid expand]
+(defn sprint-card [sprint projekt uid]
   (let [sprint-id (-> sprint :id)
-
+        storys (-> projekt projekt/storys)
         stunden-geschaetzt (reduce (fn [aufwand story]
                                      (when aufwand
                                        (if (= sprint-id (-> story :sprint-id))
@@ -176,11 +177,6 @@
            "repeat(9, minmax(min-content, max-content))"
            {:align-items "center"
             :grid-gap "32px"}
-           (when expand
-             ($ ui/IconButton
-                {:icon "apps"
-                 :size "small"
-                 :onClick #(expand sprint-id)}))
            (ui/div "Sprint #" sprint-id)
            (when-let [entwickler (-> sprint :entwickler)]
              (ui/div entwickler))
@@ -208,7 +204,7 @@
                  :size "small"
                  :on-click #(show-update-sprint> sprint)}))))))))
 
-(defn features-row [projekt uid {:keys [feature-ids]} sprint-id]
+(defn features-row [projekt uid feature-ids sprint-id]
   ($ :tr
      (for [feature-id feature-ids]
        ($ :th {:key feature-id}
@@ -229,14 +225,86 @@
                       :icon :add
                       :size "small"}))))))))
 
+(defonce SELECTED_SPRINT_ID (atom nil))
+
+(def use-selected-sprint-id (ui/atom-hook SELECTED_SPRINT_ID))
+
+(defn use-current-sprint-id [storymap]
+  (let [selected-sprint-id (use-selected-sprint-id)]
+    (when-not (= "_alle" selected-sprint-id)
+      (or selected-sprint-id
+          (->> storymap
+               :sprints-ids
+               (map (fn [sprint-id]
+                      (-> storymap :sprints (get sprint-id))))
+               (remove sprint/datum-abgeschlossen)
+               first
+               :id)
+          (-> storymap :sprints-ids first)))))
+
+(def-ui SprintSelector [storymap]
+  (let [current-sprint-id (use-current-sprint-id storymap)
+        {:keys [sprints-ids]} storymap]
+    (ui/stack
+     ($ mui/Select
+        {:variant "outlined"
+         :size "small"
+         :value (or current-sprint-id "_alle")
+         :onChange #(->> % .-target .-value (reset! SELECTED_SPRINT_ID))}
+        (for [sprint-id sprints-ids]
+          (let [sprint (-> storymap :sprints (get sprint-id))]
+            ($ mui/MenuItem
+               {:key sprint-id
+                :value sprint-id}
+               (str "Sprint #" sprint-id
+                    (when-let [s (-> sprint sprint/entwickler)]
+                      (str " | " s))
+                    (when-let [s (-> sprint sprint/datum-abgeschlossen)]
+                      (str " | " (-> s local/format-date)))))))
+        ($ mui/MenuItem
+           {:value "_alle"}
+           "* Alle Sprints *"))
+     ;; (ui/DEBUG (-> storymap :sprints))
+     ;; (ui/DEBUG sprints-ids)
+     )))
+
+(def-ui SprintTableRows [sprint storymap projekt standalone uid]
+  {:from-context [uid]}
+  (let [sprint-id (-> sprint :id)
+        feature-ids (-> storymap :feature-ids)
+        feature-ids (if-not standalone
+                      feature-ids
+                      (->> feature-ids
+                           (remove (fn [feature-id]
+                                     (empty?
+                                      (get-in storymap
+                                              [:storys-by-sprint-and-feature
+                                               [sprint-id feature-id]]))))))]
+    (<>
+     {:key sprint-id}
+     ($ :tr
+        ($ :td
+           {:colSpan (count feature-ids)}
+           (sprint-card sprint projekt uid)))
+     (features-row projekt uid feature-ids sprint-id)
+     ($ :tr
+        (for [feature-id feature-ids]
+          ($ :td {:key feature-id
+                  :style {:vertical-align "top"
+                           ;; :padding "0.5rem"
+                          }}
+             ($ StoryCards
+                {:storys (get-in storymap
+                                 [:storys-by-sprint-and-feature
+                                  [sprint-id feature-id]])
+                 :projekt projekt})))))))
+
 (def-ui Storymap [projekt uid]
   {:from-context [projekt uid]}
   (let [storys (-> projekt projekt/storys)
         storymap (core/storymap projekt storys)
-        feature-ids (->> storymap :feature-ids)
         sprints-ids (-> storymap :sprints-ids)
-        [expanded-sprint-ids set-expended-sprint-ids] (ui/use-state #{})
-        expand #(set-expended-sprint-ids (conj expanded-sprint-ids %))]
+        current-sprint-id (use-current-sprint-id storymap)]
     (ui/stack
      ;; (ui/data (-> projekt :sprints))
      ;; (ui/data (macroexpand-1 '(def-ui Hello []
@@ -245,37 +313,24 @@
      ;; (ui/data uid)
      ;; (ui/data (-> projekt :developers))
      ;; (ui/data {:sprints-ids sprints-ids})
+     ($ SprintSelector {:storymap storymap})
      ($ :table
 
         ($ :thead)
 
         ($ :tbody
-           (for [sprint-id sprints-ids]
-             (let [sprint (or (-> projekt :sprints (get sprint-id))
-                              {:id sprint-id
-                               :db/ref [(-> projekt :db/ref) :sprints sprint-id]})
-                   expanded? (or (contains? expanded-sprint-ids sprint-id)
-                                 (not (-> sprint sprint/closed?)))]
-               (<>
-                {:key sprint-id}
-                ($ :tr
-                   ($ :td
-                      {:colSpan (count feature-ids)}
-                      (sprint-card sprint projekt storys uid (when-not expanded? expand))))
-                (when expanded?
-                  (features-row projekt uid storymap sprint-id))
-                (when expanded?
-                  ($ :tr
-                     (for [feature-id feature-ids]
-                       ($ :td {:key feature-id
-                               :style {:vertical-align "top"
-                                       ;; :padding "0.5rem"
-                                       }}
-                          ($ StoryCards
-                             {:storys (get-in storymap
-                                              [:storys-by-sprint-and-feature
-                                               [sprint-id feature-id]])
-                              :projekt projekt}))))))))))
+           (if-not current-sprint-id
+             (for [sprint-id sprints-ids]
+               (let [sprint (-> storymap :sprints (get sprint-id))]
+                 ($ SprintTableRows {:sprint sprint
+                                     :storymap storymap
+                                     :projekt projekt
+                                     :standalone false})))
+             ($ SprintTableRows {:sprint (-> storymap :sprints (get current-sprint-id))
+                                 :storymap storymap
+                                 :projekt projekt
+                                 :standalone true}))))
+
      ($ :div
         (when (projekt/developer-uid? projekt uid)
           ($ ui/Button
@@ -283,7 +338,7 @@
               :icon :add
               :on-click #(show-add-story-form>
                           projekt
-                          {})})))
+                          {:sprint-id current-sprint-id})})))
      ($ :div
         {:style {:display "none"}}
         ($ :textarea

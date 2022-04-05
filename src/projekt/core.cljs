@@ -1,12 +1,10 @@
-(ns projekt.core
-  )
+(ns projekt.core)
 
 (defn story-sprint-id [story]
   (get story :sprint-id "99999"))
 
 (defn story-feature-id [story]
   (get story :feature-id "zzzzz"))
-
 
 (defn storymap [projekt storys]
   (let [sprints-ids (->> storys
@@ -25,9 +23,18 @@
                                      (map-indexed (fn [idx id] [id idx]))
                                      (into {}))
         feature-ids (->> features
-                         (sort-by #(get feature-reihenfolge-map % 999999)))]
+                         (sort-by #(get feature-reihenfolge-map % 999999)))
+        sprints (->> sprints-ids
+                     (reduce (fn [m sprint-id]
+                               (assoc m
+                                      sprint-id
+                                      (or (-> projekt :sprints (get sprint-id))
+                                          {:id sprint-id
+                                           :db/ref [(-> projekt :db/ref) :sprints sprint-id]})))
+                             {}))]
     {:storys storys
      :sprints-ids sprints-ids
      :features features
      :storys-by-sprint-and-feature storys-by-sprint-and-feature
-     :feature-ids feature-ids}))
+     :feature-ids feature-ids
+     :sprints sprints}))
