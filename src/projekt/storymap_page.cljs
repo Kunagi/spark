@@ -266,7 +266,7 @@
   (let [current-sprint-id (use-current-sprint-id storymap)
         {:keys [sprints-ids]} storymap]
     (ui/div
-     {:max-width "90vw"}
+     {:max-width "300px"}
      (ui/stack
       ($ mui/Select
          {:variant "outlined"
