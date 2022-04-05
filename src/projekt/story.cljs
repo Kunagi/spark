@@ -49,11 +49,25 @@
     :type "number"
     :input-props {:min 0 :step 4}}])
 
+(def-field Prio
+  [:int
+   {:label "Priorität"
+    :type :number}])
+
 (def-subdoc Story
-  [{}])
+  [{}
+   [:prio {:optional true} Prio]])
 
 (defn num [story]
   (-> story :id int))
+
+(defn prio [this]
+  (-> this :prio))
+
+(defn sort-value [this]
+  [(or (-> this prio)
+       99999)
+   (-> this num)])
 
 (defn parse-task [task]
   (let [prefix (-> task (.substring 0 1))

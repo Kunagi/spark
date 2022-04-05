@@ -46,8 +46,10 @@
                   story/Klaerungsbedarf
                   story/Feature-id story/Sprint-id
                   story/Aufwandschaetzung
-                  story/Aufwand]
-                 [story/Klaerungsbedarf])]
+                  story/Aufwand
+                  story/Prio]
+                 [story/Prio
+                  story/Klaerungsbedarf])]
     (ui/show-form-dialog>
      {:fields fields
       :values story
@@ -135,23 +137,29 @@
               ($ :div
                  {:style {:display "grid"
                           :grid-gap "8px"
-                          :grid-template-columns "1fr 1fr"
-                          :text-align "right"
-                          :color "grey"}}
-                 ($ :div
-                    (when-let [aufwand (-> story :aufwandschaetzung)]
-                      ($ :span
-                         aufwand " Std geschätzt")))
-                 ($ :div
-                    (when-let [aufwand (-> story :aufwand)]
-                      ($ :span aufwand " Std geleistet"))))
+                          :grid-template-columns "auto auto auto"}}
+                 (ui/div
+                  {:color "grey"}
+                  (when-let [prio (-> story story/prio)]
+                    (ui/div "Prio " prio)))
+                 (ui/div
+                  {:text-align :right
+                   :color "grey"}
+                  (when-let [aufwand (-> story :aufwandschaetzung)]
+                    ($ :span
+                       aufwand " Std geschätzt")))
+                 (ui/div
+                  {:text-align :right
+                   :color "grey"}
+                  (when-let [aufwand (-> story :aufwand)]
+                    ($ :span aufwand " Std geleistet"))))
               (when-let [s (-> story :klaerungsbedarf)]
                 (format-klaerungsbedarf s)))
            #_(ui/data story)))))
 
 (def-ui StoryCards [storys projekt]
   (ui/stack
-   (for [story (->> storys (sort-by story/num))]
+   (for [story (->> storys (sort-by story/sort-value))]
      ($ StoryCard
         {:key (-> story :id)
          :story story
