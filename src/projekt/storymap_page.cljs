@@ -238,13 +238,18 @@
                       :icon :add
                       :size "small"}))))))))
 
-(defonce SELECTED_SPRINT_ID (atom nil))
 
+(defonce SEARCH_TEXT (atom nil))
+(def use-search-text (ui/atom-hook SEARCH_TEXT))
+
+(defonce SELECTED_SPRINT_ID (atom nil))
 (def use-selected-sprint-id (ui/atom-hook SELECTED_SPRINT_ID))
 
 (defn use-current-sprint-id [storymap]
-  (let [selected-sprint-id (use-selected-sprint-id)]
-    (when-not (= "_alle" selected-sprint-id)
+  (let [selected-sprint-id (use-selected-sprint-id)
+        search-text (use-search-text)]
+    (when (and (not= "_alle" selected-sprint-id)
+               (str/blank? search-text))
       (or selected-sprint-id
           (->> storymap
                :sprints-ids
@@ -261,28 +266,53 @@
     (ui/div
      {:max-width "300px"}
      (ui/stack
-      ($ mui/Select
-         {:variant "outlined"
-          :size "small"
-          :fullWidth false
-          :value (or current-sprint-id "_alle")
-          :onChange #(->> % .-target .-value (reset! SELECTED_SPRINT_ID))}
-         (for [sprint-id sprints-ids]
-           (let [sprint (-> storymap :sprints (get sprint-id))]
-             ($ mui/MenuItem
-                {:key sprint-id
-                 :value sprint-id}
-                (str "Sprint #" sprint-id
-                     (when-let [s (-> sprint sprint/entwickler)]
-                       (str " | " s))
-                     (when-let [s (-> sprint sprint/datum-abgeschlossen)]
-                       (str " | " (-> s local/format-date)))))))
-         ($ mui/MenuItem
-            {:value "_alle"}
-            "* Alle Sprints *"))
+      ($ mui/FormControl
+         {:size "small"}
+         ($ mui/Select
+            {:variant "outlined"
+             :size "small"
+             :fullWidth false
+             :value (or current-sprint-id "_alle")
+             :onChange (fn [^js event]
+                         (reset! SEARCH_TEXT nil)
+                         (->> event .-target .-value (reset! SELECTED_SPRINT_ID)))}
+            (for [sprint-id sprints-ids]
+              (let [sprint (-> storymap :sprints (get sprint-id))]
+                ($ mui/MenuItem
+                   {:key sprint-id
+                    :value sprint-id}
+                   (str "Sprint #" sprint-id
+                        (when-let [s (-> sprint sprint/entwickler)]
+                          (str " | " s))
+                        (when-let [s (-> sprint sprint/datum-abgeschlossen)]
+                          (str " | " (-> s local/format-date)))))))
+            ($ mui/MenuItem
+               {:value "_alle"}
+               "* Alle Sprints *")))
       ;; (ui/DEBUG (-> storymap :sprints))
       ;; (ui/DEBUG sprints-ids)
       ))))
+
+
+(def-ui SearchInput []
+  (let [text (use-search-text)]
+    (ui/div
+     {:max-width "200px"}
+     ($ mui/TextField
+        {:variant "outlined"
+         :label "Suche"
+         :size "small"
+         :value (or text "")
+         :onChange #(->> % .-target .-value (reset! SEARCH_TEXT))
+         }))))
+
+(def-ui Controls [storymap]
+  (ui/div
+   {:max-width "90vw"}
+   (ui/grid
+    [:auto :auto]
+    ($ SprintSelector {:storymap storymap})
+    ($ SearchInput))))
 
 (def-ui SprintTableRows [sprint storymap projekt standalone uid]
   {:from-context [uid]}
@@ -315,9 +345,23 @@
                                   [sprint-id feature-id]])
                  :projekt projekt})))))))
 
+(defn filter-storys [storys search-text]
+  (let [search-text (-> search-text
+                        str/trim
+                        str/lower-case)
+        words (->> (str/split search-text #"\s")
+                   (remove nil?)
+                   (map str/lower-case))]
+    (->> storys
+         (filter #(story/matches-suchtext % search-text)))))
+
 (def-ui Storymap [projekt uid]
   {:from-context [projekt uid]}
-  (let [storys (-> projekt projekt/storys)
+  (let [search-text (use-search-text)
+        storys (-> projekt projekt/storys)
+        storys (if (str/blank? search-text)
+                 storys
+                 (filter-storys storys search-text))
         storymap (core/storymap projekt storys)
         sprints-ids (-> storymap :sprints-ids)
         current-sprint-id (use-current-sprint-id storymap)]
@@ -329,7 +373,7 @@
      ;; (ui/data uid)
      ;; (ui/data (-> projekt :developers))
      ;; (ui/data {:sprints-ids sprints-ids})
-     ($ SprintSelector {:storymap storymap})
+     ($ Controls {:storymap storymap})
      ($ :table
 
         ($ :thead)

@@ -61,6 +61,18 @@
 (defn num [story]
   (-> story :id int))
 
+(defn bez [story]
+  (-> story :bez))
+
+(defn beschreibung [story]
+  (-> story :beschreibung))
+
+(defn tasks [story]
+  (-> story :tasks))
+
+(defn klaerungsbedarf [story]
+  (-> story :klaerungsbedarf))
+
 (defn prio [this]
   (-> this :prio))
 
@@ -82,3 +94,16 @@
     (->> tasks
          str/split-lines
          (map parse-task))))
+
+(defn matches-suchtext [this suchtext]
+  (or
+   (when-let [s (-> this bez)]
+     (-> s str/trim str/lower-case (.indexOf suchtext) (>= 0)))
+   (when-let [s (-> this beschreibung)]
+     (-> s str/trim str/lower-case (.indexOf suchtext) (>= 0)))
+   (when-let [s (-> this tasks)]
+     (-> s str/trim str/lower-case (.indexOf suchtext) (>= 0)))
+   (when-let [s (-> this klaerungsbedarf)]
+     (-> s str/trim str/lower-case (.indexOf suchtext) (>= 0)))
+   (when-let [n (-> this num)]
+     (-> n str str/trim str/lower-case (.indexOf suchtext) (>= 0)))))
