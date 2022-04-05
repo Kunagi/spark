@@ -12,7 +12,8 @@
    [projekt.core :as core]
    [projekt.story :as story]
    [projekt.sprint :as sprint]
-   [projekt.projekt :as projekt]))
+   [projekt.projekt :as projekt]
+   [clojure.string :as str]))
 
 (defn show-add-story-form> [projekt values]
   (ui/show-form-dialog>
@@ -79,64 +80,74 @@
         {:style {:margin-top "4px"}}
         (-> task :bez))))
 
+(defn format-klaerungsbedarf [s]
+  (ui/div
+   {:white-space "pre-wrap"}
+   (ui/div
+    {:font-size "80%"
+     :font-weight 900}
+    "Klärungsbedarf")
+   (for [[idx line]  (map-indexed vector (str/split-lines s))]
+     (let [response? (str/starts-with? line "> ")]
+       (ui/div
+        {:id idx
+         :color (if response? "green" "red")}
+        line
+        (when response?
+          (ui/div {:height 8})))))))
+
 (def-ui StoryCard [story projekt uid]
   {:from-context [uid]
    :wrap-memo-props [story]}
   (log ::StoryCard--render
        :story (-> story story/num)
        :projekt (-> projekt :id))
-  (let [theme (ui/use-theme)]
-    ($ mui/Card
-       ($ mui/CardActionArea
-          {:onClick #(show-update-story-form> projekt story uid)}
-          ($ mui/CardContent
-             ($ ui/Stack
-                ($ :div
-                   {:style {:text-align "center"}}
-                   ($ :span "#" (-> story :id)))
+  ($ mui/Card
+     ($ mui/CardActionArea
+        {:onClick #(show-update-story-form> projekt story uid)}
+        ($ mui/CardContent
+           ($ ui/Stack
+              ($ :div
+                 {:style {:text-align "center"}}
+                 ($ :span "#" (-> story :id)))
+              ($ :div
+                 {:style {:text-align "center"
+                          :width "200px"
+                          :font-weight "bold"}}
+                 (-> story :bez))
+              (when-let [beschreibung (-> story :beschreibung)]
                 ($ :div
                    {:style {:text-align "center"
-                            :width "200px"
-                            :font-weight "bold"}}
-                   (-> story :bez))
-                (when-let [beschreibung (-> story :beschreibung)]
-                  ($ :div
-                     {:style {:text-align "center"
-                              :white-space "pre-wrap"}}
-                     beschreibung))
-                (when-let [tasks (story/parse-tasks story)]
-                  ($ :div
-                     (for [task tasks]
-                       ($ Task
-                          {:key task
-                           :task task}))))
-                (when-let [voraussetzungen (-> story :voraussetzungen)]
-                  ($ :div
-                     ($ :span {:className "b"
-                               :style {:white-space "pre-wrap"}}
-                        "Voraussetzungen: ")
-                     (-> voraussetzungen)))
+                            :white-space "pre-wrap"}}
+                   beschreibung))
+              (when-let [tasks (story/parse-tasks story)]
                 ($ :div
-                   {:style {:display "grid"
-                            :grid-gap "8px"
-                            :grid-template-columns "1fr 1fr"
-                            :text-align "right"
-                            :color "grey"}}
-                   ($ :div
-                      (when-let [aufwand (-> story :aufwandschaetzung)]
-                        ($ :span
-                           aufwand " Std geschätzt")))
-                   ($ :div
-                      (when-let [aufwand (-> story :aufwand)]
-                        ($ :span aufwand " Std geleistet"))))
-                (when-let [klaerungsbedarf (-> story :klaerungsbedarf)]
-                  ($ :div
-                     {:style {:color (-> ^js theme .-palette .-primary .-main)
-                              :white-space "pre-wrap"}}
-                     ($ :span {:className "b"}
-                        "Klärungsbedarf: ")
-                     (-> klaerungsbedarf))))
-             #_(ui/data story))))))
+                   (for [task tasks]
+                     ($ Task
+                        {:key task
+                         :task task}))))
+              (when-let [voraussetzungen (-> story :voraussetzungen)]
+                ($ :div
+                   ($ :span {:className "b"
+                             :style {:white-space "pre-wrap"}}
+                      "Voraussetzungen: ")
+                   (-> voraussetzungen)))
+              ($ :div
+                 {:style {:display "grid"
+                          :grid-gap "8px"
+                          :grid-template-columns "1fr 1fr"
+                          :text-align "right"
+                          :color "grey"}}
+                 ($ :div
+                    (when-let [aufwand (-> story :aufwandschaetzung)]
+                      ($ :span
+                         aufwand " Std geschätzt")))
+                 ($ :div
+                    (when-let [aufwand (-> story :aufwand)]
+                      ($ :span aufwand " Std geleistet"))))
+              (when-let [s (-> story :klaerungsbedarf)]
+                (format-klaerungsbedarf s)))
+           #_(ui/data story)))))
 
 (def-ui StoryCards [storys projekt]
   (ui/stack
