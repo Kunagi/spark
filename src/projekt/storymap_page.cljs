@@ -238,7 +238,6 @@
                       :icon :add
                       :size "small"}))))))))
 
-
 (defonce SEARCH_TEXT (atom nil))
 (def use-search-text (ui/atom-hook SEARCH_TEXT))
 
@@ -292,8 +291,6 @@
       ;; (ui/DEBUG (-> storymap :sprints))
       ;; (ui/DEBUG sprints-ids)
       ))))
-
-
 (def-ui SearchInput []
   (let [text (use-search-text)]
     (ui/div
@@ -303,16 +300,32 @@
          :label "Suche"
          :size "small"
          :value (or text "")
-         :onChange #(->> % .-target .-value (reset! SEARCH_TEXT))
-         }))))
+         :onChange #(->> % .-target .-value (reset! SEARCH_TEXT))}))))
+
+(defn show-search-form> []
+  (ui/show-form-dialog
+   {:fields [{:id :text
+              :label "Suchtext oder Nummer"}]
+    :submit (fn [{:keys [text]}]
+              (reset! SEARCH_TEXT text))}))
 
 (def-ui Controls [storymap]
-  (ui/div
-   {:max-width "90vw"}
-   (ui/grid
-    [:auto :auto]
-    ($ SprintSelector {:storymap storymap})
-    ($ SearchInput))))
+  (let [search-text (use-search-text)]
+    (ui/div
+     {:max-width "90vw"}
+     (ui/flex
+      ($ SprintSelector {:storymap storymap})
+      ($ ui/Button
+         {;; :text "Suche"
+          :icon :search
+          :color :default
+          :on-click #(show-search-form>)})
+      (when search-text
+        ($ ui/Button
+           {:icon :delete_forever
+            :text (str "\"" search-text "\"")
+            :color :default
+            :on-click #(reset! SEARCH_TEXT nil)}))))))
 
 (def-ui SprintTableRows [sprint storymap projekt standalone uid]
   {:from-context [uid]}
