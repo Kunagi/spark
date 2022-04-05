@@ -99,7 +99,7 @@
         (when response?
           (ui/div {:height 8})))))))
 
-(def-ui StoryCard [story projekt uid]
+(def-ui StoryCard [story projekt lowest-prio uid]
   {:from-context [uid]
    :wrap-memo-props [story]}
   (log ::StoryCard--render
@@ -142,7 +142,10 @@
                  (ui/div
                   {:color "grey"}
                   (when-let [prio (-> story story/prio)]
-                    (ui/div "Prio " prio)))
+                    (ui/div
+                     {:font-weight (when (= prio lowest-prio)
+                                     900)}
+                     "Prio " prio)))
                  (ui/div
                   {:text-align :right
                    :color "grey"}
@@ -158,13 +161,14 @@
                 (format-klaerungsbedarf s)))
            #_(ui/data story)))))
 
-(def-ui StoryCards [storys projekt]
+(def-ui StoryCards [storys projekt lowest-prio]
   (ui/stack
    (for [story (->> storys (sort-by story/sort-value))]
      ($ StoryCard
         {:key (-> story :id)
          :story story
-         :projekt projekt}))))
+         :projekt projekt
+         :lowest-prio lowest-prio}))))
 
 (defn sprint-card [sprint projekt uid]
   (let [sprint-id (-> sprint :id)
@@ -238,7 +242,6 @@
                       :icon :add
                       :size "small"}))))))))
 
-
 (defonce SEARCH_OPTS (atom {:auch-abgeschlossene false}))
 (def use-search-opts (ui/atom-hook SEARCH_OPTS))
 (defn use-search-text []
@@ -294,8 +297,6 @@
       ;; (ui/DEBUG (-> storymap :sprints))
       ;; (ui/DEBUG sprints-ids)
       ))))
-
-
 (defn show-search-form> []
   (ui/show-form-dialog
    {:fields [{:id :text
@@ -336,7 +337,19 @@
                                      (empty?
                                       (get-in storymap
                                               [:storys-by-sprint-and-feature
-                                               [sprint-id feature-id]]))))))]
+                                               [sprint-id feature-id]]))))))
+        storys (->> storymap
+                    :storys
+                    (filter (fn [story]
+                              (-> story story/sprint-id (= sprint-id)))))
+        lowest-prio (->> storys
+                         (map story/prio)
+                         (reduce (fn [acc prio]
+                                   (cond
+                                     (and acc prio) (min acc prio)
+                                     acc acc
+                                     prio prio))
+                                 nil))]
     (<>
      {:key sprint-id}
      ($ :tr
@@ -354,7 +367,8 @@
                 {:storys (get-in storymap
                                  [:storys-by-sprint-and-feature
                                   [sprint-id feature-id]])
-                 :projekt projekt})))))))
+                 :projekt projekt
+                 :lowest-prio lowest-prio})))))))
 
 (defn filter-storys [projekt storys search-opts]
   (let [search-text (-> search-opts
