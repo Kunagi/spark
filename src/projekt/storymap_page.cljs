@@ -314,7 +314,8 @@
     (ui/div
      {:max-width "90vw"}
      (ui/flex
-      ($ SprintSelector {:storymap storymap})
+      (when-not search-text
+        ($ SprintSelector {:storymap storymap}))
       ($ ui/Button
          {;; :text "Suche"
           :icon :search
