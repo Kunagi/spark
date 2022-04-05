@@ -48,8 +48,7 @@
                   story/Aufwand
                   story/Prio
                   story/Klaerungsbedarf
-                  story/Tasks
-                  ]
+                  story/Tasks]
                  [story/Prio
                   story/Klaerungsbedarf])]
     (ui/show-form-dialog>
@@ -266,28 +265,31 @@
 (def-ui SprintSelector [storymap]
   (let [current-sprint-id (use-current-sprint-id storymap)
         {:keys [sprints-ids]} storymap]
-    (ui/stack
-     ($ mui/Select
-        {:variant "outlined"
-         :size "small"
-         :value (or current-sprint-id "_alle")
-         :onChange #(->> % .-target .-value (reset! SELECTED_SPRINT_ID))}
-        (for [sprint-id sprints-ids]
-          (let [sprint (-> storymap :sprints (get sprint-id))]
-            ($ mui/MenuItem
-               {:key sprint-id
-                :value sprint-id}
-               (str "Sprint #" sprint-id
-                    (when-let [s (-> sprint sprint/entwickler)]
-                      (str " | " s))
-                    (when-let [s (-> sprint sprint/datum-abgeschlossen)]
-                      (str " | " (-> s local/format-date)))))))
-        ($ mui/MenuItem
-           {:value "_alle"}
-           "* Alle Sprints *"))
-     ;; (ui/DEBUG (-> storymap :sprints))
-     ;; (ui/DEBUG sprints-ids)
-     )))
+    (ui/div
+     {:max-width "90vw"}
+     (ui/stack
+      ($ mui/Select
+         {:variant "outlined"
+          :size "small"
+          :fullWidth false
+          :value (or current-sprint-id "_alle")
+          :onChange #(->> % .-target .-value (reset! SELECTED_SPRINT_ID))}
+         (for [sprint-id sprints-ids]
+           (let [sprint (-> storymap :sprints (get sprint-id))]
+             ($ mui/MenuItem
+                {:key sprint-id
+                 :value sprint-id}
+                (str "Sprint #" sprint-id
+                     (when-let [s (-> sprint sprint/entwickler)]
+                       (str " | " s))
+                     (when-let [s (-> sprint sprint/datum-abgeschlossen)]
+                       (str " | " (-> s local/format-date)))))))
+         ($ mui/MenuItem
+            {:value "_alle"}
+            "* Alle Sprints *"))
+      ;; (ui/DEBUG (-> storymap :sprints))
+      ;; (ui/DEBUG sprints-ids)
+      ))))
 
 (def-ui SprintTableRows [sprint storymap projekt standalone uid]
   {:from-context [uid]}
