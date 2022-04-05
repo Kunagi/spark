@@ -23,7 +23,7 @@
                                      (map-indexed (fn [idx id] [id idx]))
                                      (into {}))
         feature-ids (->> features
-                         (sort-by #(get feature-reihenfolge-map % 999999)))
+                         (sort-by #(get feature-reihenfolge-map % 99999)))
         sprints (->> sprints-ids
                      (reduce (fn [m sprint-id]
                                (assoc m
