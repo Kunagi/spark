@@ -115,7 +115,7 @@
                  ($ :span "#" (-> story :id)))
               ($ :div
                  {:style {:text-align "center"
-                          :width "200px"
+                          :min-width "200px"
                           :font-weight "bold"}}
                  (-> story :bez))
               (when-let [beschreibung (-> story :beschreibung)]
@@ -184,8 +184,10 @@
                                           (+ aufwand story-aufwand))
                                         aufwand)))
                                   0 storys)]
-    ($ mui/Card
-       {:className "StoryMap-SprintCard"}
+    ($ ui/Card
+       {:class "StoryMap-SprintCard"
+        :on-click #(when (projekt/developer-uid? projekt uid)
+                     (show-update-sprint> sprint))}
        ;; (ui/data sprint)
        (ui/div
         {:padding "8px 16px"}
@@ -193,10 +195,7 @@
           (ui/div
            {:padding "8px 0"}
            (str "Sprint #" sprint-id " - Noch nicht eingeplant"))
-          (ui/grid
-           "repeat(9, minmax(min-content, max-content))"
-           {:align-items "center"
-            :grid-gap "32px"}
+          (ui/flex
            (ui/div "Sprint #" sprint-id)
            (when-let [entwickler (-> sprint :entwickler)]
              (ui/div entwickler))
@@ -216,13 +215,7 @@
              (ui/div
               {:font-weight "normal"
                :color "#eee"}
-              "Abgeschlossen am " datum))
-           (when (projekt/developer-uid? projekt uid)
-             ($ ui/Button
-                {:icon :edit
-                 :color "default"
-                 :size "small"
-                 :on-click #(show-update-sprint> sprint)}))))))))
+              "Abgeschlossen am " datum))))))))
 
 (defn features-row [projekt uid feature-ids sprint-id]
   ($ :tr
