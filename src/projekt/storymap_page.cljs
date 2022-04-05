@@ -338,11 +338,11 @@
                                       (get-in storymap
                                               [:storys-by-sprint-and-feature
                                                [sprint-id feature-id]]))))))
-        storys (->> storymap
-                    :storys
-                    (filter (fn [story]
-                              (-> story story/sprint-id (= sprint-id)))))
-        lowest-prio (->> storys
+        lowest-prio (->> storymap
+                         :storys
+                         (filter (fn [story]
+                                   (-> story story/sprint-id (= sprint-id))))
+                         (remove story/completed?)
                          (map story/prio)
                          (reduce (fn [acc prio]
                                    (cond

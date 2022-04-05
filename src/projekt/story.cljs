@@ -98,6 +98,15 @@
          str/split-lines
          (map parse-task))))
 
+(defn completed? [this]
+  (let [tasks (->> this
+                   parse-tasks)]
+    (if (empty? tasks)
+      false
+      (->> tasks
+           (remove :done?)
+           empty?))))
+
 (defn matches-suchtext [this suchtext]
   (or
    (when-let [s (-> this bez)]
