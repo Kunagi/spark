@@ -76,6 +76,9 @@
 (defn prio [this]
   (-> this :prio))
 
+(defn sprint-id [this]
+  (-> this :sprint-id))
+
 (defn sort-value [this]
   [(or (-> this prio)
        99999)

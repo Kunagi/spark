@@ -238,8 +238,11 @@
                       :icon :add
                       :size "small"}))))))))
 
-(defonce SEARCH_TEXT (atom nil))
-(def use-search-text (ui/atom-hook SEARCH_TEXT))
+
+(defonce SEARCH_OPTS (atom {:auch-abgeschlossene false}))
+(def use-search-opts (ui/atom-hook SEARCH_OPTS))
+(defn use-search-text []
+  (-> (use-search-opts) :text))
 
 (defonce SELECTED_SPRINT_ID (atom nil))
 (def use-selected-sprint-id (ui/atom-hook SELECTED_SPRINT_ID))
@@ -273,7 +276,7 @@
              :fullWidth false
              :value (or current-sprint-id "_alle")
              :onChange (fn [^js event]
-                         (reset! SEARCH_TEXT nil)
+                         (reset! SEARCH_OPTS nil)
                          (->> event .-target .-value (reset! SELECTED_SPRINT_ID)))}
             (for [sprint-id sprints-ids]
               (let [sprint (-> storymap :sprints (get sprint-id))]
@@ -291,23 +294,17 @@
       ;; (ui/DEBUG (-> storymap :sprints))
       ;; (ui/DEBUG sprints-ids)
       ))))
-(def-ui SearchInput []
-  (let [text (use-search-text)]
-    (ui/div
-     {:max-width "200px"}
-     ($ mui/TextField
-        {:variant "outlined"
-         :label "Suche"
-         :size "small"
-         :value (or text "")
-         :onChange #(->> % .-target .-value (reset! SEARCH_TEXT))}))))
+
 
 (defn show-search-form> []
   (ui/show-form-dialog
    {:fields [{:id :text
-              :label "Suchtext oder Nummer"}]
-    :submit (fn [{:keys [text]}]
-              (reset! SEARCH_TEXT text))}))
+              :label "Suchtext oder Nummer"}
+             {:id :auch-abgeschlossene
+              :label "Auch abgeschlossene Sprints durchsuchen"
+              :type :checkbox}]
+    :values @SEARCH_OPTS
+    :submit #(reset! SEARCH_OPTS %)}))
 
 (def-ui Controls [storymap]
   (let [search-text (use-search-text)]
@@ -326,7 +323,7 @@
            {:icon :delete_forever
             :text (str "\"" search-text "\"")
             :color :default
-            :on-click #(reset! SEARCH_TEXT nil)}))))))
+            :on-click #(reset! SEARCH_OPTS nil)}))))))
 
 (def-ui SprintTableRows [sprint storymap projekt standalone uid]
   {:from-context [uid]}
@@ -359,27 +356,40 @@
                                   [sprint-id feature-id]])
                  :projekt projekt})))))))
 
-(defn filter-storys [storys search-text]
-  (let [search-text (-> search-text
+(defn filter-storys [projekt storys search-opts]
+  (let [search-text (-> search-opts
+                        :text
                         str/trim
                         str/lower-case)
-        words (->> (str/split search-text #"\s")
-                   (remove nil?)
-                   (map str/lower-case))]
+        ;; words (->> (str/split search-text #"\s")
+        ;;            (remove nil?)
+        ;;            (map str/lower-case))
+        storys (if (-> search-opts :auch-abgeschlossene)
+                 storys
+                 (->> storys
+                      (remove (fn [story]
+                                (let [sprint-id (-> story story/sprint-id)
+                                      sprint (-> projekt
+                                                 :sprints
+                                                 (get sprint-id))
+                                      abgeschlossen? (-> sprint sprint/datum-abgeschlossen)]
+                                  abgeschlossen?)))))]
     (->> storys
          (filter #(story/matches-suchtext % search-text)))))
 
 (def-ui Storymap [projekt uid]
   {:from-context [projekt uid]}
-  (let [search-text (use-search-text)
+  (let [search-opts (use-search-opts)
+        search-text (-> search-opts :text)
         storys (-> projekt projekt/storys)
         storys (if (str/blank? search-text)
                  storys
-                 (filter-storys storys search-text))
+                 (filter-storys projekt storys search-opts))
         storymap (core/storymap projekt storys)
         sprints-ids (-> storymap :sprints-ids)
         current-sprint-id (use-current-sprint-id storymap)]
     (ui/stack
+     ;; (ui/DEBUG storys)
      ;; (ui/data (-> projekt :sprints))
      ;; (ui/data (macroexpand-1 '(def-ui Hello []
      ;;                            {:wrap-memo-props [story]}
