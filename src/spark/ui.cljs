@@ -389,8 +389,7 @@
                                 set-docs))
              on-error    (fn [^js error]
                            (js/console.error "Loading collection failed" path error)
-                           (log-error error)
-                           )
+                           (log-error error))
              debug-id [path (u/nano-id)]
              _ (debug/reg-item :col debug-id)
              firestore-unsubscribe (.onSnapshot col-ref on-snap on-error)
@@ -1785,16 +1784,16 @@
                              (not= available-version current-version))]
     (when-not goog.DEBUG
       (when upgrade-available?
-        (center
-         {:padding "8px"}
-         (flex
-          {:align-items :center}
-          (div (or info-text "A new version is available"))
+        (stack-3
+         {:padding 64}
+         (div
+          {:text-align :center}
+          (or info-text "A new version is available"))
+         (center
           ($ Button
              {:on-click #(js/window.location.reload)
               :text     (or reload-text "Reload now")
-              :color    (or color "secondary")
-              :variant  "text"})))))))
+              :color    (or color "secondary")})))))))
 
 ;; * misc dialogs
 
