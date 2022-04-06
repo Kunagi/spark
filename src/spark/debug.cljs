@@ -1,6 +1,6 @@
 (ns spark.debug)
 
-(defonce ACTIVE (atom goog.DEBUG))
+(defonce ACTIVE (atom false))
 
 (defn active? []
   @ACTIVE)
