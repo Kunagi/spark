@@ -924,7 +924,13 @@
                  (div {:class "material-icons"} "close"))))
            ($ mui/DialogTitle title)))
         ($ mui/DialogContent
-           (-> dialog :content))))))
+           (stack
+            (-> dialog :content)
+            (when (-> dialog :cancel-button)
+              (center
+               ($ mui/Button
+                  {:onClick #(hide-dialog (-> dialog :id))}
+                  (local/text :cancel))))))))))
 
 (defnc DialogsContainer []
   (let [dialogs (-> (use-dialogs) vals)]
@@ -936,8 +942,9 @@
 (def show-form-dialog> form-ui/show-form-dialog>)
 (def use-hide-form-dialog form-ui/use-hide-form-dialog)
 
-(def-ui MessageDialogContent [message options]
-  (let [hide (use-hide-dialog)]
+(def-ui MessageDialogContent [message opts]
+  (let [hide (use-hide-dialog)
+        options (-> opts :options)]
     (stack-3
      message
      (if (seq options)
@@ -952,18 +959,26 @@
                :onClick (fn []
                           (hide)
                           ((-> option :on-click)))}
-              (-> option :text)))))
-       (center ($ mui/Button
-                  {:onClick hide}
-                  "OK"))))))
+              (-> option :text)))
+         (when (-> opts :cancel-button)
+           ($ mui/Button
+              {:onClick hide}
+              (local/text :cancel)))))
+
+       (center
+        ($ mui/Button
+           {:onClick hide}
+           (or (-> opts :ok-text)
+               (local/text :ok))))))))
 
 (defn show-message-dialog
   ([message]
    (show-message-dialog message {}))
-  ([message options]
-   (show-dialog {:title (-> options :title)
-                 :content ($ MessageDialogContent {:message message
-                                                   :options options})})))
+  ([message opts]
+   (show-dialog {:title (-> opts :title)
+                 :content ($ MessageDialogContent
+                             {:message message
+                              :opts opts})})))
 
 ;; ** PromiseProgress
 
@@ -1964,17 +1979,18 @@
 (def-ui StorageFileButton [path idx text texts edit-options]
   (let [url (use-storage-url path)
         open-on-click #(js/window.open url "_blank")
+        options (into
+                 [{:text "Anzeigen"
+                   :on-click open-on-click}]
+                 (->> edit-options
+                      (map (fn [edit-option]
+                             (assoc edit-option
+                                    :on-click (fn []
+                                                ((-> edit-option :on-click) path)))))))
         on-click (if (seq edit-options)
                    #(show-message-dialog
                      nil
-                     (into
-                      [{:text "Anzeigen"
-                        :on-click open-on-click}]
-                      (->> edit-options
-                           (map (fn [edit-option]
-                                  (assoc edit-option
-                                         :on-click (fn []
-                                                     ((-> edit-option :on-click) path))))))))
+                     {:options options})
                    open-on-click)]
     (if-not url
       ($ mui/CircularProgress)
