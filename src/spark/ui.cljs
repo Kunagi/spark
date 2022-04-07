@@ -2018,8 +2018,10 @@
 (defnc StorageFilesUploader
   [{:keys [id storage-path upload-text
            label
-           on-change]}]
-  (let [[storage-files reload-storage-files] (use-storage-files storage-path)
+           on-change
+           read-only]}]
+  (let [id (or id (u/nano-id))
+        [storage-files reload-storage-files] (use-storage-files storage-path)
         open-file-selector #(-> (js/document.getElementById id)
                                 .click)
         [uploading? set-uploading] (use-state false)
@@ -2057,12 +2059,14 @@
                                                  (js/setTimeout
                                                   #(reload-storage-files)
                                                   500))))}]})
-         (flex
-          ($ Button
-             {:text (or upload-text "Datei hinzufügen...")
-              :on-click open-file-selector
-              :color :default})))))
-     (DEBUG storage-files))))
+         (when-not read-only
+           (flex
+            ($ Button
+               {:text (or upload-text "Datei hinzufügen...")
+                :on-click open-file-selector
+                :color :default}))))))
+     ;; (DEBUG storage-files)
+     )))
 
 ;; * db dialogs
 
