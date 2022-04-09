@@ -21,7 +21,8 @@
              story/Tasks
              story/Voraussetzungen
              story/Feature-id story/Sprint-id
-             story/Aufwandschaetzung]
+             story/Aufwandschaetzung
+             story/Prio]
     :values values
     :submit (fn [values]
               (let [story (-> values
@@ -143,7 +144,8 @@
                   {:color "grey"}
                   (when-let [prio (-> story story/prio)]
                     (ui/div
-                     {:font-weight (when (= prio lowest-prio)
+                     {:font-weight (when (and (= prio lowest-prio)
+                                              (not (-> story story/completed?)))
                                      900)}
                      "Prio " prio)))
                  (ui/div
