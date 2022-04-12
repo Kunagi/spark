@@ -247,7 +247,28 @@ Bitte gib hier den empfangenen Code ein.")
 
 (def-ui LoginSelector [email telephone google apple microsoft facebook]
   (let [email-sign-in (use-email-sign-in)
-        telephone-sign-in (use-telephone-sign-in)]
+        telephone-sign-in (use-telephone-sign-in)
+        methods (cond-> #{}
+                  email (conj :email)
+                  telephone (conj :telephone)
+                  google (conj :google)
+                  apple (conj :apple)
+                  microsoft (conj :microsoft)
+                  facebook (conj :facebook))]
+
+    (ui/use-effect
+     :once
+     (when (-> methods count (= 1))
+       (case (first methods)
+         :email (auth/sign-in-with-email)
+         :telephone (auth/sign-in-with-telephone)
+         :google (auth/sign-in-with-google)
+         :apple (auth/sign-in-with-apple)
+         :microsoft (auth/sign-in-with-microsoft)
+         :facebook (auth/sign-in-with-facebook)
+         ))
+     nil)
+
     (cond
       email-sign-in
       ($ EmailProcess)
