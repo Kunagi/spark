@@ -245,16 +245,9 @@ Bitte gib hier den empfangenen Code ein.")
 
 ;; * Selector
 
-(def-ui LoginSelector [email telephone google apple microsoft facebook]
+(def-ui LoginSelector [methods]
   (let [email-sign-in (use-email-sign-in)
-        telephone-sign-in (use-telephone-sign-in)
-        methods (cond-> #{}
-                  email (conj :email)
-                  telephone (conj :telephone)
-                  google (conj :google)
-                  apple (conj :apple)
-                  microsoft (conj :microsoft)
-                  facebook (conj :facebook))]
+        telephone-sign-in (use-telephone-sign-in)]
 
     (ui/use-effect
      :once
@@ -265,8 +258,7 @@ Bitte gib hier den empfangenen Code ein.")
          :google (auth/sign-in-with-google)
          :apple (auth/sign-in-with-apple)
          :microsoft (auth/sign-in-with-microsoft)
-         :facebook (auth/sign-in-with-facebook)
-         ))
+         :facebook (auth/sign-in-with-facebook)))
      nil)
 
     (cond
@@ -281,43 +273,39 @@ Bitte gib hier den empfangenen Code ein.")
        (ui/center
         (ui/div "Welchen Dienst möchtest Du zur Anmeldung verwenden?"))
        (ui/stack
-        (when google
-          ($ ui/Button
-             {:text     "Google"
-              :on-click auth/sign-in-with-google}))
-        (when apple
-          ($ ui/Button
-             {:text     "Apple"
-              :on-click auth/sign-in-with-apple}))
-        (when microsoft
-          ($ ui/Button
-             {:text     "Microsoft"
-              :on-click auth/sign-in-with-microsoft}))
-        (when facebook
-          ($ ui/Button
-             {:text     "Facebook"
-              :on-click auth/sign-in-with-facebook}))
-        (when telephone
-          (ui/<>
-           ($ ui/Button
-              {:text     "Mobiltelefon / SMS"
-               :id       "telephone-sign-in-button"
-               :on-click auth/sign-in-with-telephone})))
-        (when email
-          ($ ui/Button
-             {:text     "E-Mail"
-              :on-click auth/sign-in-with-email}))
+        (for [method methods]
+          (ui/grid
+           ["1fr"]
+           {:key method}
+           (case method
+             :google ($ ui/Button
+                        {:text     "Google"
+                         :on-click auth/sign-in-with-google})
+
+             :apple ($ ui/Button
+                       {:text     "Apple"
+                        :on-click auth/sign-in-with-apple})
+             :microsoft ($ ui/Button
+                           {:text     "Microsoft"
+                            :on-click auth/sign-in-with-microsoft})
+             :facebook ($ ui/Button
+                          {:text     "Facebook"
+                           :on-click auth/sign-in-with-facebook})
+             :telephone (ui/<>
+                         ($ ui/Button
+                            {:text     "Mobiltelefon / SMS"
+                             :id       "telephone-sign-in-button"
+                             :on-click auth/sign-in-with-telephone}))
+             :email ($ ui/Button
+                       {:text     "E-Mail"
+                        :on-click auth/sign-in-with-email})
+             (ui/data method))))
         ($ :div))))))
 
-(defn show-sign-in-selector-dialog [options]
+(defn show-sign-in-selector-dialog [methods]
   (log ::show-sign-in-selector-dialog
-       :options options)
+       :methods methods)
   (ui/show-dialog {:id      "sign-in"
                    ;; :title   "Identifizierung"
                    :content ($ LoginSelector
-                               {:email     (-> options :email)
-                                :telephone (-> options :telephone)
-                                :google    (-> options :google)
-                                :microsoft (-> options :microsoft)
-                                :apple     (-> options :apple)
-                                :facebook  (-> options :facebook)})}))
+                               {:methods methods})}))

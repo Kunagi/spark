@@ -245,7 +245,7 @@
                  (js/console.log "AUTH FAILURE" result))))))
 
 (defn sign-in []
-  (browser/webkit-post-message "iosapp" "login")
+  ;; (browser/webkit-post-message "iosapp" "login")
   (let [sign-in-f @SIGN_IN-F]
     (u/assert sign-in-f "Missing sign-in-f")
     (sign-in-f)))
