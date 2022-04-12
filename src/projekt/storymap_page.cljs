@@ -102,7 +102,7 @@
 
 (def-ui StoryCard [story projekt lowest-prio uid]
   {:from-context [uid]
-   :wrap-memo-props [story]}
+   :wrap-memo-props [story lowest-prio]}
   (log ::StoryCard--render
        :story (-> story story/num)
        :projekt (-> projekt :id))
