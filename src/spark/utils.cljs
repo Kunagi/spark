@@ -5,6 +5,7 @@
   (:require
    [clojure.spec.alpha :as s]
    [clojure.string :as str]
+   [clojure.edn :as edn]
    [cljs.pprint :refer [pprint]]
 
    [tick.core :as tick]
@@ -67,6 +68,10 @@
 
 (defn ->edn [data]
   (with-out-str (pprint data)))
+
+(defn read-edn [s]
+  (when s
+    (edn/read-string s)))
 
 ;; Errors and Exceptions
 
