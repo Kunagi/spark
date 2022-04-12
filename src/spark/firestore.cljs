@@ -248,19 +248,21 @@
         (assoc :firestore/id (-> query-doc-snapshot .-id)
                :firestore/path path
                :firestore/exists? (boolean data)
+               :db/id (-> query-doc-snapshot .-id)
+               :db/exists (boolean data)
                :db/ref path))))
 
 (defn wrap-docs [^js query-snapshot]
   (mapv wrap-doc (-> query-snapshot .-docs)))
 
 (defn doc-id [doc]
-  (-> doc :firestore/id))
+  (-> doc :db/id))
 
 (defn doc-path [doc]
-  (-> doc :firestore/path))
+  (-> doc :db/ref))
 
 (defn doc-exists? [doc]
-  (-> doc :firestore/exists? boolean))
+  (-> doc :db/exists boolean))
 
 (defn ^js unwrap-doc [doc]
   ;; (log ::unwrap-doc
@@ -272,6 +274,8 @@
                 :firestore/exists?
                 :firestore/schema
                 :firestore/create
+                :db/id
+                :db/exists
                 :db/ref)
         inject-FieldValues
         remove-metadata

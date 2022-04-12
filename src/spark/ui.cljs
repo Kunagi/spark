@@ -195,7 +195,9 @@
 ;; * firebase
 
 (defn log-error [error]
-  (let [message (-> error .-message)]
+  (let [message (if error
+                  (-> error .-message)
+                  "Unknown Error")]
     (js/setTimeout
      (try
        (db/add> "errors" {:message message
@@ -648,6 +650,13 @@
      (d/div
       {:key i}
       (colored-data-block nil "#333" "#6f6" data)))))
+
+(defn data-card-content [text v]
+  ($ mui/CardContent
+     (when text
+       (div text))
+     (data v))
+  )
 
 (defn DEBUG [& datas]
   (when goog.DEBUG

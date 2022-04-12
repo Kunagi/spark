@@ -29,6 +29,9 @@
          entity-type)
        "/" id))
 
+(defn doc-exists? [doc]
+  (firestore/doc-exists? doc))
+
 ;; * read
 
 (defn get>
