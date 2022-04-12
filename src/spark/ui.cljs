@@ -185,12 +185,15 @@
 
 (defonce HISTORY (atom nil))
 
-(defn redirect [to]
-  (let [to (if (vector? to)
-             (str "/ui/" (str/join "/" to))
-             (str to))]
-    (-> ^js @HISTORY (.push to))
-    nil))
+(defn redirect
+  ([to]
+   (redirect to nil))
+  ([to suffix]
+   (let [to (if (vector? to)
+              (str "/ui/" (str/join "/" to) suffix)
+              (str to suffix))]
+     (-> ^js @HISTORY (.push to))
+     nil)))
 
 ;; * firebase
 
