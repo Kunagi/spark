@@ -158,6 +158,10 @@
                                :style {:white-space "pre-wrap"}}
                         "Voraussetzungen: ")
                      (-> voraussetzungen)))
+                (when-let [s (-> story story/hindernis)]
+                  (format-hindernis s))
+                (when-let [s (-> story :klaerungsbedarf)]
+                  (format-klaerungsbedarf s))
                 ($ :div
                    {:style {:display "grid"
                             :grid-gap "8px"
@@ -178,10 +182,8 @@
                      :color "grey"}
                     (when-let [aufwand (-> story :aufwand)]
                       ($ :span aufwand " Std geleistet"))))
-                (when-let [s (-> story story/hindernis)]
-                  (format-hindernis s))
-                (when-let [s (-> story :klaerungsbedarf)]
-                  (format-klaerungsbedarf s)))
+
+                )
              #_(ui/data story))))))
 
 (def-ui StoryCards [storys projekt lowest-prio]
