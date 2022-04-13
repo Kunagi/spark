@@ -12,6 +12,11 @@
    {:label "Beschreibung"
     :rows 3}])
 
+(def-field Hindernis
+  [:string
+   {:label "Hindernis"
+    :rows 3}])
+
 (def-field Voraussetzungen
   [:string
    {:label "Voraussetzungen"}])
@@ -75,6 +80,9 @@
 
 (defn prio [this]
   (-> this :prio))
+
+(defn hindernis [this]
+  (-> this :hindernis))
 
 (defn sprint-id [this]
   (-> this :sprint-id))

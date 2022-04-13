@@ -49,6 +49,7 @@
                   story/Aufwand
                   story/Prio
                   story/Klaerungsbedarf
+                  story/Hindernis
                   story/Tasks]
                  [story/Prio
                   story/Klaerungsbedarf])]
@@ -100,18 +101,32 @@
         (when response?
           (ui/div {:height 8})))))))
 
+(defn format-hindernis [s]
+  (ui/div
+   {:white-space :pre-wrap}
+   (ui/div
+    {:font-size "120%"
+     :font-weight 900
+     :color "red"}
+    "Hinderns")
+   (ui/div
+    s)))
+
 (def-ui StoryCard [story projekt lowest-prio uid]
   {:from-context [uid]
    :wrap-memo-props [story lowest-prio]}
-  (let [completed? (-> story story/completed?)
+  (let [hindernis? (-> story story/hindernis boolean)
+        completed? (-> story story/completed?)
         prio (-> story story/prio)
         next? (and (= prio lowest-prio)
-                   (not completed?))]
+                   (not completed?))
+        ]
     (log ::StoryCard--render
          :story (-> story story/num)
          :projekt (-> projekt :id))
     ($ ui/Card
        {:class (cond
+                 hindernis? "Card--StoryMap--impeded"
                  completed? "Card--StoryMap--completed"
                  next? "Card--StoryMap--next")}
        ($ mui/CardActionArea
@@ -163,6 +178,8 @@
                      :color "grey"}
                     (when-let [aufwand (-> story :aufwand)]
                       ($ :span aufwand " Std geleistet"))))
+                (when-let [s (-> story story/hindernis)]
+                  (format-hindernis s))
                 (when-let [s (-> story :klaerungsbedarf)]
                   (format-klaerungsbedarf s)))
              #_(ui/data story))))))
