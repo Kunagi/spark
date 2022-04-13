@@ -103,65 +103,69 @@
 (def-ui StoryCard [story projekt lowest-prio uid]
   {:from-context [uid]
    :wrap-memo-props [story lowest-prio]}
-  (log ::StoryCard--render
-       :story (-> story story/num)
-       :projekt (-> projekt :id))
-  ($ mui/Card
-     ($ mui/CardActionArea
-        {:onClick #(show-update-story-form> projekt story uid)}
-        ($ mui/CardContent
-           ($ ui/Stack
-              ($ :div
-                 {:style {:text-align "center"}}
-                 ($ :span "#" (-> story :id)))
-              ($ :div
-                 {:style {:text-align "center"
-                          :min-width "200px"
-                          :font-weight "bold"}}
-                 (-> story :bez))
-              (when-let [beschreibung (-> story :beschreibung)]
+  (let [completed? (-> story story/completed?)
+        prio (-> story story/prio)
+        next? (and (= prio lowest-prio)
+                   (not completed?))]
+    (log ::StoryCard--render
+         :story (-> story story/num)
+         :projekt (-> projekt :id))
+    ($ ui/Card
+       {:class (cond
+                 completed? "Card--StoryMap--completed"
+                 next? "Card--StoryMap--next")}
+       ($ mui/CardActionArea
+          {:onClick #(show-update-story-form> projekt story uid)}
+          ($ mui/CardContent
+             ($ ui/Stack
+                ($ :div
+                   {:style {:text-align "center"}}
+                   ($ :span "#" (-> story :id)))
                 ($ :div
                    {:style {:text-align "center"
-                            :white-space "pre-wrap"}}
-                   beschreibung))
-              (when-let [tasks (story/parse-tasks story)]
+                            :min-width "200px"
+                            :font-weight "bold"}}
+                   (-> story :bez))
+                (when-let [beschreibung (-> story :beschreibung)]
+                  ($ :div
+                     {:style {:text-align "center"
+                              :white-space "pre-wrap"}}
+                     beschreibung))
+                (when-let [tasks (story/parse-tasks story)]
+                  ($ :div
+                     (for [task tasks]
+                       ($ Task
+                          {:key task
+                           :task task}))))
+                (when-let [voraussetzungen (-> story :voraussetzungen)]
+                  ($ :div
+                     ($ :span {:className "b"
+                               :style {:white-space "pre-wrap"}}
+                        "Voraussetzungen: ")
+                     (-> voraussetzungen)))
                 ($ :div
-                   (for [task tasks]
-                     ($ Task
-                        {:key task
-                         :task task}))))
-              (when-let [voraussetzungen (-> story :voraussetzungen)]
-                ($ :div
-                   ($ :span {:className "b"
-                             :style {:white-space "pre-wrap"}}
-                      "Voraussetzungen: ")
-                   (-> voraussetzungen)))
-              ($ :div
-                 {:style {:display "grid"
-                          :grid-gap "8px"
-                          :grid-template-columns "auto auto auto"}}
-                 (ui/div
-                  {:color "grey"}
-                  (when-let [prio (-> story story/prio)]
-                    (ui/div
-                     {:font-weight (when (and (= prio lowest-prio)
-                                              (not (-> story story/completed?)))
-                                     900)}
-                     "Prio " prio)))
-                 (ui/div
-                  {:text-align :right
-                   :color "grey"}
-                  (when-let [aufwand (-> story :aufwandschaetzung)]
-                    ($ :span
-                       aufwand " Std geschätzt")))
-                 (ui/div
-                  {:text-align :right
-                   :color "grey"}
-                  (when-let [aufwand (-> story :aufwand)]
-                    ($ :span aufwand " Std geleistet"))))
-              (when-let [s (-> story :klaerungsbedarf)]
-                (format-klaerungsbedarf s)))
-           #_(ui/data story)))))
+                   {:style {:display "grid"
+                            :grid-gap "8px"
+                            :grid-template-columns "auto auto auto"}}
+                   (ui/div
+                    {:color "grey"}
+                    (when prio
+                      (ui/div
+                       "Prio " prio)))
+                   (ui/div
+                    {:text-align :right
+                     :color "grey"}
+                    (when-let [aufwand (-> story :aufwandschaetzung)]
+                      ($ :span
+                         aufwand " Std geschätzt")))
+                   (ui/div
+                    {:text-align :right
+                     :color "grey"}
+                    (when-let [aufwand (-> story :aufwand)]
+                      ($ :span aufwand " Std geleistet"))))
+                (when-let [s (-> story :klaerungsbedarf)]
+                  (format-klaerungsbedarf s)))
+             #_(ui/data story))))))
 
 (def-ui StoryCards [storys projekt lowest-prio]
   (ui/stack
