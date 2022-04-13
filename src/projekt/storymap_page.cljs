@@ -1,6 +1,7 @@
 (ns projekt.storymap-page
   (:require
 
+   ["@material-ui/core/colors" :as colors]
    ["@material-ui/core" :as mui]
    [tick.core :as tick]
 
@@ -92,14 +93,15 @@
   (ui/div
    {:white-space "pre-wrap"}
    (ui/div
-    {:font-size "80%"
-     :font-weight 900}
+    {:font-weight 900
+     :color (-> colors .-orange (aget 900))}
     "Klärungsbedarf")
    (for [[idx line]  (map-indexed vector (str/split-lines s))]
      (let [response? (str/starts-with? line "> ")]
        (ui/div
         {:id idx
-         :color (if response? "green" "red")}
+         :color (when response?
+                  "#666")}
         line
         (when response?
           (ui/div {:height 8})))))))
@@ -108,29 +110,31 @@
   (ui/div
    {:white-space :pre-wrap}
    (ui/div
-    {:font-size "120%"
-     :font-weight 900
-     :color "red"}
+    {:font-weight 900
+     :color (-> colors .-red (aget 900))
+     }
     "Hindernisse")
    (ui/div
     s)))
 
-(def-ui StoryCard [story projekt lowest-prio uid]
+(def-ui StoryCard [story projekt sprint lowest-prio uid]
   {:from-context [uid]
    :wrap-memo-props [story lowest-prio]}
   (let [hindernis? (-> story story/hindernis boolean)
         ungeschaetzt? (-> story story/restaufwand nil?)
         completed? (-> story story/completed?)
         prio (-> story story/prio)
-        next? (and (= prio lowest-prio)
+        next? (and (not (-> sprint sprint/datum-abgeschlossen))
+                   (-> sprint sprint/datum-beginn)
+                   (= prio lowest-prio)
                    (not completed?))]
     (log ::StoryCard--render
          :story (-> story story/num)
          :projekt (-> projekt :id))
     ($ ui/Card
        {:class (cond
-                 hindernis? "Card--StoryMap--impeded"
-                 ungeschaetzt? "Card--StoryMap--unestimated"
+                 ;; hindernis? "Card--StoryMap--impeded"
+                 ;; ungeschaetzt? "Card--StoryMap--unestimated"
                  completed? "Card--StoryMap--completed"
                  next? "Card--StoryMap--next")}
        ($ mui/CardActionArea
@@ -157,7 +161,12 @@
                 {:color "grey"}
                 (or (-> story :aufwand) "0")
                 " / "
-                (or (-> story :aufwandschaetzung) "?")
+                (if-let [x (-> story :aufwandschaetzung)]
+                  x
+                  (ui/span
+                   {:color (-> colors .-red (aget 900))
+                    :font-weight 900}
+                   "???"))
                 " Std"))
 
               ($ :div
@@ -185,22 +194,21 @@
               (when-let [s (-> story story/hindernis)]
                 (format-hindernis s))
               (when-let [s (-> story :klaerungsbedarf)]
-                (format-klaerungsbedarf s))
-
-              )
+                (format-klaerungsbedarf s)))
 
 ;; (ui/DEBUG {:restaufwand (-> story story/restaufwand)
              ;;            :tag (-> story :fertig-in-tagen)})
            ;;
              #_(ui/data story))))))
 
-(def-ui StoryCards [storys projekt lowest-prio]
+(def-ui StoryCards [storys projekt sprint lowest-prio]
   (ui/stack
    (for [story (->> storys (sort-by story/sort-value))]
      ($ StoryCard
         {:key (-> story :id)
          :story story
          :projekt projekt
+         :sprint sprint
          :lowest-prio lowest-prio}))))
 
 (defn sprint-card [sprint projekt uid]
@@ -451,6 +459,7 @@
                                      (assoc story
                                             :fertig-in-tagen (-> story-projections :arbeitstag (get (-> story :id)))))))
                  :projekt projekt
+                 :sprint sprint
                  :lowest-prio lowest-prio})))))))
 
 (defn filter-storys [projekt storys search-opts]
