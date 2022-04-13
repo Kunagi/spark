@@ -108,7 +108,7 @@
     {:font-size "120%"
      :font-weight 900
      :color "red"}
-    "Hinderns")
+    "Hindernisse")
    (ui/div
     s)))
 

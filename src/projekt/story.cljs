@@ -14,7 +14,7 @@
 
 (def-field Hindernis
   [:string
-   {:label "Hindernis"
+   {:label "Hindernisse"
     :rows 3}])
 
 (def-field Voraussetzungen
