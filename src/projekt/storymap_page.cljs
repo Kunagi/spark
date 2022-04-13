@@ -2,6 +2,7 @@
   (:require
 
    ["@material-ui/core" :as mui]
+   [tick.core :as tick]
 
    [spark.logging :refer [log]]
    [spark.utils :as u]
@@ -62,7 +63,9 @@
 
 (defn show-update-sprint> [sprint]
   (let [fields [sprint/Entwickler
-                sprint/Datum-abgeschlossen]]
+                sprint/Datum-Beginn
+                sprint/Tagesleistung
+                sprint/Datum-Abgeschlossen]]
     (ui/show-form-dialog>
      {:fields fields
       :values sprint
@@ -116,74 +119,79 @@
   {:from-context [uid]
    :wrap-memo-props [story lowest-prio]}
   (let [hindernis? (-> story story/hindernis boolean)
+        ungeschaetzt? (-> story story/restaufwand nil?)
         completed? (-> story story/completed?)
         prio (-> story story/prio)
         next? (and (= prio lowest-prio)
-                   (not completed?))
-        ]
+                   (not completed?))]
     (log ::StoryCard--render
          :story (-> story story/num)
          :projekt (-> projekt :id))
     ($ ui/Card
        {:class (cond
                  hindernis? "Card--StoryMap--impeded"
+                 ungeschaetzt? "Card--StoryMap--unestimated"
                  completed? "Card--StoryMap--completed"
                  next? "Card--StoryMap--next")}
        ($ mui/CardActionArea
           {:onClick #(show-update-story-form> projekt story uid)}
           ($ mui/CardContent
-             ($ ui/Stack
-                ($ :div
-                   {:style {:text-align "center"}}
-                   ($ :span "#" (-> story :id)))
+             (ui/stack
+
+              ;; Prio | # | Aufwände
+              (ui/grid-3
+               [:max-content :auto :max-content :max-content :max-content]
+               (ui/div
+                {:text-align "center"}
+                "#" (-> story :id))
+               (ui/div)
+               (ui/div
+                {:color "grey"}
+                (when prio
+                  (str "Prio " prio)))
+               (ui/div
+                {:color "grey"}
+                (when-let [tage (-> story :fertig-in-tagen)]
+                  (str "in " tage " AT")))
+               (ui/div
+                {:color "grey"}
+                (or (-> story :aufwand) "0")
+                " / "
+                (or (-> story :aufwandschaetzung) "?")
+                " Std"))
+
+              ($ :div
+                 {:style {:text-align "center"
+                          :min-width "200px"
+                          :font-weight "bold"}}
+                 (-> story :bez))
+              (when-let [beschreibung (-> story :beschreibung)]
                 ($ :div
                    {:style {:text-align "center"
-                            :min-width "200px"
-                            :font-weight "bold"}}
-                   (-> story :bez))
-                (when-let [beschreibung (-> story :beschreibung)]
-                  ($ :div
-                     {:style {:text-align "center"
-                              :white-space "pre-wrap"}}
-                     beschreibung))
-                (when-let [tasks (story/parse-tasks story)]
-                  ($ :div
-                     (for [task tasks]
-                       ($ Task
-                          {:key task
-                           :task task}))))
-                (when-let [voraussetzungen (-> story :voraussetzungen)]
-                  ($ :div
-                     ($ :span {:className "b"
-                               :style {:white-space "pre-wrap"}}
-                        "Voraussetzungen: ")
-                     (-> voraussetzungen)))
-                (when-let [s (-> story story/hindernis)]
-                  (format-hindernis s))
-                (when-let [s (-> story :klaerungsbedarf)]
-                  (format-klaerungsbedarf s))
+                            :white-space "pre-wrap"}}
+                   beschreibung))
+              (when-let [tasks (story/parse-tasks story)]
                 ($ :div
-                   {:style {:display "grid"
-                            :grid-gap "8px"
-                            :grid-template-columns "auto auto auto"}}
-                   (ui/div
-                    {:color "grey"}
-                    (when prio
-                      (ui/div
-                       "Prio " prio)))
-                   (ui/div
-                    {:text-align :right
-                     :color "grey"}
-                    (when-let [aufwand (-> story :aufwandschaetzung)]
-                      ($ :span
-                         aufwand " Std geschätzt")))
-                   (ui/div
-                    {:text-align :right
-                     :color "grey"}
-                    (when-let [aufwand (-> story :aufwand)]
-                      ($ :span aufwand " Std geleistet"))))
+                   (for [task tasks]
+                     ($ Task
+                        {:key task
+                         :task task}))))
+              (when-let [voraussetzungen (-> story :voraussetzungen)]
+                ($ :div
+                   ($ :span {:className "b"
+                             :style {:white-space "pre-wrap"}}
+                      "Voraussetzungen: ")
+                   (-> voraussetzungen)))
+              (when-let [s (-> story story/hindernis)]
+                (format-hindernis s))
+              (when-let [s (-> story :klaerungsbedarf)]
+                (format-klaerungsbedarf s))
 
-                )
+              )
+
+;; (ui/DEBUG {:restaufwand (-> story story/restaufwand)
+             ;;            :tag (-> story :fertig-in-tagen)})
+           ;;
              #_(ui/data story))))))
 
 (def-ui StoryCards [storys projekt lowest-prio]
@@ -322,6 +330,7 @@
       ;; (ui/DEBUG (-> storymap :sprints))
       ;; (ui/DEBUG sprints-ids)
       ))))
+
 (defn show-search-form> []
   (ui/show-form-dialog
    {:fields [{:id :text
@@ -351,6 +360,48 @@
             :color :default
             :on-click #(reset! SEARCH_OPTS nil)}))))))
 
+(defn story-projections [storys sprint]
+  (when (and (-> sprint sprint/datum-beginn)
+             (-> sprint sprint/tagesleistung)
+             (not (-> sprint sprint/datum-abgeschlossen)))
+    (let [tagesleistung (-> sprint sprint/tagesleistung)
+          date-start (tick/max (-> sprint sprint/datum-beginn tick/date)
+                               (tick/date))
+          storys (->> storys
+                      (sort-by story/sort-value)
+                      (remove story/completed?)
+                      ;; (take-while story/restaufwand)
+                      (map-indexed vector)
+                      (map (fn [[idx story]]
+                             (assoc story :idx idx))))
+          arbeitsstunden (->> storys
+                              (mapcat (fn [story]
+                                        (repeat (-> story story/restaufwand (max 1)) (-> story :id)))))
+          arbeitstag-by-sprint (->> arbeitsstunden
+                                    (reduce (fn [[tag sprint->tag] sprint-id]
+                                              (let [tag (-> tag
+                                                            (update :sprint-ids conj sprint-id)
+                                                            (update :reststunden dec))
+                                                    sprint->tag (assoc sprint->tag
+                                                                       sprint-id (-> tag :idx inc))]
+                                                (if (-> tag :reststunden pos?)
+                                                  [tag sprint->tag]
+                                                  [{:idx (-> tag :idx inc)
+                                                    :sprint-ids #{}
+                                                    :reststunden tagesleistung}
+                                                   sprint->tag])))
+                                            [{:idx 0
+                                              :sprint-ids #{}
+                                              :reststunden tagesleistung}
+                                             {}])
+                                    second)
+          ;; tage-offset-by-sprint (->> )
+          ]
+      {:date-start date-start
+       :storys storys
+       :arbeitsstunden arbeitsstunden
+       :arbeitstag arbeitstag-by-sprint})))
+
 (def-ui SprintTableRows [sprint storymap projekt standalone uid]
   {:from-context [uid]}
   (let [sprint-id (-> sprint :id)
@@ -363,10 +414,11 @@
                                       (get-in storymap
                                               [:storys-by-sprint-and-feature
                                                [sprint-id feature-id]]))))))
-        lowest-prio (->> storymap
-                         :storys
-                         (filter (fn [story]
-                                   (-> story story/sprint-id (= sprint-id))))
+        storys-in-sprint (->> storymap
+                              :storys
+                              (filter (fn [story]
+                                        (-> story story/sprint-id (= sprint-id)))))
+        lowest-prio (->> storys-in-sprint
                          (remove story/completed?)
                          (map story/prio)
                          (reduce (fn [acc prio]
@@ -374,13 +426,16 @@
                                      (and acc prio) (min acc prio)
                                      acc acc
                                      prio prio))
-                                 nil))]
+                                 nil))
+        story-projections (story-projections storys-in-sprint sprint)]
     (<>
      {:key sprint-id}
      ($ :tr
         ($ :td
            {:colSpan (count feature-ids)}
-           (sprint-card sprint projekt uid)))
+           (sprint-card sprint projekt uid)
+           ;; (ui/DEBUG story-projections)
+           ))
      (features-row projekt uid feature-ids sprint-id)
      ($ :tr
         (for [feature-id feature-ids]
@@ -389,9 +444,12 @@
                            ;; :padding "0.5rem"
                           }}
              ($ StoryCards
-                {:storys (get-in storymap
-                                 [:storys-by-sprint-and-feature
-                                  [sprint-id feature-id]])
+                {:storys (->> (get-in storymap
+                                      [:storys-by-sprint-and-feature
+                                       [sprint-id feature-id]])
+                              (map (fn [story]
+                                     (assoc story
+                                            :fertig-in-tagen (-> story-projections :arbeitstag (get (-> story :id)))))))
                  :projekt projekt
                  :lowest-prio lowest-prio})))))))
 

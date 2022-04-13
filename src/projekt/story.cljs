@@ -87,6 +87,13 @@
 (defn sprint-id [this]
   (-> this :sprint-id))
 
+(defn aufwand [this]
+  (-> this :aufwand))
+
+(defn aufwandschaetzung [this]
+  (-> this :aufwandschaetzung))
+
+
 (defn sort-value [this]
   [(or (-> this prio)
        99999)
@@ -114,6 +121,14 @@
       (->> tasks
            (remove :done?)
            empty?))))
+
+(defn restaufwand [this]
+  (if (-> this completed?)
+    0
+    (when-let [rest (-> this aufwandschaetzung)]
+      (if-let [aufwand (-> this aufwand)]
+        (- rest aufwand)
+        rest))))
 
 (defn matches-suchtext [this suchtext]
   (or

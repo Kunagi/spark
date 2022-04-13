@@ -8,11 +8,20 @@
   [:string
    {:label "Entiwickler"}])
 
-(def-field Datum-abgeschlossen
+(def-field Datum-Beginn
+  [:string
+   {:label "Beginn am"
+    :type :date}])
+
+(def-field Datum-Abgeschlossen
   [:string
    {:label "Abgeschlossen am"
     :type :date}])
 
+(def-field Tagesleistung
+  [:int
+   {:label "Leistung pro Tag (in Stunden)"
+    :type "number"}])
 
 (def-subdoc Sprint
   [{}])
@@ -23,6 +32,12 @@
 
 (defn datum-abgeschlossen [this]
   (-> this :datum-abgeschlossen))
+
+(defn datum-beginn [this]
+  (-> this :datum-beginn))
+
+(defn tagesleistung [this]
+  (-> this :tagesleistung))
 
 (defn entwickler [this]
   (-> this :entwickler))
