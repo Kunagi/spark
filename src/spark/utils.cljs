@@ -498,6 +498,22 @@
  "millis" (->time 1577870520000) := (tick/time "10:22")
  "string" (->time "12:23") := (tick/time "12:23"))
 
+;; (defn ->zoned-time [tz v]
+;;   (when (and tz v)
+;;     (cond
+;;       (tick/instant? v) (-> v tick/date-time (tick/in tz))
+;;       :else ":-("
+;;       (tick/time? v) v
+;;       (string? v) (tick/time v)
+;;       :else (-> v ->instant tick/time))))
+
+(comment
+  (tick/zone "Europe/Berlin")
+  (tick/zoned-date-time)
+  (-> (tick/instant) tick/date-time (tick/in "Europe/Berlin") tick/time)
+  ;; (->zoned-time "Europe/Berlin" (tick/instant))
+  (js/Date.))
+
 (defn millis [thing]
   (cond
     (nil? thing)              nil
@@ -562,14 +578,22 @@
        (<= b-end a-start)               ; b is before a / b ends before a starts
        )))
 
-(defn timestamp [date-string]
+(defn ->js-date [date-string]
   (when date-string
-    (if (instance? js/Date date-string)
-      date-string
-      (js/Date. (js/Date.parse date-string)))))
+    (cond
 
+      ;; already js/Date
+      (instance? js/Date date-string)
+      date-string
+
+      :else (-> date-string millis js/Date.)
+
+      ;; :else (js/Date. (js/Date.parse date-string))
+      )))
 (comment
-  (timestamp "2020-01-01"))
+  (->js-date (tick/instant))
+  (->js-date "2020-01-01 10:22")
+  (->js-date "2020-01-01"))
 
 (defn timestamp--now []
   (js/Date.))
@@ -579,7 +603,7 @@
 
 (defn date [date-or-string]
   (when date-or-string
-    (let [ts (timestamp date-or-string)]
+    (let [ts (->js-date date-or-string)]
       (str (-> ts .getFullYear)
            "-"
            (-> ts .getMonth inc (string-pad-left 2 "0"))
@@ -587,7 +611,7 @@
            (-> ts .getDate (string-pad-left 2 "0"))))))
 
 (comment
-  (timestamp "2020-01-01 10:22")
+  (->js-date "2020-01-01 10:22")
   (date "2020-01-01 10:22"))
 
 (defn date-today []
@@ -597,8 +621,8 @@
   (date-today))
 
 (defn date-same-day? [date-a date-b]
-  (let [date-a (timestamp date-a)
-        date-b (timestamp date-b)]
+  (let [date-a (->js-date date-a)
+        date-b (->js-date date-b)]
     (and (= (-> date-a .getDate)   (-> date-b .getDate))
          (= (-> date-a .getMonth) (-> date-b .getMonth))
          (= (-> date-a .getFullYear)  (-> date-b .getFullYear)))))
@@ -610,8 +634,8 @@
 
 (defn date-before? [date test-date]
   (when date
-    (let [date (timestamp date)
-          test-date (timestamp test-date)]
+    (let [date (->js-date date)
+          test-date (->js-date test-date)]
 
       (cond
         (< (-> date .getFullYear) (-> test-date .getFullYear)) true
@@ -652,7 +676,7 @@
    (time-of-date date-or-string seconds? false))
   ([date-or-string seconds? milliseconds?]
    (when date-or-string
-     (let [ts (timestamp date-or-string)]
+     (let [ts (->js-date date-or-string)]
        (str (-> ts .getHours (string-pad-left 2 "0"))
             ":"
             (-> ts .getMinutes (string-pad-left 2 "0"))
