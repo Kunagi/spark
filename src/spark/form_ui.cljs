@@ -570,7 +570,12 @@
                    :color   "secondary"
                    :size    "small"}
                   (-> action :label))))
-         Input))))
+         Input)
+       (when-let [input-hint (-> field :input-hint)]
+         ($ :div
+            {:style {:color "#999"}}
+            input-hint))
+       )))
 
 (def DIALOG-CLASS (atom nil))
 
@@ -652,6 +657,8 @@
           ;;        (u/->edn data))))
 
           ($ :div
+             {:style {:display "grid"
+                      :grid-gap "8px"}}
              (for [field (get form :fields)]
                ($ FormField
                   {:key         (-> field :id)
