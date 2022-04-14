@@ -730,8 +730,14 @@
 
 (defn- as-promises-vector [promises-or-lists-of-promises]
   (reduce (fn [promises promise-or-list]
-            (if (instance? js/Promise promise-or-list)
+            (cond
+              (nil? promise-or-list)
+              promises
+
+              (instance? js/Promise promise-or-list)
               (conj promises promise-or-list)
+
+              :else
               (->> promise-or-list
                    (map as>)
                    (into promises))))
