@@ -93,12 +93,6 @@
 (defn aufwandschaetzung [this]
   (-> this :aufwandschaetzung))
 
-
-(defn sort-value [this]
-  [(or (-> this prio)
-       99999)
-   (-> this num)])
-
 (defn parse-task [task]
   (let [prefix (-> task (.substring 0 1))
         bez (-> task (.substring 2))
@@ -121,6 +115,11 @@
       (->> tasks
            (remove :done?)
            empty?))))
+
+(defn sort-value [this]
+  [(if (-> this completed?) 1 2)
+   (or (-> this prio) 99999)
+   (-> this num)])
 
 (defn restaufwand [this]
   (if (-> this completed?)
