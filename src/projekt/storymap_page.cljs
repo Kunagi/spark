@@ -111,8 +111,7 @@
    {:white-space :pre-wrap}
    (ui/div
     {:font-weight 900
-     :color (-> colors .-red (aget 900))
-     }
+     :color (-> colors .-red (aget 900))}
     "Hindernisse")
    (ui/div
     s)))
@@ -127,16 +126,15 @@
         next? (and (not (-> sprint sprint/datum-abgeschlossen))
                    (-> sprint sprint/datum-beginn)
                    (= prio lowest-prio)
-                   (not completed?))]
+                   (not completed?))
+        aufwand (max (-> story story/restaufwand)
+                     (-> story story/aufwand)
+                     1)]
     (log ::StoryCard--render
          :story (-> story story/num)
          :projekt (-> projekt :id))
     ($ ui/Card
-       {:class (cond
-                 ;; hindernis? "Card--StoryMap--impeded"
-                 ;; ungeschaetzt? "Card--StoryMap--unestimated"
-                 completed? "Card--StoryMap--completed"
-                 next? "Card--StoryMap--next")}
+       {:class (str (when completed? " Card--StoryMap--completed"))}
        ($ mui/CardActionArea
           {:onClick #(show-update-story-form> projekt story uid)}
           ($ mui/CardContent
@@ -145,12 +143,14 @@
               ;; Prio | # | Aufwände
               (ui/grid-3
                [:max-content :auto :max-content :max-content :max-content]
+               {:align-items :center}
+
                (ui/div
-                {:text-align "center"}
                 "#" (-> story :id))
                (ui/div)
                (ui/div
-                {:color "grey"}
+                {:color (if next? (-> colors .-blue (aget 600)) "grey")
+                 :font-weight (when next? 900)}
                 (when prio
                   (str "Prio " prio)))
                (ui/div
@@ -159,15 +159,23 @@
                   (str "in " tage " AT")))
                (ui/div
                 {:color "grey"}
-                (or (-> story :aufwand) "0")
-                " / "
-                (if-let [x (-> story :aufwandschaetzung)]
-                  x
-                  (ui/span
-                   {:color (-> colors .-red (aget 900))
-                    :font-weight 900}
-                   "???"))
-                " Std"))
+                (ui/flex
+                 {:align-items :center}
+                 (ui/div
+                  (or (-> story :aufwand) "0")
+                  " / "
+                  (if-let [x (-> story :aufwandschaetzung)]
+                    x
+                    (ui/span
+                     {:color (-> colors .-red (aget 900))
+                      :font-weight 900}
+                     "???"))
+                  " Std")
+                 ;; (ui/div
+                 ;;  {:background-color "#aaa"
+                 ;;   :width            (+ aufwand 2)
+                 ;;   :height           (+ aufwand 2)})
+                 )))
 
               ($ :div
                  {:style {:text-align "center"
