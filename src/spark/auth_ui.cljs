@@ -26,7 +26,7 @@
                                  email (-> email-sign-in :url))))
 
         CancelButton ($ ui/Button
-                        {:text     "Anmeldevorgang Abbrechen"
+                        {:text     "Abbrechen"
                          :variant  "text"
                          :color "default"
                          :on-click (fn []
