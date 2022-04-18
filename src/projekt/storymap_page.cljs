@@ -116,9 +116,9 @@
    (ui/div
     s)))
 
-(def-ui StoryCard [story projekt sprint lowest-prio uid]
+(def-ui StoryCard [story projekt sprint lowest-prio uid arbeitstage]
   {:from-context [uid]
-   :wrap-memo-props [story lowest-prio]}
+   :wrap-memo-props [story lowest-prio arbeitstage]}
   (let [hindernis? (-> story story/hindernis boolean)
         ungeschaetzt? (-> story story/restaufwand nil?)
         completed? (-> story story/completed?)
@@ -135,6 +135,7 @@
          :projekt (-> projekt :id))
     ($ ui/Card
        {:class (str (when completed? " Card--StoryMap--completed"))}
+       ;; (ui/DEBUG arbeitstage)
        ($ mui/CardActionArea
           {:onClick #(show-update-story-form> projekt story uid)}
           ($ mui/CardContent
@@ -156,7 +157,9 @@
                (ui/div
                 {:color "grey"}
                 (when-let [tage (-> story :fertig-in-tagen)]
-                  (str "in " tage " AT")))
+                  (if-let [date (nth arbeitstage tage)]
+                    (-> date local/format-date)
+                    (str "in " tage " AT"))))
                (ui/div
                 {:color "grey"}
                 (ui/flex
@@ -209,7 +212,7 @@
            ;;
              #_(ui/data story))))))
 
-(def-ui StoryCards [storys projekt sprint lowest-prio]
+(def-ui StoryCards [storys projekt sprint lowest-prio arbeitstage]
   (ui/stack
    (for [story (->> storys (sort-by story/sort-value))]
      ($ StoryCard
@@ -217,7 +220,8 @@
          :story story
          :projekt projekt
          :sprint sprint
-         :lowest-prio lowest-prio}))))
+         :lowest-prio lowest-prio
+         :arbeitstage arbeitstage}))))
 
 (defn sprint-card [sprint projekt uid]
   (let [sprint-id (-> sprint :id)
@@ -444,6 +448,7 @@
                                      acc acc
                                      prio prio))
                                  nil))
+        arbeitstage (sprint/arbeitstage-ab sprint instant)
         story-projections (story-projections storys-in-sprint sprint)]
     (<>
      {:key sprint-id}
@@ -451,7 +456,7 @@
         ($ :td
            {:colSpan (count feature-ids)}
            (sprint-card sprint projekt uid)
-           (ui/DEBUG (sprint/arbeitstage-ab sprint instant))
+           ;; (ui/DEBUG arbeitstage)
            ;; (ui/DEBUG story-projections)
            ))
      (features-row projekt uid feature-ids sprint-id)
@@ -470,7 +475,8 @@
                                             :fertig-in-tagen (-> story-projections :arbeitstag (get (-> story :id)))))))
                  :projekt projekt
                  :sprint sprint
-                 :lowest-prio lowest-prio})))))))
+                 :lowest-prio lowest-prio
+                 :arbeitstage arbeitstage})))))))
 
 (defn filter-storys [projekt storys search-opts]
   (let [search-text (-> search-opts
