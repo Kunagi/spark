@@ -198,14 +198,17 @@
 ;; * firebase
 
 (defn log-error [error]
-  (let [message (if error
+  (let [message (if (and error
+                         (. hasOwnProperty error "message"))
                   (-> error .-message)
                   "Unknown Error")]
     (js/setTimeout
      (try
        (db/add> "errors" {:message message
                           :error (str error)
-                          :stack (-> error .-stack)
+                          :stack (when (and error
+                                            (. hasOwnProperty error "stack"))
+                                   (-> error .-stack))
                           :url js/window.location.href
                           :userAgent js/navigator.userAgent
                           :timestamp :db/timestamp
@@ -658,8 +661,7 @@
   ($ mui/CardContent
      (when text
        (div text))
-     (data v))
-  )
+     (data v)))
 
 (defn DEBUG [& datas]
   (when goog.DEBUG
