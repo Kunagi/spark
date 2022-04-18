@@ -202,9 +202,7 @@
                          (.hasOwnProperty error "message"))
                   (-> error .-message)
                   "Unknown Error")]
-    (js/setTimeout
-     (try
-       (db/add> "errors" {:message message
+    (p/let [_ (db/add> "errors" {:message message
                           :error (str error)
                           :stack (when (and error
                                             (.hasOwnProperty error "stack"))
@@ -212,10 +210,8 @@
                           :url js/window.location.href
                           :userAgent js/navigator.userAgent
                           :timestamp :db/timestamp
-                          :uid (js/localStorage.getItem "spark.uid")})
-       (catch :default _ex
-         nil))
-     1))
+                          :uid (js/localStorage.getItem "spark.uid")})]
+      nil))
   nil)
 
 (def call-server> firebase-functions/call>)
@@ -396,7 +392,7 @@
                                 (map firestore/wrap-doc)
                                 set-docs))
              on-error    (fn [^js error]
-                           (js/console.error "Loading collection failed" path error)
+                           (js/console.error "Loading collection failed" col-ref error)
                            (log-error error))
              debug-id [path (u/nano-id)]
              _ (debug/reg-item :col debug-id)
