@@ -65,6 +65,7 @@
 (defn show-update-sprint> [sprint]
   (let [fields [sprint/Entwickler
                 sprint/Datum-Beginn
+                sprint/Datum-Ende
                 sprint/Tagesleistung
                 sprint/Datum-Abgeschlossen]]
     (ui/show-form-dialog>
@@ -158,7 +159,17 @@
                 {:color "grey"}
                 (when-let [tage (-> story :fertig-in-tagen)]
                   (if-let [date (nth arbeitstage tage)]
-                    (-> date local/format-date)
+                    (let [ende (-> sprint sprint/datum-ende u/->date)
+                          nach-ende? (when (and ende (-> date (tick/> ende)))
+                                       (-> date (tick/> ende)))
+                          ]
+                      (if nach-ende?
+                        (ui/span
+                         {:color (-> colors .-red (aget 900))
+                          :font-weight :bold}
+                         (-> date local/format-date))
+                        (-> date local/format-date)))
+
                     (str "in " tage " AT"))))
                (ui/div
                 {:color "grey"}

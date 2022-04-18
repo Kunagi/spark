@@ -14,6 +14,11 @@
    {:label "Beginn am"
     :type :date}])
 
+(def-field Datum-Ende
+  [:string
+   {:label "Ende, geplant am"
+    :type :date}])
+
 (def-field Datum-Abgeschlossen
   [:string
    {:label "Abgeschlossen am"
@@ -36,6 +41,9 @@
 
 (defn datum-beginn [this]
   (-> this :datum-beginn))
+
+(defn datum-ende [this]
+  (-> this :datum-ende))
 
 (defn arbeitstage-ab [this instant]
   (when-let [datum (-> this datum-beginn)]
