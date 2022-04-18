@@ -102,7 +102,7 @@
        (ui/div
         {:id idx
          :color (when response?
-                  "#666")}
+                  (-> colors .-blue (aget 600)))}
         line
         (when response?
           (ui/div {:height 8})))))))
@@ -161,8 +161,7 @@
                   (if-let [date (nth arbeitstage tage)]
                     (let [ende (-> sprint sprint/datum-ende u/->date)
                           nach-ende? (when (and ende (-> date (tick/> ende)))
-                                       (-> date (tick/> ende)))
-                          ]
+                                       (-> date (tick/> ende)))]
                       (if nach-ende?
                         (ui/span
                          {:color (-> colors .-red (aget 900))
