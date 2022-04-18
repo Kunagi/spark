@@ -420,7 +420,8 @@
 
 (def-ui SprintTableRows [sprint storymap projekt standalone uid]
   {:from-context [uid]}
-  (let [sprint-id (-> sprint :id)
+  (let [instant (tick/instant)
+        sprint-id (-> sprint :id)
         feature-ids (-> storymap :feature-ids)
         feature-ids (if-not standalone
                       feature-ids
@@ -450,6 +451,7 @@
         ($ :td
            {:colSpan (count feature-ids)}
            (sprint-card sprint projekt uid)
+           (ui/DEBUG (sprint/arbeitstage-ab sprint instant))
            ;; (ui/DEBUG story-projections)
            ))
      (features-row projekt uid feature-ids sprint-id)
