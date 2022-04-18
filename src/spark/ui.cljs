@@ -392,8 +392,10 @@
                                 (map firestore/wrap-doc)
                                 set-docs))
              on-error    (fn [^js error]
-                           (js/console.error "Loading collection failed" col-ref error)
-                           (log-error error))
+                           (let [msg (str "Loading collection " (str col-ref) " failed")
+                                 error (js/Error. msg (clj->js {:cause error}))]
+                             (js/console.error error)
+                             (log-error error)))
              debug-id [path (u/nano-id)]
              _ (debug/reg-item :col debug-id)
              firestore-unsubscribe (.onSnapshot col-ref on-snap on-error)
