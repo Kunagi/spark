@@ -203,14 +203,14 @@
                   (-> error .-message)
                   "Unknown Error")]
     (p/let [_ (db/add> "errors" {:message message
-                          :error (str error)
-                          :stack (when (and error
-                                            (.hasOwnProperty error "stack"))
-                                   (-> error .-stack))
-                          :url js/window.location.href
-                          :userAgent js/navigator.userAgent
-                          :timestamp :db/timestamp
-                          :uid (js/localStorage.getItem "spark.uid")})]
+                                 :error (str error)
+                                 :stack (when (and error
+                                                   (.hasOwnProperty error "stack"))
+                                          (-> error .-stack))
+                                 :url js/window.location.href
+                                 :userAgent js/navigator.userAgent
+                                 :timestamp :db/timestamp
+                                 :uid (js/localStorage.getItem "spark.uid")})]
       nil))
   nil)
 
@@ -392,7 +392,8 @@
                                 (map firestore/wrap-doc)
                                 set-docs))
              on-error    (fn [^js firestore-error]
-                           (let [msg (str "Loading collection " (u/->edn path) " failed")
+                           (let [msg (str "Loading collection " (u/->edn path) " failed: "
+                                          (str firestore-error))
                                  error (js/Error. msg (clj->js {:cause firestore-error}))]
                              (js/console.error error firestore-error)
                              (log-error error)))
