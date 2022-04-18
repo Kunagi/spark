@@ -391,10 +391,10 @@
                                 .-docs
                                 (map firestore/wrap-doc)
                                 set-docs))
-             on-error    (fn [^js error]
-                           (let [msg (str "Loading collection " (str col-ref) " failed")
-                                 error (js/Error. msg (clj->js {:cause error}))]
-                             (js/console.error error)
+             on-error    (fn [^js firestore-error]
+                           (let [msg (str "Loading collection " (u/->edn path) " failed")
+                                 error (js/Error. msg (clj->js {:cause firestore-error}))]
+                             (js/console.error error firestore-error)
                              (log-error error)))
              debug-id [path (u/nano-id)]
              _ (debug/reg-item :col debug-id)
