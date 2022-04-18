@@ -199,7 +199,7 @@
 
 (defn log-error [error]
   (let [message (if (and error
-                         (. hasOwnProperty error "message"))
+                         (.hasOwnProperty error "message"))
                   (-> error .-message)
                   "Unknown Error")]
     (js/setTimeout
@@ -207,7 +207,7 @@
        (db/add> "errors" {:message message
                           :error (str error)
                           :stack (when (and error
-                                            (. hasOwnProperty error "stack"))
+                                            (.hasOwnProperty error "stack"))
                                    (-> error .-stack))
                           :url js/window.location.href
                           :userAgent js/navigator.userAgent
