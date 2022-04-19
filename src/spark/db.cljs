@@ -35,11 +35,35 @@
 (defn doc-id [doc]
   (firestore/doc-id doc))
 
+(defn coerce-path-element [pe]
+  (cond
+
+    (spark/doc-schema? pe)
+    (spark/doc-schema-col-path pe)
+
+    (map? pe)
+    (cond
+      (-> pe (get :id) spark/doc-schema?) (assoc pe :id (-> pe (get :id) spark/doc-schema-col-path))
+      :else pe)
+
+    :else pe))
+
+(defn coerce-path [path]
+  (when path
+    (cond
+
+      (vector? path) (->> path (mapv coerce-path-element))
+
+      (spark/doc-schema? path)
+      (spark/doc-schema-col-path path)
+
+      :else path)))
+
 ;; * read
 
 (defn get>
   ([path]
-   (firestore/get> path))
+   (firestore/get> (coerce-path path)))
   ([entity-type id]
    (get> (entity-type->ref entity-type id))))
 

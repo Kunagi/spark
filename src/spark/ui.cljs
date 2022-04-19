@@ -363,16 +363,7 @@
   [path]
   ;; (log ::use-col
   ;;      :path path)
-  (let [path (cond
-
-               (spark/doc-schema? path)
-               (spark/doc-schema-col-path path)
-
-               (and (vector? path) (spark/doc-schema? (first path)))
-               (into
-                [(spark/doc-schema-col-path (first path))] (rest path))
-
-               :else path)
+  (let [path (db/coerce-path path)
         [docs set-docs] (use-state nil)
         effect-signal   (str path)]
 
