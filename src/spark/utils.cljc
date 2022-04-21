@@ -1,7 +1,7 @@
 ;; * ns
 (ns spark.utils
   (:refer-clojure :exclude [assert pos? zero? min max tap>])
-  ;; (:require-macros [spark.utils :refer [assert]])
+  #?(:cljs (:require-macros [spark.utils :refer [assert]]))
   (:require
    [clojure.spec.alpha :as s]
    [clojure.string :as str]
@@ -60,19 +60,20 @@
 
 ;; * tap
 
-(defn tap> [value]
-  (let [start-time (-> (js/Date.) .getTime)]
-    (if (instance? js/Promise value)
-      (-> value (.then (fn [result]
-                         (clojure.core/tap> {:promise/resolved result
-                                             :promise/runtime (- (-> (js/Date.) .getTime)
-                                                                 start-time)}))
-                       (fn [error]
-                         (clojure.core/tap> {:promise/rejected error
-                                             :promise/runtime (- (-> (js/Date.) .getTime)
-                                                                 start-time)}))))
-      (clojure.core/tap> value)))
-  value)
+#?(:cljs (defn tap> [value]
+           (let [start-time (-> (js/Date.) .getTime)]
+             (if (instance? js/Promise value)
+               (-> value (.then (fn [result]
+                                  (clojure.core/tap> {:promise/resolved result
+                                                      :promise/runtime (- (-> (js/Date.) .getTime)
+                                                                          start-time)}))
+                                (fn [error]
+                                  (clojure.core/tap> {:promise/rejected error
+                                                      :promise/runtime (- (-> (js/Date.) .getTime)
+                                                                          start-time)}))))
+               (clojure.core/tap> value)))
+           value)
+   :clj (def tap> clojure.core/tap>))
 
 (comment
   (tap> "hello world")
@@ -88,18 +89,19 @@
 
 ;; JSON
 
-(defn js->json [js-obj]
-  (when js-obj
-    (try
-      (js/JSON.stringify js-obj)
-      (catch :default _ex
-        (str js-obj)))))
+#?(:cljs
+   (defn js->json [js-obj]
+     (when js-obj
+       (try
+         (js/JSON.stringify js-obj)
+         (catch :default _ex
+           (str js-obj))))))
 
-(defn ->json [o]
-  (when o
-    (-> o
-        clj->js
-        js->json)))
+#?(:cljs (defn ->json [o]
+           (when o
+             (-> o
+                 clj->js
+                 js->json))))
 
 ;; * EDN
 
@@ -121,11 +123,11 @@
     (string? ex)
     ex
 
-    (instance? js/Error ex)
-    (str (-> ^js ex .-message)
-         (when-let [c (ex-cause ex)]
-           (str "\n"
-                (exception-as-text c))))
+    #?(:cljs (instance? js/Error ex))
+    #?(:cljs (str (-> ^js ex .-message)
+                  (when-let [c (ex-cause ex)]
+                    (str "\n"
+                         (exception-as-text c)))))
 
     (map? ex)
     (if-let [message (-> ex :message)]
@@ -147,12 +149,12 @@
     (string? ex)
     {:message ex}
 
-    (instance? js/Error ex)
-    {:message (-> ^js ex .-message)
-     :data (ex-data ex)
-     :stacktrace (-> ^js ex .-stack)
-     :cause (when-let [c (ex-cause ex)]
-              (exception-as-data c))}
+    #?(:cljs (instance? js/Error ex))
+    #?(:cljs {:message (-> ^js ex .-message)
+              :data (ex-data ex)
+              :stacktrace (-> ^js ex .-stack)
+              :cause (when-let [c (ex-cause ex)]
+                       (exception-as-data c))})
 
     (map? ex)
     (if-let [message (-> ex :message)]
@@ -195,30 +197,33 @@
 
 ;; * fetch
 
-(defn fetch>
-  ([url]
-   (fetch> url {}))
-  ([url opts]
-   (js/fetch url (-> opts clj->js))))
+#?(:cljs
+   (defn fetch>
+     ([url]
+      (fetch> url {}))
+     ([url opts]
+      (js/fetch url (-> opts clj->js)))))
 
-(defn fetch-json>
-  ([url]
-   (fetch-json> url {}))
-  ([url opts]
-   (-> (fetch> url opts)
-       (.then (fn [^js response]
-                (-> response .json)))
-       (.then (fn [^js json]
-                (js->clj json :keywordize-keys true))))))
+#?(:cljs
+   (defn fetch-json>
+     ([url]
+      (fetch-json> url {}))
+     ([url opts]
+      (-> (fetch> url opts)
+          (.then (fn [^js response]
+                   (-> response .json)))
+          (.then (fn [^js json]
+                   (js->clj json :keywordize-keys true)))))))
 
 ;; * numbers
 
-(defn parse-float [v]
-  (when v
-    (let [f (js/parseFloat v)]
-      (when (js/isNaN f) (throw (ex-info (str "NaN: " v)
-                                         {:value v})))
-      f)))
+#?(:cljs
+   (defn parse-float [v]
+     (when v
+       (let [f (js/parseFloat v)]
+         (when (js/isNaN f) (throw (ex-info (str "NaN: " v)
+                                            {:value v})))
+         f))))
 
 (comment
   (parse-float "22.2")
@@ -325,23 +330,24 @@
   (seq-position #{:b} [:a])
   (seq-position #{:b} nil))
 
-(defn distribute
-  "Like `partition` but with distributed elements."
-  [n coll]
-  (if (< n 2)
-    [coll]
-    (let [coll-size (count coll)
-          partition-size (js/Math.ceil (/ (count coll) n))
-          needed-coll-size (* n partition-size)
-          coll (if (< coll-size needed-coll-size)
-                 (take needed-coll-size (concat coll (repeat nil)))
-                 coll)
-          rows (partition n coll)
-          interleaved (apply interleave rows)
-          partitions (partition-all partition-size interleaved)
-          partitions (map #(remove nil? %) partitions)
-          partitions (remove empty? partitions)]
-      partitions)))
+#?(:cljs
+   (defn distribute
+     "Like `partition` but with distributed elements."
+     [n coll]
+     (if (< n 2)
+       [coll]
+       (let [coll-size (count coll)
+             partition-size (js/Math.ceil (/ (count coll) n))
+             needed-coll-size (* n partition-size)
+             coll (if (< coll-size needed-coll-size)
+                    (take needed-coll-size (concat coll (repeat nil)))
+                    coll)
+             rows (partition n coll)
+             interleaved (apply interleave rows)
+             partitions (partition-all partition-size interleaved)
+             partitions (map #(remove nil? %) partitions)
+             partitions (remove empty? partitions)]
+         partitions))))
 
 (comment
   (/ 5 2)
@@ -477,25 +483,26 @@
 
 ;; https://www.juxt.land/tick/docs/index.html
 
-(defn ->instant
-  "Coerces `v` to `tick/instant`."
-  [v]
-  (when v
-    (cond
-      (tick/instant? v) v
-      (instance? js/Date v) (-> v tick/instant)
-      (string? v) (tick/instant v)
-      (number? v) (-> v tick/instant)
+#?(:cljs
+   (defn ->instant
+     "Coerces `v` to `tick/instant`."
+     [v]
+     (when v
+       (cond
+         (tick/instant? v) v
+         (instance? js/Date v) (-> v tick/instant)
+         (string? v) (tick/instant v)
+         (number? v) (-> v tick/instant)
 
-      (and (map? v)
-           (-> v :_seconds)
-           (-> v :_nanoseconds))
-      (tick/instant (+ (-> v :_seconds (* 1000))
-                       (-> v :_nanoseconds (/ 1000))))
+         (and (map? v)
+              (-> v :_seconds)
+              (-> v :_nanoseconds))
+         (tick/instant (+ (-> v :_seconds (* 1000))
+                          (-> v :_nanoseconds (/ 1000))))
 
-      :else (throw (ex-info (str "Unsupported time instant format: " v)
-                            {:value v
-                             :type (type v)})))))
+         :else (throw (ex-info (str "Unsupported time instant format: " v)
+                               {:value v
+                                :type (type v)}))))))
 
 (tests
  "js.Date" (->instant (js/Date. "2020-01-01")) := (tick/instant (js/Date. "2020-01-01"))
@@ -503,14 +510,15 @@
  "string" (->instant "2020-01-01T10:00:00") := (tick/instant "2020-01-01T10:00:00")
  "map" (->instant {:_seconds 1633078276, :_nanoseconds 210000000}))
 
-(defn ->date
-  "Coerces `v` to `tick/date`."
-  [v]
-  (when v
-    (cond
-      (tick/date? v) v
-      (string? v) (tick/date v)
-      :else (-> v ->instant tick/date))))
+#?(:cljs
+   (defn ->date
+     "Coerces `v` to `tick/date`."
+     [v]
+     (when v
+       (cond
+         (tick/date? v) v
+         (string? v) (tick/date v)
+         :else (-> v ->instant tick/date)))))
 
 (tests
  "nil" (->date nil) := nil
@@ -519,14 +527,15 @@
  "millis" (->date 1577870520000) := (tick/date "2020-01-01")
  "string" (->date "2020-01-01") := (tick/date "2020-01-01"))
 
-(defn ->time
-  "Coerces `v` to `tick/time`."
-  [v]
-  (when v
-    (cond
-      (tick/time? v) v
-      (string? v) (tick/time v)
-      :else (-> v ->instant tick/time))))
+#?(:cljs
+   (defn ->time
+     "Coerces `v` to `tick/time`."
+     [v]
+     (when v
+       (cond
+         (tick/time? v) v
+         (string? v) (tick/time v)
+         :else (-> v ->instant tick/time)))))
 
 (tests
  "nil" (->time nil) := nil
@@ -551,14 +560,15 @@
   ;; (->zoned-time "Europe/Berlin" (tick/instant))
   (js/Date.))
 
-(defn millis [thing]
-  (cond
-    (nil? thing)              nil
-    (number? thing)           thing
-    (instance? js/Date thing) (-> thing .getTime)
-    (tick/date-time? thing) (js/Date.parse (tick/inst thing))
-    (tick/zoned-date-time? thing) (js/Date.parse (tick/inst thing))
-    :else                     (js/Date.parse thing)))
+#?(:cljs
+   (defn millis [thing]
+     (cond
+       (nil? thing)              nil
+       (number? thing)           thing
+       (instance? js/Date thing) (-> thing .getTime)
+       (tick/date-time? thing) (js/Date.parse (tick/inst thing))
+       (tick/zoned-date-time? thing) (js/Date.parse (tick/inst thing))
+       :else                     (js/Date.parse thing))))
 
 (comment
   (js/Date.)
@@ -615,75 +625,82 @@
        (<= b-end a-start)               ; b is before a / b ends before a starts
        )))
 
-(defn ->js-date [date-string]
-  (when date-string
-    (cond
+#?(:cljs
+   (defn ->js-date [date-string]
+     (when date-string
+       (cond
 
-      ;; already js/Date
-      (instance? js/Date date-string)
-      date-string
+         ;; already js/Date
+         (instance? js/Date date-string)
+         date-string
 
-      :else (-> date-string millis js/Date.)
+         :else (-> date-string millis js/Date.)
 
-      ;; :else (js/Date. (js/Date.parse date-string))
-      )))
+         ;; :else (js/Date. (js/Date.parse date-string))
+         ))))
 (comment
   (->js-date (tick/instant))
   (->js-date "2020-01-01 10:22")
   (->js-date "2020-01-01"))
 
-(defn timestamp--now []
-  (js/Date.))
+#?(:cljs
+   (defn timestamp--now []
+     (js/Date.)))
 
-(defn millis--now []
-  (-> (js/Date.) .getTime))
+#?(:cljs
+   (defn millis--now []
+     (-> (js/Date.) .getTime)))
 
-(defn date [date-or-string]
-  (when date-or-string
-    (let [ts (->js-date date-or-string)]
-      (str (-> ts .getFullYear)
-           "-"
-           (-> ts .getMonth inc (string-pad-left 2 "0"))
-           "-"
-           (-> ts .getDate (string-pad-left 2 "0"))))))
+#?(:cljs
+   (defn date [date-or-string]
+     (when date-or-string
+       (let [ts (->js-date date-or-string)]
+         (str (-> ts .getFullYear)
+              "-"
+              (-> ts .getMonth inc (string-pad-left 2 "0"))
+              "-"
+              (-> ts .getDate (string-pad-left 2 "0")))))))
 
 (comment
   (->js-date "2020-01-01 10:22")
   (date "2020-01-01 10:22"))
 
-(defn date-today []
-  (date (js/Date.)))
+#?(:cljs
+   (defn date-today []
+     (date (js/Date.))))
 
 (comment
   (date-today))
 
-(defn date-same-day? [date-a date-b]
-  (let [date-a (->js-date date-a)
-        date-b (->js-date date-b)]
-    (and (= (-> date-a .getDate)   (-> date-b .getDate))
-         (= (-> date-a .getMonth) (-> date-b .getMonth))
-         (= (-> date-a .getFullYear)  (-> date-b .getFullYear)))))
+#?(:cljs
+   (defn date-same-day? [date-a date-b]
+     (let [date-a (->js-date date-a)
+           date-b (->js-date date-b)]
+       (and (= (-> date-a .getDate)   (-> date-b .getDate))
+            (= (-> date-a .getMonth) (-> date-b .getMonth))
+            (= (-> date-a .getFullYear)  (-> date-b .getFullYear))))))
 
 (comment
   (date-same-day? (js/Date.) (js/Date.))
   (date-same-day? "2020-01-01" "2020-01-01")
   (date-same-day? "2020-01-01" "2020-01-02"))
 
-(defn date-before? [date test-date]
-  (when date
-    (let [date (->js-date date)
-          test-date (->js-date test-date)]
+#?(:cljs
+   (defn date-before? [date test-date]
+     (when date
+       (let [date (->js-date date)
+             test-date (->js-date test-date)]
 
-      (cond
-        (< (-> date .getFullYear) (-> test-date .getFullYear)) true
-        (> (-> date .getFullYear) (-> test-date .getFullYear)) false
-        :else (cond
-                (< (-> date .getMonth) (-> test-date .getMonth)) true
-                (> (-> date .getMonth) (-> test-date .getMonth)) false
-                :else (cond
-                        (< (-> date .getDate) (-> test-date .getDate)) true
-                        (> (-> date .getDate) (-> test-date .getDate)) false
-                        :else false))))))
+         (cond
+           (< (-> date .getFullYear) (-> test-date .getFullYear)) true
+           (> (-> date .getFullYear) (-> test-date .getFullYear)) false
+           :else (cond
+                   (< (-> date .getMonth) (-> test-date .getMonth)) true
+                   (> (-> date .getMonth) (-> test-date .getMonth)) false
+                   :else (cond
+                           (< (-> date .getDate) (-> test-date .getDate)) true
+                           (> (-> date .getDate) (-> test-date .getDate)) false
+                           :else false)))))))
 
 (comment
   (date-before? "2020-01-01" "2020-01-02")
@@ -694,9 +711,10 @@
   (date-before? "2020-02-01" "2020-01-01")
   (date-before? "2022-01-01" "2020-01-01"))
 
-(defn date-past? [date]
-  (when date
-    (date-before? date (date-today))))
+#?(:cljs
+   (defn date-past? [date]
+     (when date
+       (date-before? date (date-today)))))
 
 (comment
   (date-today)
@@ -706,21 +724,22 @@
   (date-past? "2021-04-02")
   (date-past? "2021-04-03"))
 
-(defn time-of-date
-  ([date-or-string]
-   (time-of-date date-or-string false false))
-  ([date-or-string seconds?]
-   (time-of-date date-or-string seconds? false))
-  ([date-or-string seconds? milliseconds?]
-   (when date-or-string
-     (let [ts (->js-date date-or-string)]
-       (str (-> ts .getHours (string-pad-left 2 "0"))
-            ":"
-            (-> ts .getMinutes (string-pad-left 2 "0"))
-            (when seconds?
-              (str ":" (-> ts .getSeconds (string-pad-left 2 "0"))))
-            (when (and seconds? milliseconds?)
-              (str ":" (-> ts .getMilliseconds (string-pad-left 3 "0")))))))))
+#?(:cljs
+   (defn time-of-date
+     ([date-or-string]
+      (time-of-date date-or-string false false))
+     ([date-or-string seconds?]
+      (time-of-date date-or-string seconds? false))
+     ([date-or-string seconds? milliseconds?]
+      (when date-or-string
+        (let [ts (->js-date date-or-string)]
+          (str (-> ts .getHours (string-pad-left 2 "0"))
+               ":"
+               (-> ts .getMinutes (string-pad-left 2 "0"))
+               (when seconds?
+                 (str ":" (-> ts .getSeconds (string-pad-left 2 "0"))))
+               (when (and seconds? milliseconds?)
+                 (str ":" (-> ts .getMilliseconds (string-pad-left 3 "0"))))))))))
 
 (comment
   (time-of-date (js/Date.))
@@ -729,34 +748,39 @@
 
 ;; * promises
 
-(defn promise> [f-with-resolve-and-reject]
-  (js/Promise. f-with-resolve-and-reject))
+#?(:cljs
+   (defn promise> [f-with-resolve-and-reject]
+     (js/Promise. f-with-resolve-and-reject)))
 
-(defn resolve> [result]
-  (js/Promise.resolve result))
+#?(:cljs
+   (defn resolve> [result]
+     (js/Promise.resolve result)))
 
-(defn reject> [result]
-  (js/Promise.reject result))
+#?(:cljs
+   (defn reject> [result]
+     (js/Promise.reject result)))
 
-(defn no-op> []
-  (js/Promise.resolve nil))
+#?(:cljs
+   (defn no-op> []
+     (js/Promise.resolve nil)))
 
-(defn as>
-  "Converge `thing` to js/Promise."
-  [thing]
-  (cond
-    (nil? thing)
-    (no-op>)
+#?(:cljs
+   (defn as>
+     "Converge `thing` to js/Promise."
+     [thing]
+     (cond
+       (nil? thing)
+       (no-op>)
 
-    (instance? js/Promise thing)
-    thing
+       (instance? js/Promise thing)
+       thing
 
-    (fn? thing)
-    (promise> (fn [resolve _reject]
-                (resolve (thing))))
+       (fn? thing)
+       (promise> (fn [resolve _reject]
+                   (resolve (thing))))
 
-    :else
-    (resolve> thing)))
+       :else
+       (resolve> thing))))
 
 (comment
   (tap> (as> :boo))
@@ -765,26 +789,28 @@
       (.then (fn [result]
                (prn "result:" result)))))
 
-(defn- as-promises-vector [promises-or-lists-of-promises]
-  (reduce (fn [promises promise-or-list]
-            (cond
-              (nil? promise-or-list)
-              promises
+#?(:cljs
+   (defn- as-promises-vector [promises-or-lists-of-promises]
+     (reduce (fn [promises promise-or-list]
+               (cond
+                 (nil? promise-or-list)
+                 promises
 
-              (instance? js/Promise promise-or-list)
-              (conj promises promise-or-list)
+                 (instance? js/Promise promise-or-list)
+                 (conj promises promise-or-list)
 
-              :else
-              (->> promise-or-list
-                   (map as>)
-                   (into promises))))
-          [] promises-or-lists-of-promises))
+                 :else
+                 (->> promise-or-list
+                      (map as>)
+                      (into promises))))
+             [] promises-or-lists-of-promises)))
 
-(defn all> [& promises-or-lists-of-promises]
-  (let [promises (as-promises-vector promises-or-lists-of-promises)]
-    (-> (js/Promise.all promises)
-        (.then (fn [results]
-                 (as> (vec results)))))))
+#?(:cljs
+   (defn all> [& promises-or-lists-of-promises]
+     (let [promises (as-promises-vector promises-or-lists-of-promises)]
+       (-> (js/Promise.all promises)
+           (.then (fn [results]
+                    (as> (vec results))))))))
 
 (comment
   (all>
@@ -795,15 +821,17 @@
                (js/console.log "#2")
                (resolve "2")))))
 
-(defn- next-promise> [promises results]
-  (if-let [next-promise (first promises)]
-    (-> next-promise
-        (.then (fn [result]
-                 (next-promise> (rest promises) (conj results result)))))
-    (as> results)))
+#?(:cljs
+   (defn- next-promise> [promises results]
+     (if-let [next-promise (first promises)]
+       (-> next-promise
+           (.then (fn [result]
+                    (next-promise> (rest promises) (conj results result)))))
+       (as> results))))
 
-(defn all-in-sequence> [& promises-or-lists-of-promises]
-  (next-promise> (as-promises-vector promises-or-lists-of-promises) []))
+#?(:cljs
+   (defn all-in-sequence> [& promises-or-lists-of-promises]
+     (next-promise> (as-promises-vector promises-or-lists-of-promises) [])))
 
 (comment
   (tap>
@@ -811,18 +839,20 @@
     (as> "#1")
     (as> "#2"))))
 
-(defn later> [wait-millis f]
-  (js/Promise.
-   (fn [resolve _]
-     (js/setTimeout #(resolve (f))
-                    wait-millis))))
+#?(:cljs
+   (defn later> [wait-millis f]
+     (js/Promise.
+      (fn [resolve _]
+        (js/setTimeout #(resolve (f))
+                       wait-millis)))))
 
-(defn => [promise & thens]
-  (reduce (fn [promise then]
-            (-> promise
-                (.then (fn [result]
-                         (as> (then result))))))
-          (as> promise) thens))
+#?(:cljs
+   (defn => [promise & thens]
+     (reduce (fn [promise then]
+               (-> promise
+                   (.then (fn [result]
+                            (as> (then result))))))
+             (as> promise) thens)))
 
 (comment
   (-> (resolve> {:log []})
@@ -842,42 +872,46 @@
       #(resolve> (update % :log conj "d"))
       tap>))
 
-(defn transform>
-  "Returns `js/Promise` which resolves the application of `transform` on the
+#?(:cljs
+   (defn transform>
+     "Returns `js/Promise` which resolves the application of `transform` on the
   value of `promise`.
 
   Use this if you have a promise which value needs to be transformed."
-  [promise transform]
-  (js/Promise.
-   (fn [resolve reject]
-     (-> promise
-         (.then (fn [result]
-                  (let [transformed (transform result)]
-                    (resolve transformed)))
-                reject)))))
+     [promise transform]
+     (js/Promise.
+      (fn [resolve reject]
+        (-> promise
+            (.then (fn [result]
+                     (let [transformed (transform result)]
+                       (resolve transformed)))
+                   reject))))))
 
-(defn p-transformed
-  "Wraps promise function `f>` with `transform` function.
+#?(:cljs
+   (defn p-transformed
+     "Wraps promise function `f>` with `transform` function.
 
   Use this if you have a promise function which value needs to be transformed."
-  [f> transform]
-  (fn [& args]
-    (transform> (apply f> args) transform)))
+     [f> transform]
+     (fn [& args]
+       (transform> (apply f> args) transform))))
 
-(defn chain-promise-fns> [input-value fns]
-  (let [fns (remove nil? fns)]
-    (if-let [fn> (first fns)]
-      (-> (fn> input-value)
-          (.then #(chain-promise-fns> % (rest fns))))
-      (js/Promise.resolve input-value))))
+#?(:cljs
+   (defn chain-promise-fns> [input-value fns]
+     (let [fns (remove nil? fns)]
+       (if-let [fn> (first fns)]
+         (-> (fn> input-value)
+             (.then #(chain-promise-fns> % (rest fns))))
+         (js/Promise.resolve input-value)))))
 
-(defn apply>
-  "Returns `js/Promise` with the result of applying `f` on `args` while
+#?(:cljs
+   (defn apply>
+     "Returns `js/Promise` with the result of applying `f` on `args` while
   resolving all promises in `args`."
-  [f args]
-  (s/assert vector? args)
-  (-> (js/Promise.all args)
-      (.then #(js/Promise.resolve (apply f %)))))
+     [f args]
+     (s/assert vector? args)
+     (-> (js/Promise.all args)
+         (.then #(js/Promise.resolve (apply f %))))))
 
 (comment
   (instance? js/Promise (js/Promise. (fn [_ _])))
@@ -888,8 +922,9 @@
 
 ;; * deprecations
 
-(defn log-deprecated [info]
-  (js/console.error "DEPRECATED" (js/Error info)))
+#?(:cljs
+   (defn log-deprecated [info]
+     (js/console.error "DEPRECATED" (js/Error info))))
 
 ;; * CSV
 
@@ -935,7 +970,7 @@
     (str "Value does not match schema: "
          (try
            (malli-error/humanize explain)
-           (catch :default ex
+           (catch #?(:cljs :default :clj Exception) ex
              (throw (ex-info "Malli schema error humanization failed."
                              {:schema  schema
                               :explain explain}
@@ -944,7 +979,7 @@
 (defn malli-explain [schema value]
   (try
     (malli/explain schema value)
-    (catch :default ex
+    (catch #?(:cljs :default :clj Exception) ex
       (throw (ex-info "Invalid malli schema"
                       {:malli/schema schema}
                       ex)))))
