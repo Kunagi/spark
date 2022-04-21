@@ -1,11 +1,13 @@
-(ns spark.logging
-  (:require
-   [spark.utils :as u]))
+(ns spark.logging)
+
+(defn compiler-option [k]
+     (when cljs.env/*compiler*
+       (get-in @cljs.env/*compiler* [:options k])))
 
 (defmacro log [event-keyword & {:as event-data}]
   ;; (prn &env)
   (let [event (str event-keyword)
-        log-format (u/compiler-option :spark-log-format)
+        log-format (compiler-option :spark-log-format)
         ;; s (with-out-str (pprint &env))
         ]
     (if event-data
