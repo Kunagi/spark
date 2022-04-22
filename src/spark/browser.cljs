@@ -252,8 +252,8 @@
   (log ::webkit-post-message
        :message-handler message-handler-name
        :body message-body)
-  (when (and (exists? js/webkit)
-             (exists? js/webkit.messageHandlers)
+  (when (and (exists? js/webkit) js/webkit
+             (exists? js/webkit.messageHandlers) js/webkit.messageHandlers
              (.hasOwnProperty js/webkit.messageHandlers message-handler-name))
     (when-let [message-handler (aget js/webkit.messageHandlers message-handler-name)]
       (-> ^js message-handler
