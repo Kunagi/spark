@@ -1060,8 +1060,7 @@
         theme                          (use-theme)]
     ($ Stack
        ($ :div
-          {:style {:font-size   "120%"
-                   :font-weight 900
+          {:style {:font-weight 900
                    :color       (-> theme .-palette .-primary .-main)
                    :white-space "pre-wrap"}}
           (str message))
@@ -1075,6 +1074,7 @@
             {:style {:max-height       "200px"
                      :overflow         "auto"
                      :font-family      "monospace"
+                     :font-size        "10px"
                      :white-space      "pre-wrap"
                      :background-color "#333"
                      :color            "#6ff"
