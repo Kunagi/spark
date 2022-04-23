@@ -5,7 +5,7 @@
          hyperfiddle/rcf                     {:git/url "https://github.com/hyperfiddle/rcf.git"
                                               :sha "1ed7a56b6f924aa2050cc163fc4636544ff6c279"}
          lilactown/helix                     {:mvn/version "0.0.15"}
-         funcool/promesa                     {:mvn/version "6.0.2"}
+         funcool/promesa                     {:mvn/version "8.0.446"}
          nano-id/nano-id                     {:mvn/version "1.0.0"}
          cljs-bean/cljs-bean                 {:mvn/version "1.6.0"}
          tick/tick                           {:mvn/version "0.5.0-RC5"}

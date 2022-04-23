@@ -124,14 +124,16 @@
     ex
 
     #?(:cljs (instance? js/Error ex))
-    #?(:cljs (str (-> ^js ex .-message)
+    #?(:cljs (str ""
+                  (-> ^js ex .-message)
                   (when-let [c (ex-cause ex)]
                     (str "\n"
                          (exception-as-text c)))))
 
     (map? ex)
     (if-let [message (-> ex :message)]
-      (str message
+      (str ""
+           message
            (when-let [c (ex-cause ex)]
              (str "\n"
                   (exception-as-text c))))
