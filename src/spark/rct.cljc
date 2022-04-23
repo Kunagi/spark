@@ -4,8 +4,8 @@
    [promesa.core :as p]
    [spark.logging :refer [log]]))
 
-(defonce ON (atom false))
-(defn on? [] @ON)
+(defonce AUTORUN (atom false))
+(defn autorun? [] @AUTORUN)
 
 #?(:clj
    (defn compiler-option [k]
@@ -87,14 +87,17 @@
                                                        :ns ~(str *ns*)
                                                        :id ~(random-uuid)}))
                                           (conj-form-result
-                                           ~acc (testform> ~form))))))))]
-      `(when ~(deref ON)
-         (-> (p/resolved {:forms  []
-                          :ns     ~(str *ns*)
-                          :id     ~(random-uuid)
-                          :failed false})
-             ~@forms_
-             (p/then (fn [~acc]
-                       (swap! TESTS conj ~acc))))))))
+                                           ~acc (testform> ~form))))))))
+          test (gensym "test_")]
+      `(let [~test #(-> (p/resolved {:forms  []
+                                     :ns     ~(str *ns*)
+                                     :id     ~(random-uuid)
+                                     :failed false})
+                        ~@forms_
+                        (p/then (fn [~acc]
+                                  (swap! TESTS conj ~acc))))]
+         ;; TODO register test
+         (when ~(autorun?)
+           (~test))))))
 
 #?(:clj (defmacro tests [& body]))
