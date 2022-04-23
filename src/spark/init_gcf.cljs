@@ -38,9 +38,6 @@
   ;; https://github.com/zelark/nano-id
   (set! js/crypto (Crypto.))
 
-;; Logging
-  (set! js/_spark_logger (-> functions .-logger))
-
   ;; Firebase
   (-> admin .initializeApp)
   (env-config/set! :firestore (-> admin .firestore))

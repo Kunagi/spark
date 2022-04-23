@@ -1,8 +1,23 @@
 (ns spark.logging
   #?(:cljs (:require-macros [spark.logging :refer [log]]))
   (:require
-   #?(:cljs [cljs.pprint :refer [pprint]]
-      :clj [clojure.pprint :refer [pprint]])))
+   #?(:gcf ["firebase-functions" :as firebase-functions])
+   #?(:cljs [cljs.pprint :as pprint]
+      :clj [clojure.pprint :as pprint])))
+
+;; * logging
+
+#?(:gcf
+   (defn log-with-gcf [event event-data]
+     (.write ^js (.-logger firebase-functions)
+             (clj->js
+              (assoc event-data
+                     :severity "INFO"
+                     :message event)))))
+
+(defn log-with-println [event event-data]
+  (println event (when event-data (with-out-str (pprint/pprint event-data))))
+  )
 
 ;; * log macro
 
@@ -13,23 +28,26 @@
 
 #?(:clj
    (defn ->log-expr [event event-data]
-     (case (compiler-option :spark-log-format)
 
-       :edn `(-> (or js/_spark_logger js/console) (.log ~event (with-out-str (cljs.pprint/pprint ~event-data))))
-       :js `(-> (or js/_spark_logger js/console) (.log ~event (cljs.core/clj->js ~event-data)))
+     (case (compiler-option :spark-logging-mode)
 
-       `(if goog.DEBUG
-          (-> (or js/_spark_logger js/console) (.log ~event ~event-data))
-          (-> (or js/_spark_logger js/console) (.log ~event (cljs.core/clj->js ~event-data)))))))
+       :gcf
+       ;; `(let [logger (-> firebase-funcotins .-logger)]
+       ;;    (.log logger "[gcf]" ~event ~event-data))
+       ;; `(.log js/console "[gcf]" ~event ~event-data)
+       ;; `(.log (.-logger firebase-functions) "[gcf]" ~event ~event-data)
+       `(log-with-gcf ~event ~event-data)
+
+       :browser-console
+       `(.log js/console "[:browser-console]" ~event ~@[event-data])
+
+                                        ; else
+       `(log-with-println ~event ~event-data)
+       )))
 
 #?(:clj
    (defmacro log [event-keyword & {:as event-data}]
      (->log-expr (str event-keyword) event-data)))
-
-;; * logging
-
-#?(:cljs
-   (set! js/_spark_logger js/console))
 
 ;; * tap
 
