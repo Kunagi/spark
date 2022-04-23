@@ -4,6 +4,7 @@
    #?(:gcf ["firebase-functions" :as firebase-functions])
    #?(:cljs [cljs.pprint :as pprint]
       :clj [clojure.pprint :as pprint])
+   [flatland.ordered.map :as ordered.map]
    [clojure.string :as str]))
 
 ;; * logging
@@ -61,8 +62,7 @@
          `(.log js/console
                 "--->"
                 ~(namespace event) " " ~(name event)
-                "  <---"
-                ))
+                "  <---"))
 
        :browser-console
        (let [event-expr (str "%c" (namespace event)
@@ -76,8 +76,13 @@
        `(log-with-println ~event ~event-data))))
 
 #?(:clj
-   (defmacro log [event-keyword & {:as event-data}]
-     (->log-expr event-keyword event-data)))
+   (defmacro log [event-keyword & data-kvs]
+     (let [data (when data-kvs
+                  (->> data-kvs
+                       (partition 2)
+                       (map #(->> % (into [])))
+                       (into (ordered.map/ordered-map))))]
+       (->log-expr event-keyword data))))
 
 ;; * tap
 
