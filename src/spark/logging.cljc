@@ -3,7 +3,8 @@
   (:require
    #?(:gcf ["firebase-functions" :as firebase-functions])
    #?(:cljs [cljs.pprint :as pprint]
-      :clj [clojure.pprint :as pprint])))
+      :clj [clojure.pprint :as pprint])
+   [clojure.string :as str]))
 
 ;; * logging
 
@@ -11,13 +12,16 @@
    (defn log-with-gcf [event event-data]
      (.write ^js (.-logger firebase-functions)
              (clj->js
-              (assoc event-data
-                     :severity "INFO"
-                     :message event)))))
+              {:severity "DEBUG"
+               :message (str (namespace event)
+                             " | "
+                             (name event))
+               :ns (namespace event)
+               :event (name event)
+               :data event-data}))))
 
 (defn log-with-println [event event-data]
-  (println event (when event-data (with-out-str (pprint/pprint event-data))))
-  )
+  (println event (when event-data (with-out-str (pprint/pprint event-data)))))
 
 ;; * log macro
 
@@ -25,6 +29,14 @@
    (defn compiler-option [k]
      (when cljs.env/*compiler*
        (get-in @cljs.env/*compiler* [:options k]))))
+
+(def col--spark "#8d6e63")
+(def col--app "#6d4c41")
+(def col--event "#0277bd")
+
+(def css--ns--spark (str "background-color: " col--spark "; color: white; padding: 2px 4px; border-radius: 4px;"))
+(def css--ns--app (str "background-color: " col--app "; color: white; padding: 2px 4px; border-radius: 4px;"))
+(def css--event (str "background-color: " col--event "; color: white; font-weight: bold; padding: 2px 4px; border-radius: 4px; margin-left: 4px;"))
 
 #?(:clj
    (defn ->log-expr [event event-data]
@@ -39,15 +51,19 @@
        `(log-with-gcf ~event ~event-data)
 
        :browser-console
-       `(.log js/console "[:browser-console]" ~event ~@[event-data])
+       (let [event-expr (str "%c" (namespace event)
+                             "%c" (name event))]
+         (if (if (-> event namespace (str/starts-with? "spark."))
+               css--ns--spark css--ns--app)
+           `(.log js/console ~event-expr css--ns--spark css--event ~@[event-data])
+           `(.log js/console ~event-expr css--ns--app css--event ~@[event-data])))
 
-                                        ; else
-       `(log-with-println ~event ~event-data)
-       )))
+       ; else
+       `(log-with-println ~event ~event-data))))
 
 #?(:clj
    (defmacro log [event-keyword & {:as event-data}]
-     (->log-expr (str event-keyword) event-data)))
+     (->log-expr event-keyword event-data)))
 
 ;; * tap
 
