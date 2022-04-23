@@ -50,6 +50,20 @@
        ;; `(.log (.-logger firebase-functions) "[gcf]" ~event ~event-data)
        `(log-with-gcf ~event ~event-data)
 
+       :js-console
+       (if event-data
+         `(.log js/console
+                "--->"
+                ~(namespace event) " " ~(name event)
+                "  <---"
+                "\n"
+                (with-out-str (cljs.pprint/pprint ~event-data)))
+         `(.log js/console
+                "--->"
+                ~(namespace event) " " ~(name event)
+                "  <---"
+                ))
+
        :browser-console
        (let [event-expr (str "%c" (namespace event)
                              "%c" (name event))]
