@@ -34,10 +34,12 @@
 (def col--spark "#8d6e63")
 (def col--app "#6d4c41")
 (def col--event "#0277bd")
+(def col--exception "#d32f2f")
 
 (def css--ns--spark (str "background-color: " col--spark "; color: white; padding: 2px 4px; border-radius: 4px;"))
 (def css--ns--app (str "background-color: " col--app "; color: white; padding: 2px 4px; border-radius: 4px;"))
 (def css--event (str "background-color: " col--event "; color: white; font-weight: bold; padding: 2px 4px; border-radius: 4px; margin-left: 4px;"))
+(def css--exception (str "background-color: " col--exception "; color: white; font-weight: bold; padding: 2px 4px; border-radius: 4px; margin-left: 4px;"))
 
 #?(:clj
    (defn ->log-expr [event event-data]
@@ -65,12 +67,26 @@
                 "  <---"))
 
        :browser-console
-       (let [event-expr (str "%c" (namespace event)
-                             "%c" (name event))]
-         (if (if (-> event namespace (str/starts-with? "spark."))
-               css--ns--spark css--ns--app)
-           `(.log js/console ~event-expr css--ns--spark css--event ~@[event-data])
-           `(.log js/console ~event-expr css--ns--app css--event ~@[event-data])))
+       (let [
+             css--ns (if (-> event namespace (str/starts-with? "spark."))
+                       (symbol "spark.logging" "css--ns--spark")
+                       (symbol "spark.logging" "css--ns--app"))
+             exception (-> event-data :exception)
+             event-data (if exception
+                          (dissoc event-data :exception)
+                          event-data)
+             event-expr (str "%c" (namespace event)
+                             "%c" (name event)
+                             (when exception
+                               (str "%c:exception")))
+             ]
+
+         `(.log
+           js/console
+           ~event-expr
+           ~css--ns css--event
+           ~@(when exception [css--exception "\n" exception "\n"])
+           ~@[event-data]))
 
        ; else
        `(log-with-println ~event ~event-data))))
