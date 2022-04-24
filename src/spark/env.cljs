@@ -1,6 +1,6 @@
 (ns spark.env
   (:require
-   [spark.rct :refer [tests]]
+   [spark.rct :refer [test> def>]]
    [spark.local :as local]
    ))
 
@@ -11,7 +11,7 @@
   [b]
   (when b "x"))
 
-(tests
+(comment
  "true" (format-x-on-true true) := "x"
  "false" (format-x-on-true false) := nil
  )

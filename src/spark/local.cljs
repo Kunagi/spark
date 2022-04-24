@@ -5,7 +5,7 @@
    [tick.timezone]
    [tick.core :as tick]
 
-   [spark.rct :refer [tests]]
+   [spark.rct :refer [test> def>]]
    [spark.utils :as u]
    [spark.money :as money]))
 
@@ -60,7 +60,7 @@
   ([lang v]
    (format-currency lang "EUR" v)))
 
-(tests
+(comment
  "integer" (format-eur :de 20) := "20,00 €"
  "decimal" (format-eur :de 20.2) := "20,20 €"
  "string" (format-eur :de "20.2") := "20,20 €"
@@ -100,7 +100,7 @@
      (->> (u/->date v)
           (tick/format (formatter--date lang))))))
 
-(tests
+(comment
  "string" (format-date :de "2020-01-01")
 
  (->> (u/->date "2020-01-01") (tick/format (tick/formatter "dd.MM." (->joda-locale :de))))
@@ -124,7 +124,7 @@
          (tick/truncate truncate-to)
          str))))
 
-(tests
+(comment
  "js/Date" (format-time (js/Date. "2020-01-01T12:21")) := "12:21")
 
 (defn format-date+time
@@ -137,11 +137,11 @@
             " "
             (format-time lang (tick/time instant) :minutes))))))
 
-(tests
+(comment
  "js/Date" (format-date+time :de (js/Date.))
  "string" (format-date+time :de "2020-01-01T12:23") := "01.01.2020 12:23")
 
-(tests
+(comment
 
 ;;
  )
@@ -184,7 +184,7 @@
          (string? v) v
          :else       (str v))))))
 
-(tests
+(comment
  (text :yes)
  (text :continue)
  (text nil))
@@ -198,7 +198,7 @@
    (when-not (nil? b)
      (text lang (if b :yes :no) nil))))
 
-(tests
+(comment
  "nil" (format-yes-no :de nil) := nil
  "true" (format-yes-no :de true) := "Ja"
  "false" (format-yes-no :de false) := "Nein")

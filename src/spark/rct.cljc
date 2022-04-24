@@ -1,11 +1,18 @@
 (ns spark.rct
   #?(:cljs (:require-macros [spark.rct :refer [def> testform> test> tests]]))
   (:require
+   #?(:cljs [cljs.test :refer [deftest]])
    [promesa.core :as p]
    [spark.logging :refer [log]]))
 
 (defonce AUTORUN (atom false))
 (defn autorun? [] @AUTORUN)
+
+(defn enable-autorun!
+  ([]
+   (enable-autorun! true))
+  ([autorun-on?]
+   (reset! AUTORUN autorun-on?)))
 
 #?(:clj
    (defn compiler-option [k]
@@ -73,7 +80,7 @@
 
 (def TESTS (atom '()))
 
-(defmacro test> [& forms]
+(defmacro test> [symbol & forms]
   (when (compiler-option :spark-tests)
     (let [acc (gensym "acc_")
           forms_ (->> forms
@@ -87,17 +94,28 @@
                                                        :ns ~(str *ns*)
                                                        :id ~(random-uuid)}))
                                           (conj-form-result
-                                           ~acc (testform> ~form))))))))
-          test (gensym "test_")]
-      `(let [~test #(-> (p/resolved {:forms  []
-                                     :ns     ~(str *ns*)
-                                     :id     ~(random-uuid)
-                                     :failed false})
-                        ~@forms_
-                        (p/then (fn [~acc]
-                                  (swap! TESTS conj ~acc))))]
-         ;; TODO register test
-         (when ~(autorun?)
-           (~test))))))
+                                           ~acc (testform> ~form))))))))]
+      `(do
+         (cljs.test/deftest ~symbol
+           (-> (p/resolved {:forms  []
+                            :ns     ~(str *ns*)
+                            :id     ~(random-uuid)
+                            :failed false})
+               ~@forms_
+               (p/then (fn [~acc]
+                         (swap! TESTS conj ~acc)))))
+         (when (autorun?)
+           (~symbol))))))
+
+
+(do
+   (log ::test>
+        :autorun (autorun?))
+  (test> dummy
+         (assert (= 1 1))
+         (js/console.log "%cyahoo!" "background-color: red; color: white; padding: 16px;")))
+
+(comment
+  (autorun?))
 
 #?(:clj (defmacro tests [& body]))

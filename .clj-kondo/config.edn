@@ -14,8 +14,7 @@
            spark.core/def-test   clojure.core/fn
 
            spark.rct/def> clojure.core/def
-           spark.rct/rct clojure.core/let
-           spark.rct/rct-debug clojure.core/let
+           spark.rct/test> clojure.test/deftest
 
            spark.gcf.cmd/def-cmd clojure.core/def
 

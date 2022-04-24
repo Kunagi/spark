@@ -18,7 +18,7 @@
 
    [flatland.ordered.map :as ordered.map]
 
-   [spark.rct :refer [tests]]))
+   [spark.rct :refer [test> def>]]))
 
 ;; http://weavejester.github.io/medley/medley.core.html
 
@@ -506,7 +506,7 @@
                                {:value v
                                 :type (type v)}))))))
 
-(tests
+(comment
  "js.Date" (->instant (js/Date. "2020-01-01")) := (tick/instant (js/Date. "2020-01-01"))
  "millis" (->instant 1577870520000) := (tick/instant 1577870520000)
  "string" (->instant "2020-01-01T10:00:00") := (tick/instant "2020-01-01T10:00:00")
@@ -522,7 +522,7 @@
          (string? v) (tick/date v)
          :else (-> v ->instant tick/date)))))
 
-(tests
+(comment
  "nil" (->date nil) := nil
  "tick/date" (->date (tick/date "2020-01-01")) := (tick/date "2020-01-01")
  "js.Date" (->date (js/Date. "2020-01-01")) := (tick/date "2020-01-01")
@@ -539,7 +539,7 @@
          (string? v) (tick/time v)
          :else (-> v ->instant tick/time)))))
 
-(tests
+(comment
  "nil" (->time nil) := nil
  "tick/time " (->time (tick/time "12:23")) := (tick/time "12:23")
  "js.Date" (->time (js/Date. "2020-01-01T12:23")) := (tick/time "12:23")
