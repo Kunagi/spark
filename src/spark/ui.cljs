@@ -1528,9 +1528,10 @@
 (def FieldLabel form-ui/FieldLabel)
 (def Field form-ui/Field)
 
-(defnc FieldCardContent [{:keys [label children]}]
+(defnc FieldCardContent [{:keys [label description children]}]
   ($ mui/CardContent
-     ($ Field {:label label}
+     ($ Field {:label label
+               :description description}
         children)))
 
 ;;;
@@ -2107,12 +2108,15 @@
 (defnc EntityFieldCardActionArea [{:keys [on-click
                                           label children
                                           entity field
-                                          value-suffix display]}]
+                                          value-suffix display
+                                          description]}]
   (let [field (cond
                 (map? field) field
                 (spark/field-schema? field) (get field 1))
         label           (or label
                             (-> field :label))
+        description (or description
+                        (-> field :description))
         field-id        (-> field :id)
         value           (when field-id (get entity field-id))
         value-component (if-let [display (or display
@@ -2177,7 +2181,8 @@
        ;; (data {:field-id field-id
        ;;        :value    value})
        ($ FieldCardContent
-          {:label label}
+          {:label label
+           :description description}
           ;; (DEBUG (get entity field-id))
           ;; (when goog.DEBUG
           ;;   (data (-> field spark/schema-opts :display)))

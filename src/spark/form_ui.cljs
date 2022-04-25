@@ -767,16 +767,20 @@
    ;; TODO (->component text)
    (str text)))
 
-(defnc Field [{:keys [label children]}]
-  ($ :div
-     {:spacing 0.5
-      :class   "Field EditableField"}
+(defnc Field [{:keys [label description children]}]
+  (d/div
+     {:class "Field EditableField"
+      :style {:display "grid"
+              :grid-gap "8px"}}
      ($ FieldLabel
         {:text label})
      (d/div
       {:class "FieldValue"
        :style {:min-height "15px"}}
-      children)))
+      children)
+     (when description
+       (d/div description))
+     ))
 
 (defnc StringVectorChips [{:keys [values]}]
   ($ :div
