@@ -82,6 +82,14 @@
 (def atom-hook spark-react/atom-hook)
 (def memo spark-react/memo)
 
+(defn use-promise [p]
+  (let [[result set-result] (use-state nil)]
+    (use-effect
+     :once
+     (u/=> p set-result)
+     nil)
+    result))
+
 (def use-url-params (atom-hook browser/URL_PARAMS))
 
 (defn use-url-param [k]
