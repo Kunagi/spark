@@ -151,7 +151,7 @@
            :label           (-> field :label)
            :type            (-> field :input-type)
            :multiline       (get field :multiline?)
-           :rows            (get field :rows (when (get field :multiline?) 5))
+           :minRows            (get field :rows (when (get field :multiline?) 5))
            :autoFocus       (-> field :auto-focus?)
            :inputProps      (clj->js input-props)
            :InputProps      (clj->js InputProps)
