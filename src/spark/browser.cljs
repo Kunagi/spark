@@ -123,7 +123,7 @@
     (-> a .-style .-display (set! "none"))
     (-> a (.setAttribute "href", blob-url))
     (-> a (.setAttribute "type" "application/pdf"))
-    (-> a (.setAttribute "download" filename))
+    ;; (-> a (.setAttribute "download" filename))
     (-> a (.setAttribute "target" "_blank"))
     (js/document.body.appendChild a)
     (-> a .click)
