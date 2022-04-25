@@ -52,10 +52,10 @@
   (when path
     (cond
 
-      (vector? path) (->> path (mapv coerce-path-element))
-
       (spark/doc-schema? path)
       (spark/doc-schema-col-path path)
+
+      (vector? path) (->> path (mapv coerce-path-element))
 
       :else path)))
 

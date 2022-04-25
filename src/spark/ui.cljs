@@ -370,8 +370,8 @@
     (use-effect
      [effect-signal]
      (when path
-       ;; (log ::use-col--subscribe
-       ;;      :path path)
+       (log ::use-col--subscribe
+            :path path)
        (let [col-ref     (firestore/ref path)
              on-snap     (fn [^js query-col-snapshot]
                            ;; (log ::query-snapshot-received
