@@ -119,14 +119,15 @@
     (js/document.body.removeChild a)))
 
 (defn initiate-pdf-bloburl-download
-  ([filename blob-url]
-   (initiate-pdf-bloburl-download filename blob-url nil))
-  ([filename blob-url target]
+  ([blob-url filename]
+   (initiate-pdf-bloburl-download blob-url filename nil))
+  ([blob-url filename target]
    (let [a        (js/document.createElement "a")]
      (-> a .-style .-display (set! "none"))
      (-> a (.setAttribute "href", blob-url))
      (-> a (.setAttribute "type" "application/pdf"))
-     (-> a (.setAttribute "download" filename))
+     (when filename
+       (-> a (.setAttribute "download" filename)))
      (when target
        (-> a (.setAttribute "target" target)))
      (js/document.body.appendChild a)

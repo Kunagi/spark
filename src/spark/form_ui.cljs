@@ -345,8 +345,9 @@
         value       (-> field :value)
         required?   (-> field :required?)
         label-id (str "select_" (-> field :id) "_label")
+        options (-> field :options)
         get-value-from-options (fn [selected-value]
-                                 (->> field :options
+                                 (->> options
                                       (reduce (fn [ret option]
                                                 (or ret
                                                     (when (-> option :value str
@@ -355,7 +356,16 @@
                                               nil)))
         nil-option-exists? (->> field :options
                                 (filter #(-> % :value str/blank?))
-                                seq)]
+                                seq)
+        value-missing-in-options? (and value
+                                       (->> options
+                                            (filter #(-> % :value (= value)))
+                                            empty?))
+        options (if value-missing-in-options?
+                  (conj options {:value value
+                                 :label (str "??? " value)})
+                  options)
+        ]
     ($ :div
        ;; ($ :pre "!" (-> field :error str) "!")
        ($ mui/FormControl
@@ -383,7 +393,7 @@
              (when (and (not nil-option-exists?)
                         (or (nil? value) (not required?)))
                ($ :option {:value nil} ""))
-             (for [option (-> field :options)]
+             (for [option options]
                ($ :option
                   {:key   (-> option :value)
                    :value (str (or (-> option :value)
@@ -521,9 +531,9 @@
                 :size "small"}
                "Mehr anzeigen")
             #_($ :a
-               {:onClick #(set-expanded true)
-                :style {:cursor "pointer"}}
-               "Mehr anzeigen..."))))))
+                 {:onClick #(set-expanded true)
+                  :style {:cursor "pointer"}}
+                 "Mehr anzeigen..."))))))
 
 (defmethod create-input "checkboxes" [field]
   (log ::create-input
@@ -574,8 +584,7 @@
        (when-let [input-hint (-> field :input-hint)]
          ($ :div
             {:style {:color "#999"}}
-            input-hint))
-       )))
+            input-hint)))))
 
 (def DIALOG-CLASS (atom nil))
 

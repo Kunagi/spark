@@ -315,10 +315,14 @@
   (let [form (-> form
                  (set-field-value field-id new-value))
         field (field-by-id form field-id)
-        on-change (-> field :on-change)
-        form (if-not on-change
+        field-on-change (-> field :on-change)
+        form (if-not field-on-change
                form
-               (on-change form new-value))]
+               (field-on-change form new-value))
+        form-on-change (-> form :on-change)
+        form (if-not form-on-change
+               form
+               (form-on-change form field-id new-value))]
     form))
 
 (defn field-error [form field-id]
