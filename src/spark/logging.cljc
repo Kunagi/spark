@@ -34,11 +34,13 @@
 (def col--spark "#8d6e63")
 (def col--app "#6d4c41")
 (def col--event "#0277bd")
+(def col--event--tap> "#c43e00")
 (def col--exception "#d32f2f")
 
 (def css--ns--spark (str "background-color: " col--spark "; color: white; padding: 2px 4px; border-radius: 4px;"))
 (def css--ns--app (str "background-color: " col--app "; color: white; padding: 2px 4px; border-radius: 4px;"))
-(def css--event (str "background-color: " col--event "; color: white; font-weight: bold; padding: 2px 4px; border-radius: 4px; margin-left: 4px;"))
+(def css--event--default (str "background-color: " col--event "; color: white; font-weight: bold; padding: 2px 4px; border-radius: 4px; margin-left: 4px;"))
+(def css--event--tap> (str "background-color: " col--event--tap> "; color: white; font-weight: bold; padding: 2px 16px; border-radius: 4px; margin-left: 4px;"))
 (def css--exception (str "background-color: " col--exception "; color: white; font-weight: bold; padding: 2px 4px; border-radius: 4px; margin-left: 4px;"))
 
 #?(:clj
@@ -67,10 +69,12 @@
                 "  <---"))
 
        :browser-console
-       (let [
-             css--ns (if (-> event namespace (str/starts-with? "spark."))
+       (let [css--ns (if (-> event namespace (str/starts-with? "spark."))
                        (symbol "spark.logging" "css--ns--spark")
                        (symbol "spark.logging" "css--ns--app"))
+             css--event (cond
+                          (-> event name (= "tap>")) (symbol "spark.logging" "css--event--tap>")
+                          :else (symbol "spark.logging" "css--event--default"))
              exception (-> event-data :exception)
              event-data (if exception
                           (dissoc event-data :exception)
@@ -78,13 +82,12 @@
              event-expr (str "%c" (namespace event)
                              "%c" (name event)
                              (when exception
-                               (str "%c:exception")))
-             ]
+                               (str "%c:exception")))]
 
          `(.log
            js/console
            ~event-expr
-           ~css--ns css--event
+           ~css--ns ~css--event
            ~@(when exception [css--exception "\n" exception "\n"])
            ~@[event-data]))
 
