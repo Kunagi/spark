@@ -118,16 +118,20 @@
     (-> a .click)
     (js/document.body.removeChild a)))
 
-(defn initiate-pdf-bloburl-download [filename blob-url]
-  (let [a        (js/document.createElement "a")]
-    (-> a .-style .-display (set! "none"))
-    (-> a (.setAttribute "href", blob-url))
-    (-> a (.setAttribute "type" "application/pdf"))
-    (-> a (.setAttribute "download" filename))
-    ;; (-> a (.setAttribute "target" "_blank"))
-    (js/document.body.appendChild a)
-    (-> a .click)
-    (js/document.body.removeChild a)))
+(defn initiate-pdf-bloburl-download
+  ([filename blob-url]
+   (initiate-pdf-bloburl-download filename blob-url nil))
+  ([filename blob-url target]
+   (let [a        (js/document.createElement "a")]
+     (-> a .-style .-display (set! "none"))
+     (-> a (.setAttribute "href", blob-url))
+     (-> a (.setAttribute "type" "application/pdf"))
+     (-> a (.setAttribute "download" filename))
+     (when target
+       (-> a (.setAttribute "target" target)))
+     (js/document.body.appendChild a)
+     (-> a .click)
+     (js/document.body.removeChild a))))
 
 (defn download-image-to-data-url> [image-url]
   (u/promise>
