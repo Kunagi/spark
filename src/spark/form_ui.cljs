@@ -363,7 +363,7 @@
                                             empty?))
         options (if value-missing-in-options?
                   (conj options {:value value
-                                 :label (str "??? " value)})
+                                 :label (str value " ***")})
                   options)
         ]
     ($ :div
