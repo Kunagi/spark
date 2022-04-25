@@ -1849,8 +1849,8 @@
 (defnc Confirmation [{:keys [text confirmation-text on-confirm]}]
   (let [hide-dialog (use-hide-dialog)
         confirm (fn []
-                  (on-confirm)
-                  (hide-dialog))]
+                  (p/let [_ (on-confirm)]
+                    (hide-dialog)))]
     (stack-2
      (div
       {:text-align :center
@@ -1867,7 +1867,7 @@
                      (local/text :ok))
            :on-click confirm}))))))
 
-(defn show-confirmation-dialog [dialog]
+(defn show-confirmation-dialog> [dialog]
   (let [dialog-id     (str "selection-list_" (u/nano-id))
         dialog        (assoc dialog
                              :id dialog-id
@@ -1875,7 +1875,11 @@
                                          {:text (-> dialog :text)
                                           :confirmation-text (-> dialog :confirmation-text)
                                           :on-confirm (-> dialog :on-confirm)}))]
-    (show-dialog dialog)))
+    (show-dialog> dialog)))
+
+(defn show-confirmation-dialog [dialog]
+  (show-confirmation-dialog> dialog)
+  nil)
 
 ;;;
 ;;; storage
