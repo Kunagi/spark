@@ -92,6 +92,10 @@
   (assert-field-schema Field)
   (-> (schema-opts Field) :label))
 
+(defn field-schema-description [Field]
+  (assert-field-schema Field)
+  (-> (schema-opts Field) :description))
+
 ;;;
 ;;; Doc
 ;;;
