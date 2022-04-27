@@ -196,10 +196,12 @@
                                       (nth schema 3)
                                       (nth schema 2))
                         k-conformed (conform-js-data k k-schema db-doc-ref)]
-                    (assoc m
-                           k-conformed
-                           (conform-js-data v v-schema (conj db-doc-ref
-                                                             k-conformed)))))
+                    (if v
+                      (assoc m
+                             k-conformed
+                             (conform-js-data v v-schema (conj db-doc-ref
+                                                               k-conformed)))
+                      m)))
                 {} (js/Object.keys data))
 
         ;; else -> :map
