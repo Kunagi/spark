@@ -279,6 +279,13 @@
     (assoc m k v)
     m))
 
+(defn assoc-if-nil
+  "Assoc if `m` is missing key `k` or its value is `nil`."
+  [m k v]
+  (if (get m k)
+    m
+    (assoc m k v)))
+
 (defn assoc-if-not-nil
   "Assoc if the value `v` ist not nil."
   [m k v]
