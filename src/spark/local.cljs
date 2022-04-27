@@ -189,6 +189,9 @@
  (text :continue)
  (text nil))
 
+(defn ->text--yes-no [b]
+  (text (if b :yes :no)))
+
 ;; * boolean
 
 (defn format-yes-no
