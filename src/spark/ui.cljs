@@ -2123,7 +2123,8 @@
                                              (-> field :display))]
                           (display value)
                           (div
-                           {:white-space :pre-wrap}
+                           {:white-space :pre-wrap
+                            :word-break :break-word}
                            (cond
 
                              (and (-> field :type (= :select))
