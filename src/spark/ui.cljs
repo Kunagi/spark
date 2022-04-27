@@ -2167,6 +2167,9 @@
                              (-> field :type (= :eur))
                              (local/format-eur value)
 
+                             (-> field :type (= :date))
+                             (local/format-date value)
+
                              (or (set? value)
                                  (vector? value)
                                  (list? value))
