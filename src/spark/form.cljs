@@ -110,8 +110,7 @@
   (seq? [:a])
   (seq [:a])
   (sequential? [])
-  (sequential? "abc")
-  )
+  (sequential? "abc"))
 
 (defn- prepare-field-value [value field]
   (case (-> field :type)
@@ -220,8 +219,7 @@
       (when-not (and (-> value (str/includes? "@"))
                      (-> value (str/includes? "."))
                      (-> value (str/includes? " ") not))
-        (local/text :invalid-input))
-      )))
+        (local/text :invalid-input)))))
 
 (defn default-field-validator [form field-id]
   (let [field (field-by-id form field-id)]
@@ -246,7 +244,7 @@
 (defn values [form]
   (-> form :values))
 
-(defn field-value [form field-id]
+(defn field-value-internal [form field-id]
   (let [values (values form)]
     (or (get values field-id)
         (-> (field-by-id form field-id) :value))))
@@ -282,8 +280,9 @@
 
 (defn validate-field [form field-id]
   (let [field     (field-by-id form field-id)
-        value     (field-value form field-id)
-        value     (coerce-value value form field-id)
+        ;; value     (field-value-internal form field-id)
+        ;; value     (coerce-value value form field-id)
+        value (get-in form [:values field-id])
         error     (when (and  (-> field :required?)
                               (if (-> field :type (= :checkbox))
                                 (not value)
@@ -315,10 +314,11 @@
         (validate-field field-id))))
 
 (defn set-field-value [form field-id value]
-  (let [field-index (field-index-by-id form field-id)]
+  (let [field-index (field-index-by-id form field-id)
+        field (field-by-id form field-id)]
     (-> form
         (assoc-in [:values field-id] value)
-        (assoc-in [:fields field-index :value] value)
+        (assoc-in [:fields field-index :value] (prepare-field-value value field))
         (validate-field field-id))))
 
 (defn set-fields-values [form values]
@@ -326,22 +326,28 @@
             (set-field-value form field-id value))
           form values))
 
-(defn on-field-value-change [form field-id new-value]
+(defn on-field-value-change [form field-id new-value-internal]
   ;; (log ::on-field-value-change
   ;;      :values (-> form :values)
   ;;      :field field-id
   ;;      :value new-value)
-  (let [form (-> form
-                 (set-field-value field-id new-value))
+  ;; TODO Optimization: call on-change only if external value changed
+  (let [new-value-external (coerce-value new-value-internal form field-id)
+        field-index (field-index-by-id form field-id)
+        form (-> form
+                 (assoc-in [:fields field-index :value] new-value-internal)
+                 (assoc-in [:values field-id] new-value-external)
+                 (validate-field field-id))
+
         field (field-by-id form field-id)
         field-on-change (-> field :on-change)
         form (if-not field-on-change
                form
-               (field-on-change form new-value))
+               (field-on-change form new-value-external))
         form-on-change (-> form :on-change)
         form (if-not form-on-change
                form
-               (form-on-change form field-id new-value))]
+               (form-on-change form field-id new-value-external))]
     form))
 
 (defn field-error [form field-id]
