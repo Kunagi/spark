@@ -107,12 +107,15 @@
         .trim)))
 
 (defn prepare-field-value--text [value field]
-  ;; (tap> [:prepare-field-value--text value])
+  (tap> [:prepare-field-value--text value (sequential? value) (-> field :multiline?)])
   (cond
     (nil? value) nil
     (string? value) value
 
-    (or (set? value) (sequential? value)) (->> value (map str) (str/join " "))
+    (or (set? value) (sequential? value))
+    (if (-> field :multiline?)
+      (->> value (map str) (str/join "\n"))
+      (->> value (map str) (str/join " ")))
 
     :else (str value)))
 
@@ -170,7 +173,7 @@
                                                    (-> field :default-value))
                                       value    (prepare-field-value value field)]
                                   (assoc values field-id value)))
-                              (or (-> form :values) {}) (-> form :fields)))
+                              (or (-> form :values) {}) fields))
         form   (update form :fields
                        (fn [fields]
                          (mapv (fn [field]
@@ -249,9 +252,31 @@
       (default-field-validator form field-id)))
 
 (defn field-coercer [form field-id]
-  (-> form
-      (field-by-id field-id)
-      :coercer))
+  (let [coercer (-> form
+                    (field-by-id field-id)
+                    :coercer)]
+    (if (fn? coercer)
+      coercer
+      (case coercer
+        :lines
+        (fn [value _form]
+          (when value
+            (->> (str/split-lines value)
+                 (map str/trim)
+                 (remove str/blank?))))
+
+        :ints
+        (fn [value _form]
+          (when value
+            (->> (str/split value #"[\s,]")
+                 (map js/parseInt))))
+
+        :sorted-ints
+        (fn [value _form]
+          (when value
+            (->> (str/split value #"[\s,]")
+                 (map js/parseInt)
+                 sort)))))))
 
 (defn values [form]
   (-> form :values))
