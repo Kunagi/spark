@@ -239,7 +239,7 @@
                           ;;     )
 
                           ;; Prevent Chrome Autocomplete
-                          (-> props .-inputProps .-autocomplete (set! "impp"))
+                          (-> props .-inputProps .-autoComplete (set! "impp"))
 
                           (-> props .-InputLabelProps .-shrink (set! true))
 
