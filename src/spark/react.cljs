@@ -7,9 +7,9 @@
 
 (def memo helix/memo)
 
-(defn atom-hook
+(defn atom-hook_
   ([ATOM]
-   (atom-hook ATOM identity))
+   (atom-hook_ ATOM identity))
   ([ATOM transformator]
    (fn use-atom []
      (let [[value set-value] (helix-hooks/use-state @ATOM)
@@ -25,5 +25,7 @@
         #(remove-watch ATOM watch-key))
 
        (transformator value)))))
+
+(def atom-hook atom-hook_ #_(memoize atom-hook_))
 
 (def create-ref react/createRef)

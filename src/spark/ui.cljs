@@ -84,6 +84,9 @@
 (def atom-hook spark-react/atom-hook)
 (def memo spark-react/memo)
 
+(defn use-atom [ATOM]
+  ((atom-hook ATOM)))
+
 (defn use-promise [p]
   (let [[result set-result] (use-state nil)]
     (use-effect
