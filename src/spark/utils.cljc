@@ -488,6 +488,37 @@
   (string-pad-left "1" 3 nil)
   (string-pad-left "1" 3 ""))
 
+(defn string-includes-any? [s substrs]
+  (->> substrs
+       (filter #(str/includes? s %))
+       first
+       boolean))
+
+(defn string-includes-all? [s substrs]
+  (->> substrs
+       (remove #(str/includes? s %))
+       empty?))
+
+(defn search [searchtext candidates candidate-values]
+  (let [words (->> (str/split searchtext #"\s")
+                   (map str/trim))
+        shortest-word-len (->> words
+                               (map count)
+                               (apply clojure.core/max))]
+    (when (-> shortest-word-len (>= 3))
+      (let [words (->> words
+                       (map str/lower-case))
+            matches? (fn [candidate]
+                       (->> (candidate-values candidate)
+                            (remove nil?)
+                            (map str/lower-case)
+                            (filter (fn [value]
+                                      (string-includes-all? value words)))
+                            first
+                            boolean))]
+        (->> candidates
+             (filter matches?))))))
+
 ;; * date and time
 
 ;; https://www.juxt.land/tick/docs/index.html
