@@ -98,6 +98,14 @@
 
 ;; * Downloads
 
+(defn create-a-href-and-click [href]
+  (let [a        (js/document.createElement "a")]
+    (-> a .-style .-display (set! "none"))
+    (-> a (.setAttribute "href", href))
+    (js/document.body.appendChild a)
+    (-> a .click)
+    (js/document.body.removeChild a)))
+
 (defn initiate-text-download [filename text]
   (let [a        (js/document.createElement "a")
         uri-data (js/encodeURIComponent text)]
