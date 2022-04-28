@@ -97,6 +97,22 @@
         (.replace "€" "")
         .trim)))
 
+(defn prepare-field-value--string [value field]
+  (cond
+    (nil? value) nil
+    (string? value) value
+
+    (sequential? value) (->> value str (str/join " "))
+
+    :else (str value)))
+
+(comment
+  (seq? [:a])
+  (seq [:a])
+  (sequential? [])
+  (sequential? "abc")
+  )
+
 (defn- prepare-field-value [value field]
   (case (-> field :type)
 
@@ -104,6 +120,9 @@
 
     :checkboxes
     (->> field :options (map :value) (into #{}) (set/intersection value))
+
+    :string
+    (prepare-field-value--string value field)
 
     value))
 
