@@ -4,6 +4,8 @@
    [spark.rct :refer [test>]]
    [spark.utils :as u]))
 
+(def country-prefix--de "49")
+
 (defn ->e123-spaceless [s default-country-prefix-number]
   (when s
     (assert default-country-prefix-number)
