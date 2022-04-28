@@ -63,6 +63,8 @@
 
 ;; * Misc
 
+(def debug? debug/active?)
+
 ;; (def create-ref js/React.createRef)
 (def create-ref spark-react/create-ref)
 
@@ -662,7 +664,7 @@
      (data v)))
 
 (defn DEBUG [& datas]
-  (when goog.DEBUG
+  (when (debug?)
     (apply data datas)))
 
 (defnc ExpandableData [{:keys [label value]}]
