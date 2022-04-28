@@ -1,5 +1,5 @@
 (ns spark.rct
-  #?(:cljs (:require-macros [spark.rct :refer [def> testform> test> tests]]))
+  #?(:cljs (:require-macros [spark.rct :refer [def> testform> test>]]))
   (:require
    #?(:cljs [cljs.test :refer [deftest]])
    [promesa.core :as p]
@@ -118,4 +118,3 @@
 (comment
   (autorun?))
 
-#?(:clj (defmacro tests [& body]))
