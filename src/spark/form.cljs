@@ -107,7 +107,7 @@
         .trim)))
 
 (defn prepare-field-value--text [value field]
-  (tap> [:prepare-field-value--text value (sequential? value) (-> field :multiline?)])
+  ;; (tap> [:prepare-field-value--text value (sequential? value) (-> field :multiline?)])
   (cond
     (nil? value) nil
     (string? value) value
@@ -252,9 +252,7 @@
       (default-field-validator form field-id)))
 
 (defn field-coercer [form field-id]
-  (let [coercer (-> form
-                    (field-by-id field-id)
-                    :coercer)]
+  (when-let [coercer (-> form (field-by-id field-id) :coercer)]
     (if (fn? coercer)
       coercer
       (case coercer
