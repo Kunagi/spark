@@ -28,13 +28,25 @@
         (-> field :id)
         (-> field :attr/key))))
 
-(defn- initialize-option [option]
+(defn- initialize-option [option mapper]
   (if (map? option)
     option
     {:value option
-     :label (str option)}))
+     :label (if mapper
+              (mapper option)
+              (str option))}))
 
-(defn- initialize-field [form idx field]
+(defn- initialize-field-options [field form]
+  (if-not (-> field :options)
+    field
+    (let [mapper (-> field :option-mapper)
+          options (or (-> field :keytable)
+                      (when-let [options (-> field :options)]
+                        (->> options (mapv #(initialize-option % mapper)))))]
+      (-> field
+          (assoc :options options)))))
+
+(defn- initialize-field [field form idx]
   (let [field         (if (spark/field-schema? field)
                         (spark/field-schema-as-form-field field)
                         field)
@@ -66,24 +78,20 @@
                               (name id)
                               (str id))))
 
-        options (or (when-let [keytable (-> field :keytable)]
-                      (->> keytable vals (mapv initialize-option)))
-                    (when-let [options (-> field :options)]
-                      (->> options (mapv initialize-option))))
         auto-focus-first-field? (get form :auto-focus-first-field? true)]
-    (assoc field
-           :id id
-           :auto-focus? (boolean (and auto-focus-first-field?
-                                      (= 0 idx)))
-           :name field-name
-           :label (or (-> field :label)
-                      (-> field :name)
-                      field-name)
-           :type field-type
-           :multiline? (or (-> field :multiline?)
-                           (-> field :rows boolean))
-           :auto-complete (get field :auto-complete "off")
-           :options options)))
+    (-> field
+        (assoc :id id
+               :auto-focus? (boolean (and auto-focus-first-field?
+                                          (= 0 idx)))
+               :name field-name
+               :label (or (-> field :label)
+                          (-> field :name)
+                          field-name)
+               :type field-type
+               :multiline? (or (-> field :multiline?)
+                               (-> field :rows boolean))
+               :auto-complete (get field :auto-complete "off"))
+        (initialize-field-options form))))
 
 (def ^js eur-number-format
   (-> js/Intl (.NumberFormat "de-DE"
@@ -98,7 +106,7 @@
         .trim)))
 
 (defn prepare-field-value--text [value field]
-  (tap> [:prepare-field-value--text value])
+  ;; (tap> [:prepare-field-value--text value])
   (cond
     (nil? value) nil
     (string? value) value
@@ -147,12 +155,11 @@
   (let [form-id (or (-> form :id)
                     (u/nano-id))
         form (assoc form :id form-id)
-        fields (into []
-                     (map-indexed
-                      (partial initialize-field form)
-                      (->> form
-                           :fields
-                           (remove nil?))))
+        fields (->> form :fields
+                    (remove nil?)
+                    (map-indexed vector)
+                    (mapv (fn [[idx field]]
+                            (initialize-field field form idx))))
         form   (assoc form :fields fields)
         form   (assoc form :values
                       (reduce (fn [values field]
