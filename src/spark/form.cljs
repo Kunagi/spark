@@ -37,10 +37,11 @@
               (str option))}))
 
 (defn- initialize-field-options [field form]
-  (if-not (-> field :options)
+  (if-not (or (-> field :options)
+              (-> field :keytable))
     field
     (let [mapper (-> field :option-mapper)
-          options (or (-> field :keytable)
+          options (or (-> field :keytable vals)
                       (when-let [options (-> field :options)]
                         (->> options (mapv #(initialize-option % mapper)))))]
       (-> field
@@ -124,7 +125,7 @@
   (sequential? "abc"))
 
 (defn- prepare-field-value [value field]
-  (tap> [:prepare-field-value value field])
+  ;; (tap> [:prepare-field-value value field])
   (case (-> field :type)
 
     :eur (format-eur value)
