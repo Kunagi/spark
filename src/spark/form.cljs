@@ -97,22 +97,26 @@
         (.replace "€" "")
         .trim)))
 
-(defn prepare-field-value--string [value field]
+(defn prepare-field-value--text [value field]
+  (tap> [:prepare-field-value--text value])
   (cond
     (nil? value) nil
     (string? value) value
 
-    (sequential? value) (->> value str (str/join " "))
+    (or (set? value) (sequential? value)) (->> value (map str) (str/join " "))
 
     :else (str value)))
 
 (comment
   (seq? [:a])
   (seq [:a])
+  (sequential? #{})
+  (set? #{})
   (sequential? [])
   (sequential? "abc"))
 
 (defn- prepare-field-value [value field]
+  (tap> [:prepare-field-value value field])
   (case (-> field :type)
 
     :eur (format-eur value)
@@ -120,8 +124,8 @@
     :checkboxes
     (->> field :options (map :value) (into #{}) (set/intersection value))
 
-    :string
-    (prepare-field-value--string value field)
+    :text
+    (prepare-field-value--text value field)
 
     value))
 
@@ -270,14 +274,6 @@
                       (coercer value form))]
         value))))
 
-(defn coerce-values [form]
-  (->> form :fields (map :id)
-       (reduce (fn [form field-id]
-                 (let [value (coerce-value (get-in form [:values field-id])
-                                           form field-id)]
-                   (assoc-in form [:values field-id] value)))
-               form)))
-
 (defn validate-field [form field-id]
   (let [field     (field-by-id form field-id)
         ;; value     (field-value-internal form field-id)
@@ -333,6 +329,9 @@
   ;;      :value new-value)
   ;; TODO Optimization: call on-change only if external value changed
   (let [new-value-external (coerce-value new-value-internal form field-id)
+        ;; _ (tap> {:id field-id
+        ;;          :new new-value-internal
+        ;;          :coerced new-value-external})
         field-index (field-index-by-id form field-id)
         form (-> form
                  (assoc-in [:fields field-index :value] new-value-internal)
@@ -348,6 +347,7 @@
         form (if-not form-on-change
                form
                (form-on-change form field-id new-value-external))]
+    ;; (tap> {:in-form (get-in form [:values field-id])})
     form))
 
 (defn field-error [form field-id]
@@ -379,8 +379,7 @@
         form (->> form
                   :fields
                   (map :id)
-                  (reduce validate-field form)
-                  coerce-values)
+                  (reduce validate-field form))
         form (if (-> form :error)
                form
                (validate-form form))]
