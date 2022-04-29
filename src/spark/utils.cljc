@@ -848,7 +848,7 @@
 #?(:cljs
    (defn all> [& promises-or-lists-of-promises]
      (let [promises (as-promises-vector promises-or-lists-of-promises)]
-       (-> (js/Promise.all promises)
+       (-> (js/Promise.allSettled promises)
            (.then (fn [results]
                     (as> (vec results))))))))
 
@@ -950,7 +950,7 @@
   resolving all promises in `args`."
      [f args]
      (s/assert vector? args)
-     (-> (js/Promise.all args)
+     (-> (js/Promise.allSettled args)
          (.then #(js/Promise.resolve (apply f %))))))
 
 (comment
