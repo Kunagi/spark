@@ -850,9 +850,25 @@
      (let [promises (as-promises-vector promises-or-lists-of-promises)]
        (-> (js/Promise.allSettled promises)
            (.then (fn [results]
-                    (as> (vec results))))))))
+                    (->> results
+                         (map (fn [^js result]
+                                (when-let [error (-> result .-reason)]
+                                  (throw (ex-info "A promise in all> was rejected"
+                                                  {:error error
+                                                   :result result}
+                                                  error))
+                                  )
+                                (-> result .-value)))
+                         vec)))))))
 
 (comment
+  (tap> (all> [(js/Promise.resolve "a")
+               (js/Promise.resolve "b")]))
+
+  (tap> (all> [(js/Promise.resolve "a")
+               (js/Promise.reject "boom!")]))
+
+
   (all>
    (promise> (fn [resolve]
                (js/console.log "#1")
@@ -943,22 +959,6 @@
          (-> (fn> input-value)
              (.then #(chain-promise-fns> % (rest fns))))
          (js/Promise.resolve input-value)))))
-
-#?(:cljs
-   (defn apply>
-     "Returns `js/Promise` with the result of applying `f` on `args` while
-  resolving all promises in `args`."
-     [f args]
-     (s/assert vector? args)
-     (-> (js/Promise.allSettled args)
-         (.then #(js/Promise.resolve (apply f %))))))
-
-(comment
-  (instance? js/Promise (js/Promise. (fn [_ _])))
-  (let [sum (fn [a b c] (+ a b c))]
-    (js/console.log "direct invocation:" (sum 1 2 3))
-    (-> (apply> sum [1 2 3])
-        (.then #(js/console.log "promise result #1:" %)))))
 
 ;; * deprecations
 
