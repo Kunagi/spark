@@ -853,7 +853,8 @@
                     (->> results
                          (map (fn [^js result]
                                 (when-let [error (-> result .-reason)]
-                                  (throw (ex-info "A promise in all> was rejected"
+                                  (throw (ex-info (str "A promise in all> was rejected: "
+                                                       error)
                                                   {:error error
                                                    :result result}
                                                   error))
