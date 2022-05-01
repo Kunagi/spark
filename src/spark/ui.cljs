@@ -961,7 +961,9 @@
 
 (def-ui MessageDialogContent [message opts]
   (let [hide (use-hide-dialog)
-        options (-> opts :options)]
+        options (->> opts
+                     :options
+                     (remove nil?))]
     (stack-3
      message
      (if (seq options)
