@@ -5,13 +5,14 @@
                                      use-state provider create-context
                                      use-context
                                      map$
-                                     div center icon imgdiv
+                                     div span center icon imgdiv
                                      grid grid-0 grid-1 grid-2
                                      grid-3 grid-4 grid-5
                                      stack stack-0 stack-1 stack-2
                                      stack-3 stack-4 stack-5
                                      flex flex-0 flex-1 flex-2
-                                     flex-3 flex-4 flex-5]]
+                                     flex-3 flex-4 flex-5
+                                     ]]
                    [kunagi.mui.api]
                    [kunagi.mui.core :refer [defnc]]
                    [clojure.string :as str])
