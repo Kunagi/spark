@@ -1,10 +1,12 @@
 {:paths ["src"]
- :deps  {org.clojure/clojurescript {:mvn/version "1.10.879"}
+ :deps  {
+         ;;
+         org.clojure/clojurescript {:mvn/version "1.10.891"}
          org.clojure/spec.alpha    {:mvn/version "0.2.194"}
 
-         hyperfiddle/rcf                     {:git/url "https://github.com/hyperfiddle/rcf.git"
-                                              :sha "1ed7a56b6f924aa2050cc163fc4636544ff6c279"}
-         lilactown/helix                     {:mvn/version "0.0.15"}
+         io.github.kunagi/kunagi-mui {:git/sha "f6c5becc69de465da75227444f85413d517407a4"}
+         ;; io.github.kunagi/kunagi-mui {:local/root "/p/kunagi-mui"}
+
          funcool/promesa                     {:mvn/version "8.0.446"}
          nano-id/nano-id                     {:mvn/version "1.0.0"}
          cljs-bean/cljs-bean                 {:mvn/version "1.6.0"}
