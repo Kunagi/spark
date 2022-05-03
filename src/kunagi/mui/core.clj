@@ -1,8 +1,7 @@
-(ns spark.react
+(ns kunagi.mui.core
   (:require
    [helix.core :as helix]
    [helix.hooks :as helix-hooks]))
-
 
 ;; https://cljdoc.org/d/lilactown/helix/0.0.13/doc/pro-tips
 (defmacro defnc [type params & body]
@@ -25,7 +24,7 @@
        ~(merge default-opts opts)
        ~@body)))
 
-
+(defmacro defcomponent [type & args] `(helix/defcomponent ~type ~@args))
 (defmacro $ [type & args] `(helix/$ ~type ~@args))
 (defmacro <> [& children] `(helix/<> ~@children))
 (defmacro create-context [& body] `(helix/create-context ~@body))

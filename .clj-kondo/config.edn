@@ -4,7 +4,6 @@
 
            promesa.core/let      clojure.core/let
 
-           spark.react/defnc     clojure.core/defn
            spark.core/def-doc    clojure.core/def
            spark.core/def-field  clojure.core/def
            spark.core/def-subdoc clojure.core/def

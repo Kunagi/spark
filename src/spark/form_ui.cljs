@@ -1,23 +1,18 @@
 (ns spark.form-ui
   (:require
    [clojure.spec.alpha :as s]
-   [cljs.pprint :refer [pprint]]
-   [cljs-bean.core :as cljs-bean]
-
-   [helix.core :refer [defnc $ <>]]
-   [helix.hooks :as hooks]
-   [helix.dom :as d]
 
    ["@material-ui/core" :as mui]
    ["@material-ui/lab" :as mui-lab]
 
-   [spark.react :as r]
+   [kunagi.mui.core :as kui.core :refer [defnc]]
+   [kunagi.mui.api :as kui :refer [$ <>]]
+
    [spark.utils :as u]
    [spark.core :as spark]
    [spark.logging :refer [log]]
    ;; [spark.mui :as ui]
    [spark.form :as form]
-   [spark.react :as react]
    [spark.db :as db]
    [clojure.string :as str]))
 
@@ -50,12 +45,12 @@
                                 :then resolve
                                 :catch reject))))))
 
-(def use-dialog-forms (react/atom-hook DIALOG_FORMS))
+(def use-dialog-forms (kui/atom-hook DIALOG_FORMS))
 
-(defonce HIDE_DIALOG (r/create-context nil))
+(defonce HIDE_DIALOG (kui/create-context nil))
 
 (defn use-hide-form-dialog []
-  (r/use-context HIDE_DIALOG))
+  (kui/use-context HIDE_DIALOG))
 
 ;; (defnc DialogFormsDebugCard []
 ;;   ($ mui/Card
@@ -487,7 +482,7 @@
         options (-> field :options)
         expandable? (and options-expand-limit
                          (> (count options) options-expand-limit))
-        [expanded? set-expanded] (hooks/use-state (when expandable?
+        [expanded? set-expanded] (kui/use-state (when expandable?
                                                     (reduce (fn [ret option]
                                                               (or ret
                                                                   (value (-> option :value))))
@@ -553,7 +548,7 @@
         error    (form/field-error form field-id)
         on-change (fn [value]
                     (update-form form/on-field-value-change field-id value))
-        Input    (d/div
+        Input    ($ :div
                   (create-input
                    (assoc field
                           :form form
@@ -561,7 +556,7 @@
                           :on-submit on-submit
                           :on-change on-change))
                   (when-let [helptext (-> field :helptext)]
-                    (d/div
+                    ($ :div
                      {:style {:color "#666"}}
                      helptext)))]
     ($ :div
@@ -647,7 +642,7 @@
                               (catch :default ex
                                 (update-form (fn [_]
                                                (form/set-error form (u/exception-as-text ex)))))))))))]
-    (r/provider
+    (kui/provider
      {:context HIDE_DIALOG
       :value   close}
      (if (-> form :submitted?)
@@ -721,8 +716,8 @@
   (let [open? (-> form :open? boolean)
         on-close (fn []
                    (close-form-dialog (-> form :id)))
-        [form set-form] (hooks/use-state form)]
-    (d/div
+        [form set-form] (kui/use-state form)]
+    ($ :div
      (let [max-width (or (-> form :max-width)
                          :md)
            max-width (if (keyword? max-width)
@@ -761,25 +756,25 @@
      children))
 
 (defnc FieldLabel [{:keys [text]}]
-  (d/div
+  ($ :div
    {:class "FieldLabel"
     :style {:color "grey"}}
    ;; TODO (->component text)
    (str text)))
 
 (defnc Field [{:keys [label description children]}]
-  (d/div
+  ($ :div
      {:class "Field EditableField"
       :style {:display "grid"
               :grid-gap "8px"}}
      ($ FieldLabel
         {:text label})
-     (d/div
+     ($ :div
       {:class "FieldValue"
        :style {:min-height "15px"}}
       children)
      (when description
-       (d/div description))
+       ($ :div description))
      ))
 
 (defnc StringVectorChips [{:keys [values]}]

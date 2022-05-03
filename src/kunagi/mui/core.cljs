@@ -1,10 +1,12 @@
-(ns spark.react
-  (:require-macros [spark.react])
+(ns kunagi.mui.core
+  (:require-macros [kunagi.mui.core])
   (:require
    ["react" :as react]
+   ["react-dom" :as rdom]
    [helix.core :as helix]
    [helix.hooks :as helix-hooks]))
 
+(def create-ref react/createRef)
 (def memo helix/memo)
 
 (defn atom-hook_
@@ -28,4 +30,8 @@
 
 (def atom-hook atom-hook_ #_(memoize atom-hook_))
 
-(def create-ref react/createRef)
+(defn mount [component element-id]
+  (assert (string? element-id))
+  (assert component)
+  (rdom/render component
+               (js/document.getElementById element-id)))

@@ -2,7 +2,6 @@
   (:require
    [clojure.spec.alpha :as s]
 
-   [spark.react :as react]
    [spark.logging :refer [log]]
    [spark.firestore :as fs]))
 

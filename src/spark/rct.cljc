@@ -108,13 +108,6 @@
            (~symbol))))))
 
 
-(do
-   (log ::test>
-        :autorun (autorun?))
-  (test> dummy
-         (assert (= 1 1))
-         (js/console.log "%cyahoo!" "background-color: red; color: white; padding: 16px;")))
-
 (comment
   (autorun?))
 

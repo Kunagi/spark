@@ -1,8 +1,10 @@
 ;; * ns
 (ns spark.ui
-  (:require-macros [spark.ui :refer [<> def-ui def-ui-showcase
+  (:require-macros [spark.ui :refer [$ <> use-effect
+                                      def-ui def-ui-showcase
+                                     use-state provider create-context
+                                     use-context
                                      map$
-                                     create-context use-context provider
                                      div center icon imgdiv
                                      grid grid-0 grid-1 grid-2
                                      grid-3 grid-4 grid-5
@@ -10,8 +12,10 @@
                                      stack-3 stack-4 stack-5
                                      flex flex-0 flex-1 flex-2
                                      flex-3 flex-4 flex-5]]
-                   [spark.react :refer [use-state use-effect defnc $]]
+                   [kunagi.mui.api]
+                   [kunagi.mui.core :refer [defnc]]
                    [clojure.string :as str])
+
   (:require
    [clojure.string :as str]
    [cljs.pprint :refer [pprint]]
@@ -20,17 +24,17 @@
    [camel-snake-kebab.core :as csk]
    [promesa.core :as p]
    [helix.core :as helix]
-   [helix.dom :as d]
 
-   ["react-dom" :as rdom]
    ["react-router-dom" :as router]
 
    ["@material-ui/core" :as mui]
    ["@material-ui/core/styles" :as mui-styles]
 
+   [kunagi.mui.api :as kui]
+   [kunagi.mui.core :as kui.core]
+
    [spark.logging :refer [log]]
    [spark.utils :as u]
-   [spark.react :as spark-react]
    [spark.core :as spark]
    [spark.firestore :as firestore]
    [spark.db :as db]
@@ -66,7 +70,7 @@
 (def debug? debug/active?)
 
 ;; (def create-ref js/React.createRef)
-(def create-ref spark-react/create-ref)
+(def create-ref kui/create-ref)
 
 (def reg-showcase showcase/reg-showcase)
 (def reg-page pages/reg-page)
@@ -81,8 +85,8 @@
 (def DocFieldsCard form-ui/DocFieldsCard)
 (def FormDialogsContainer form-ui/FormDialogsContainer)
 
-(def atom-hook spark-react/atom-hook)
-(def memo spark-react/memo)
+(def atom-hook kui/atom-hook)
+(def memo kui/memo)
 
 (defn use-atom [ATOM]
   ((atom-hook ATOM)))
@@ -605,7 +609,7 @@
 ;; * common ui functions
 
 (defn colored-data-block [label background-color color data]
-  (d/div
+  ($ :div
    {:class "data"
     :style {:white-space      "pre-wrap"
             :word-break "break-all"
@@ -628,7 +632,7 @@
    (with-out-str (pprint data))))
 
 (defn colored-data-line [label background-color color data]
-  (d/div
+  ($ :div
    {:style {:white-space "nowrap"
             :height "50px"
             :font-family :monospace
@@ -645,7 +649,7 @@
      :overflow "hidden"
      :text-overflow "ellipsis"}
     (when label
-      (d/span
+      ($ :span
        {:style
         {:font-weight 900
          :text-align "center"}}
@@ -654,9 +658,9 @@
     (with-out-str (print data)))))
 
 (defn data [& datas]
-  (d/div
+  ($ :div
    (for [[i data] (map-indexed vector datas)]
-     (d/div
+     ($ :div
       {:key i}
       (colored-data-block nil "#333" "#6f6" data)))))
 
@@ -791,7 +795,7 @@
 
 (defnc Spacer [{:keys [width height]}]
   (let [theme (mui-styles/useTheme)]
-    (d/div
+    ($ :div
      {:style {:width  (-> theme (.spacing (or width 1)))
               :height (-> theme (.spacing (or width 1)))}})))
 
@@ -833,7 +837,7 @@
 
 (defnc Stack [{:keys [children spacing]}]
   (let [theme (mui-styles/useTheme)]
-    (d/div
+    ($ :div
      {:style {:display :grid
               :grid-gap (-> theme (.spacing (or spacing 1)))}}
      children)))
@@ -843,12 +847,12 @@
                    (->> children (remove nil?))
                    [children])
         theme    (mui-styles/useTheme)]
-    (d/div
+    ($ :div
      {:style {:display :flex
               ;; FIXME :gap (-> theme (.spacing (or spacing 1)))
               }}
      (for [[idx child] (map-indexed vector children)]
-       (d/div
+       ($ :div
         {:key   idx
          :style (merge  {:margin-right (-> theme (.spacing (or spacing 1)))}
                         style)}
@@ -1143,7 +1147,7 @@
 
 ;; * ErrorBoundary
 
-(helix/defcomponent ErrorBoundary
+(kui.core/defcomponent ErrorBoundary
   (constructor [this]
                (set! (.-state this) #js {:error nil}))
 
@@ -1183,8 +1187,7 @@
              ($ mui/Divider)
 
              ($ ErrorInfo
-                {:error (.. this -state -error)}))
-            #_(d/pre (d/code (pr-str (.. this -state -error)))))))
+                {:error (.. this -state -error)})))))
 
 ;;; links
 
@@ -1367,8 +1370,8 @@
         text     (or text (-> command :label))
         icon     (when-let [icon (or icon (-> command :icon))]
                    (cond
-                     (string? icon)  (d/div {:class "material-icons"} icon)
-                     (keyword? icon) (d/div {:class "material-icons"} (name icon))
+                     (string? icon)  ($ :div {:class "material-icons"} icon)
+                     (keyword? icon) ($ :div {:class "material-icons"} (name icon))
                      :else           icon))
         on-click (or on-click onClick)
         on-click (or on-click
@@ -1469,11 +1472,11 @@
                                      "play_arrow")]
                    (cond
                      (keyword? icon)
-                     (d/div {:class (str "material-icons" (when theme (str "-" theme)))}
+                     ($ :div {:class (str "material-icons" (when theme (str "-" theme)))}
                             (name icon))
 
                      (string? icon)
-                     (d/div {:class (str "material-icons" (when theme (str "-" theme)))}
+                     ($ :div {:class (str "material-icons" (when theme (str "-" theme)))}
                             icon)
 
                      :else icon))]
@@ -1524,7 +1527,7 @@
       children
       (let [children (->> children
                           (remove nil?))]
-        (d/div
+        ($ :div
          {:class "CardRow"
           :style {:display :grid
                   :grid-template-columns (or grid-template-columns
@@ -1810,8 +1813,7 @@
                 (update :theme styles/adapt-theme)
                 (update :styles styles/adapt-styles))]
     (reset! SPA spa)
-    (rdom/render ($ (-> spa :root-component))
-                 (js/document.getElementById "app"))))
+    (kui/mount ($ (-> spa :root-component)) "app")))
 
 (def-ui UpgradeRequest [available-version info-text reload-text color]
   (let [current-version    (str/trim (str (resource/inline "../spa/version.txt")))

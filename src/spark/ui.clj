@@ -1,20 +1,20 @@
 (ns spark.ui
   (:require
-   [clojure.pprint :refer [pprint]]
    [clojure.string :as str]
 
-   [spark.react :as r]
+   [kunagi.mui.api :as kui]
+   [kunagi.mui.core :as kui.core]
+
    [spark.core :as spark]))
 
-(defmacro defnc [& body] `(r/defnc ~@body))
-(defmacro $ [type & args] `(r/$ ~type ~@args))
-(defmacro <> [& children] `(r/<> ~@children))
-(defmacro use-state [& body] `(r/use-state ~@body))
-(defmacro use-effect [& body] `(r/use-effect ~@body))
-(defmacro use-memo [& body] `(r/use-memo ~@body))
-(defmacro create-context [& body] `(r/create-context ~@body))
-(defmacro use-context [& body] `(r/use-context ~@body))
-(defmacro provider [& body] `(r/provider ~@body))
+(defmacro defnc [& body] `(kui.core/defnc ~@body))
+(defmacro $ [& body] `(kui/$ ~@body))
+(defmacro <> [& children] `(kui/<> ~@children))
+(defmacro create-context [& body] `(kui/create-context ~@body))
+(defmacro use-state [& body] `(kui/use-state ~@body))
+(defmacro use-context [& body] `(kui/use-context ~@body))
+(defmacro use-effect [& body] `(kui/use-effect ~@body))
+(defmacro provider [& body] `(kui/provider ~@body))
 
 (defmacro def-page  [sym opts]
   (let [opts (spark/complete-opts opts sym "page")]
@@ -55,7 +55,7 @@
                                               (keyword (name %))
                                               %)
                                            wrap-memo-props)]
-                 (update opts :wrap conj `(r/memo
+                 (update opts :wrap conj `(kui/memo
                                            (fn [~a ~b]
                                              (= (select-keys ~a ~wrap-memo-props)
                                                 (select-keys ~b ~wrap-memo-props))))))
@@ -130,7 +130,7 @@
                          [(assoc props :className class) (dissoc style :class)]
                          [props style])
          props         (assoc props :style (conform-style style))]
-     `($ ~element ~props ~@children))))
+     `(kui/$ ~element ~props ~@children))))
 
 (defmacro div [& style-and-children]
   (html-element :div style-and-children))
@@ -217,6 +217,6 @@
 
 (defmacro map$ [component item-key items]
   `(for [item# ~items]
-     ($ ~component
+     (kui/$ ~component
         {:key      item#
          ~item-key item#})))
