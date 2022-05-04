@@ -2,8 +2,7 @@
   (:require
    [clojure.spec.alpha :as s]
 
-   ["@material-ui/core" :as mui]
-   ["@material-ui/lab" :as mui-lab]
+   ["@mui/material" :as mui]
 
    [kunagi.mui.core :as kui.core :refer [defnc]]
    [kunagi.mui.api :as kui :refer [$ <>]]
@@ -186,7 +185,7 @@
        ;;               :font-family      "monospace"}}
        ;;      (u/->edn (:value field))))
 
-       ($ mui-lab/Autocomplete
+       ($ mui/Autocomplete
           {;; :value           (or (-> field :value) "")
            :inputValue (or (-> field :value) "")
               ;; :label           (-> field :label)
@@ -399,7 +398,7 @@
             ($ mui/FormHelperText error))))))
 
 (defmethod create-input "chips" [field]
-  ($ mui-lab/Autocomplete
+  ($ mui/Autocomplete
      {:value            (clj->js (-> field :value))
       :onChange         #((:on-change field) (-> %2 js->clj))
       :multiple         true

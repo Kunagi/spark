@@ -1,6 +1,6 @@
 (ns spark.ui.ui-showcase-page
   (:require
-   ["@material-ui/core" :as mui]
+   ["@mui/material" :as mui]
 
    [spark.ui :as ui :refer [def-ui def-page $]]
    [spark.ui.showcase :as showcase]

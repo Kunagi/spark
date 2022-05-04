@@ -1,8 +1,8 @@
 (ns projekt.storymap-page
   (:require
 
-   ["@material-ui/core/colors" :as colors]
-   ["@material-ui/core" :as mui]
+   ["@mui/material/colors" :as colors]
+   ["@mui/material" :as mui]
    [tick.core :as tick]
 
    [spark.logging :refer [log]]

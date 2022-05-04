@@ -1,12 +1,10 @@
 (ns spark.ui.styles
   (:require
    [clojure.string :as str]
-   ["@material-ui/core/styles" :as mui-styles]
-   ))
+   ["@mui/material/styles" :as mui-styles]))
 
 (defn app-styles [theme]
-  {
-   :.center {:display :grid :place-items "center"}
+  {:.center {:display :grid :place-items "center"}
    :.center-text {:text-align "center"}
 
    :.right {:display :grid :place-items "end"}
@@ -27,35 +25,33 @@
    :.stack-5 {:display :grid :grid-gap (-> theme (.spacing 5))}
 
    ".flex"       {:display :flex :flex-wrap "wrap"
-                  :margin  (str "-" (-> theme (.spacing 1) (/ 2)) "px")}
-   ".flex > *"   {:margin (str (-> theme (.spacing 1) (/ 2)) "px")}
+                  :margin (-> theme (.spacing -0.5))}
+   ".flex > *"   {:margin (-> theme (.spacing 0.5))}
    ".flex-0"     {:display :flex :flex-wrap "wrap"}
    ".flex-1"     {:display :flex :flex-wrap "wrap"
-                  :margin  (str "-" (-> theme (.spacing 1) (/ 2)) "px")}
-   ".flex-1 > *" {:margin (str (-> theme (.spacing 1) (/ 2)) "px")}
+                  :margin (-> theme (.spacing 0.5) )}
+   ".flex-1 > *" {:margin (-> theme (.spacing 0.5))}
    ".flex-2"     {:display :flex :flex-wrap "wrap"
-                  :margin  (str "-" (-> theme (.spacing 2) (/ 2)) "px")}
-   ".flex-2 > *" {:margin (str (-> theme (.spacing 2) (/ 2)) "px")}
+                  :margin (-> theme (.spacing -1) )}
+   ".flex-2 > *" {:margin (-> theme (.spacing 1))}
    ".flex-3"     {:display :flex :flex-wrap "wrap"
-                  :margin  (str "-" (-> theme (.spacing 3) (/ 2)) "px")}
-   ".flex-3 > *" {:margin (str (-> theme (.spacing 3) (/ 2)) "px")}
+                  :margin (-> theme (.spacing -1.5) )}
+   ".flex-3 > *" {:margin (-> theme (.spacing 1.5))}
    ".flex-4"     {:display :flex :flex-wrap "wrap"
-                  :margin  (str "-" (-> theme (.spacing 4) (/ 2)) "px")}
-   ".flex-4 > *" {:margin (str (-> theme (.spacing 4) (/ 2)) "px")}
+                  :margin (-> theme (.spacing -2))}
+   ".flex-4 > *" {:margin (-> theme (.spacing 2))}
    ".flex-5"     {:display :flex :flex-wrap "wrap"
-                  :margin  (str "-" (-> theme (.spacing 5) (/ 2)) "px")}
-   ".flex-5 > *" {:margin (str (-> theme (.spacing 5) (/ 2)) "px")}
+                  :margin  (-> theme (.spacing -2.5) )}
+   ".flex-5 > *" {:margin (-> theme (.spacing 2.5))}
 
    "a.Link--no-styles" {:text-decoration :none
                         :color           :unset
                         :display         :block}
 
-   ".CursorPointer" {:cursor :pointer}
-   })
+   ".CursorPointer" {:cursor :pointer}})
 
 (def attr-with-px?
-  #{
-    :padding "padding"
+  #{:padding "padding"
     :padding-top "padding-top"
     :padding-bottom "padding-bottom"
     :padding-left "padding-left"
@@ -68,8 +64,7 @@
     :margin-right "margin-right"
 
     :grid-gap "grid-gap"
-    :gap "gap"
-    })
+    :gap "gap"})
 
 (defn- conform-style-value [v attr]
   (cond
@@ -80,7 +75,6 @@
     (and (number? v)
          (attr-with-px? attr)) (str v "px")
     :else                      v))
-
 
 (defn- conform-style [styles]
   (reduce (fn [styles [k v]]
@@ -102,11 +96,11 @@
                    (conform-style v)))
           {} styles))
 
-
 (defn adapt-theme [theme]
   (-> theme
       (or {})
       clj->js
+      ;; mui-styles/adaptV4Theme
       mui-styles/createTheme
       mui-styles/responsiveFontSizes))
 

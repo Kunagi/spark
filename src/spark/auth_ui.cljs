@@ -2,7 +2,7 @@
   (:require
    [clojure.string :as str]
    ["firebase/auth" :as firebase-auth]
-   ["@material-ui/core" :as mui]
+   ["@mui/material" :as mui]
    [spark.logging :refer [log]]
    [spark.utils :as u]
    [spark.ui :as ui :refer [def-ui $]]

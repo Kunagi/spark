@@ -1,7 +1,7 @@
 (ns projekt.issues-page
   (:require
 
-   ["@material-ui/core" :as mui]
+   ["@mui/material" :as mui]
 
 
    [spark.ui :as ui :refer [def-page def-ui $]]

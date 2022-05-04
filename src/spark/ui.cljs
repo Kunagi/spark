@@ -28,8 +28,8 @@
 
    ["react-router-dom" :as router]
 
-   ["@material-ui/core" :as mui]
-   ["@material-ui/core/styles" :as mui-styles]
+   ["@mui/material" :as mui]
+   ["@mui/styles" :as mui-styles]
 
    [kunagi.mui.api :as kui]
    [kunagi.mui.core :as kui.core]

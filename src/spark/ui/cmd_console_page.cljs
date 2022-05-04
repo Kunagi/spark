@@ -1,6 +1,6 @@
 (ns spark.ui.cmd-console-page
   (:require
-   ["@material-ui/core" :as mui]
+   ["@mui/material" :as mui]
    [clojure.edn :as edn]
 
    [spark.logging :refer [log]]
