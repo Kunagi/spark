@@ -358,8 +358,7 @@
         options (if value-missing-in-options?
                   (conj options {:value value
                                  :label (str value " ***")})
-                  options)
-        ]
+                  options)]
     ($ :div
        ;; ($ :pre "!" (-> field :error str) "!")
        ($ mui/FormControl
@@ -482,10 +481,10 @@
         expandable? (and options-expand-limit
                          (> (count options) options-expand-limit))
         [expanded? set-expanded] (kui/use-state (when expandable?
-                                                    (reduce (fn [ret option]
-                                                              (or ret
-                                                                  (value (-> option :value))))
-                                                            false options)))
+                                                  (reduce (fn [ret option]
+                                                            (or ret
+                                                                (value (-> option :value))))
+                                                          false options)))
         visible-options (if (or expanded?
                                 (not expandable?))
                           options
@@ -548,16 +547,16 @@
         on-change (fn [value]
                     (update-form form/on-field-value-change field-id value))
         Input    ($ :div
-                  (create-input
-                   (assoc field
-                          :form form
-                          :error error
-                          :on-submit on-submit
-                          :on-change on-change))
-                  (when-let [helptext (-> field :helptext)]
-                    ($ :div
-                     {:style {:color "#666"}}
-                     helptext)))]
+                    (create-input
+                     (assoc field
+                            :form form
+                            :error error
+                            :on-submit on-submit
+                            :on-change on-change))
+                    (when-let [helptext (-> field :helptext)]
+                      ($ :div
+                         {:style {:color "#666"}}
+                         helptext)))]
     ($ :div
        {:key field-id}
        (if-let [action (-> field :action)]
@@ -582,7 +581,7 @@
 
 (def DIALOG-CLASS (atom nil))
 
-(defnc Form [{:keys [form set-form on-close]}]
+(defnc Form [{:keys [form set-form on-close on-cancel]}]
   (let [form         (assoc form :update (fn [f]
                                            (set-form (f form))))
         update-form_ (fn [f & args]
@@ -617,6 +616,11 @@
                     (set-submitted)
                     (when-let [then (get form :then)]
                       (then result)))
+
+        cancel (fn []
+                 (when on-cancel
+                   (on-cancel))
+                 (close nil))
 
         on-submit (fn []
                     (let [form (form/on-submit form)]
@@ -696,7 +700,7 @@
                          :grid-gap              "8px"}}
                 (when-not (-> form :cancel-disabled)
                   ($ mui/Button
-                     {:onClick #(close nil)}
+                     {:onClick #(cancel)}
                      "Abbrechen"))
                 ($ mui/Button
                    {:onClick on-submit
@@ -717,29 +721,29 @@
                    (close-form-dialog (-> form :id)))
         [form set-form] (kui/use-state form)]
     ($ :div
-     (let [max-width (or (-> form :max-width)
-                         :md)
-           max-width (if (keyword? max-width)
-                       (name max-width)
-                       max-width)]
-       ($ mui/Dialog
-          {:open      open?
-           :className @DIALOG-CLASS
-           :fullWidth true
-           :maxWidth max-width
+       (let [max-width (or (-> form :max-width)
+                           :md)
+             max-width (if (keyword? max-width)
+                         (name max-width)
+                         max-width)]
+         ($ mui/Dialog
+            {:open      open?
+             :className @DIALOG-CLASS
+             :fullWidth true
+             :maxWidth max-width
             ;; :onClose close
-           }
+             }
 
           ;; ($ :pre (-> open? u/->edn))
 
-          (when-let [title (-> form :title)]
-            ($ mui/DialogTitle
-               title))
+            (when-let [title (-> form :title)]
+              ($ mui/DialogTitle
+                 title))
 
-          ($ mui/DialogContent
-             ($ Form {:form form
-                      :set-form set-form
-                      :on-close on-close})))))))
+            ($ mui/DialogContent
+               ($ Form {:form form
+                        :set-form set-form
+                        :on-close on-close})))))))
 
 (defnc FormDialogsContainer []
   (let [forms (use-dialog-forms)]
@@ -756,10 +760,10 @@
 
 (defnc FieldLabel [{:keys [text]}]
   ($ :div
-   {:class "FieldLabel"
-    :style {:color "grey"}}
+     {:class "FieldLabel"
+      :style {:color "grey"}}
    ;; TODO (->component text)
-   (str text)))
+     (str text)))
 
 (defnc Field [{:keys [label description children]}]
   ($ :div
@@ -769,12 +773,11 @@
      ($ FieldLabel
         {:text label})
      ($ :div
-      {:class "FieldValue"
-       :style {:min-height "15px"}}
-      children)
+        {:class "FieldValue"
+         :style {:min-height "15px"}}
+        children)
      (when description
-       ($ :div description))
-     ))
+       ($ :div description))))
 
 (defnc StringVectorChips [{:keys [values]}]
   ($ :div
