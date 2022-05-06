@@ -952,7 +952,8 @@
               (center
                ($ mui/Button
                   {:onClick #(hide-dialog (-> dialog :id))}
-                  (local/text :cancel))))))))))
+                  (or (-> dialog :cancel-button-text)
+                      (local/text :cancel)))))))))))
 
 (defnc DialogsContainer []
   (let [dialogs (-> (use-dialogs) vals)]
@@ -1851,7 +1852,8 @@
                          {:items     (-> dialog :items)
                           :on-select (fn [item]
                                        (hide-dialog dialog-id)
-                                       ((-> dialog :on-select) item))})
+                                       ((or (-> item :on-select)
+                                            (-> dialog :on-select)) item))})
         dialog        (assoc dialog
                              :id dialog-id
                              :content SelectionList)]
@@ -2005,7 +2007,8 @@
 
 (def-ui StorageFileButton [path idx text texts edit-options]
   (let [url (use-storage-url path)
-        open-on-click #(js/window.open url "_blank")
+        open-on-click (fn []
+                        (js/window.open url "_blank"))
         options (into
                  [{:text "Anzeigen"
                    :on-click open-on-click}]
