@@ -26,8 +26,8 @@
 (defn commit-version []
   (print-task "commit-version")
   (assert-git-clean)
-  (kb/process {:command-args ["git" "push"]
-            :dir "spark"})
+  ;; (kb/process {:command-args ["git" "push"]
+  ;;           :dir "spark"})
   (kb/process {:command-args ["git" "tag" git-version-tag]})
   (kb/process {:command-args ["git" "push" "origin" git-version-tag]})
   (let [next-version (inc version)

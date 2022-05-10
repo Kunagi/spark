@@ -872,6 +872,7 @@
 
 (def use-offline (atom-hook browser/OFFLINE))
 (def use-width (atom-hook browser/WIDTH))
+(def use-height (atom-hook browser/HEIGHT))
 
 (defonce SPA (atom nil))
 (def use-spa (atom-hook SPA))

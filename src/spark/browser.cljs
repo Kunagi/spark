@@ -285,13 +285,18 @@
     :registered))
 
 (defonce WIDTH (atom js/window.innerWidth))
-(defonce _width-event-listener
+(defonce HEIGHT (atom js/window.innerHeight))
+(defonce _resize-event-listener
   (do
     (js/window.addEventListener "resize" (fn []
-                                           (let [width js/window.innerWidth]
+                                           (let [width js/window.innerWidth
+                                                 height js/window.innerHeight]
                                              (when (not= width @WIDTH)
-                                               (reset! WIDTH width)))))
+                                               (reset! WIDTH width))
+                                             (when (not= height @HEIGHT)
+                                               (reset! HEIGHT height)))))
     :registered))
+
 
 ;; sharing
 
