@@ -65,4 +65,5 @@
    (update-references-to-build-artifacts)
    (when pre-deploy-hook (pre-deploy-hook))
    (firebase-deploy firebase-project-id (get opts :firebase-functions true))
-   (when post-deploy-hook (post-deploy-hook))))
+   (when post-deploy-hook (post-deploy-hook))
+   (kb/process {:command-args ["git" "reset" "--hard"]})))
