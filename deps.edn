@@ -3,7 +3,7 @@
          org.clojure/clojurescript {:mvn/version "1.10.891"}
          org.clojure/spec.alpha    {:mvn/version "0.2.194"}
 
-         io.github.kunagi/kunagi-mui {:git/sha "6f4cbb1dcc97b11c7d05a2f29923ab39d3ee3cf2", :git/tag "v0.0.3"}
+         io.github.kunagi/kunagi-mui {:git/sha "27834590d8f0ded7530e1778c62c8e283e4c13c0", :git/tag "v0.0.4"}
          ;; io.github.kunagi/kunagi-mui {:local/root "/p/kunagi-mui"}
 
          funcool/promesa                     {:mvn/version "8.0.446"}
