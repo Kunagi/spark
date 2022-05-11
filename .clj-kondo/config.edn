@@ -1,24 +1,3 @@
 ;; https://github.com/clj-kondo/clj-kondo/blob/master/doc/config.md
 
-{:lint-as {helix.core/defnc clojure.core/defn
-
-           promesa.core/let      clojure.core/let
-
-           spark.core/def-doc    clojure.core/def
-           spark.core/def-field  clojure.core/def
-           spark.core/def-subdoc clojure.core/def
-           spark.core/def-cmd    clojure.core/def
-           spark.core/def-query  clojure.core/def
-           spark.core/def-spa    clojure.core/def
-           spark.core/def-test   clojure.core/fn
-
-           spark.rct/def> clojure.core/def
-           spark.rct/test> clojure.test/deftest
-
-           spark.gcf.cmd/def-cmd clojure.core/def
-
-           spark.ui/def-ui      clojure.core/defn
-           spark.ui/def-ui-test clojure.core/fn
-           spark.ui/def-page    clojure.core/def
-
-           spark.models/def-model clojure.core/def}}
+{:lint-as {}}
