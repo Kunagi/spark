@@ -18,10 +18,10 @@
  {:build
   {:paths ["src"]
    :deps {;;
-                 ;; io.github.kunagi/kunagi-mui {:git/sha ""}
-          io.github.kunagi/kunagi-build {:local/root "../kunagi-build"}
-          io.github.kunagi/kunagi-mui {:local/root "../kunagi-mui"}
-                 ;;
+          io.github.kunagi/kunagi-build {:local/root "/p/kunagi-build"}
+          io.github.kunagi/kunagi-utils {:local/root "/p/kunagi-utils"}
+          io.github.kunagi/kunagi-mui {:local/root "/p/kunagi-mui"}
+          ;;
           }
    :ns-default build}
 
