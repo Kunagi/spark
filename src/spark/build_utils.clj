@@ -12,7 +12,7 @@
           s (-> s (.replace target replacement))]
       (spit f s))))
 
-(def version (-> "src/spa/version.txt" slurp .trim Integer/parseInt))
+(def version (-> "src/spa/version.txt" slurp str/trim))
 (def git-version-tag (str "v" version))
 
 (defn clean []
