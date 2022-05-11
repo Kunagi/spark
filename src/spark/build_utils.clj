@@ -60,6 +60,7 @@
   ([{:keys [pre-deploy-hook post-deploy-hook
             firebase-project-id]
      :as opts}]
+   (spit "src/gcf-tap.edn" nil)
    (firebase-build)
    (update-references-to-build-artifacts)
    (when pre-deploy-hook (pre-deploy-hook))
