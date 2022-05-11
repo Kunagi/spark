@@ -1,0 +1,8 @@
+{:lint-as {;;
+           kunagi.mui.core/defnc clojure.core/defn
+           kunagi.mui.api/defnc clojure.core/defn
+
+           kunagi.mui.core/def-ui clojure.core/defn
+           kunagi.mui.api/def-ui clojure.core/defn
+           ;;
+           }}
