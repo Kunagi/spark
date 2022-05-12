@@ -1,7 +1,7 @@
 ;; * ns
 (ns spark.ui
   (:require-macros [spark.ui :refer [$ <> use-effect
-                                      def-ui def-ui-showcase
+                                     def-ui def-ui-showcase
                                      use-state provider create-context
                                      use-context
                                      map$
@@ -11,8 +11,7 @@
                                      stack stack-0 stack-1 stack-2
                                      stack-3 stack-4 stack-5
                                      flex flex-0 flex-1 flex-2
-                                     flex-3 flex-4 flex-5
-                                     ]]
+                                     flex-3 flex-4 flex-5]]
                    [kunagi.mui.api]
                    [kunagi.mui.core :refer [defnc]]
                    [clojure.string :as str])
@@ -610,59 +609,59 @@
 
 (defn colored-data-block [label background-color color data]
   ($ :div
-   {:class "data"
-    :style {:white-space      "pre-wrap"
-            :word-break "break-all"
-            :font-family      "monospace"
-            :font-size        "13px"
-            :font-weight      400
-            :font-style       "normal"
-            :overflow         "auto"
-            :width            "100%"
-            :background-color background-color
-            :color            color
-            :padding          "1rem"
-            :border-radius    "4px"
-            :margin           "1px"}}
-   (when label
-     (div
-      {:font-weight 900
-       :text-align  "center"}
-      (with-out-str (print label))))
-   (with-out-str (pprint data))))
+     {:class "data"
+      :style {:white-space      "pre-wrap"
+              :word-break "break-all"
+              :font-family      "monospace"
+              :font-size        "13px"
+              :font-weight      400
+              :font-style       "normal"
+              :overflow         "auto"
+              :width            "100%"
+              :background-color background-color
+              :color            color
+              :padding          "1rem"
+              :border-radius    "4px"
+              :margin           "1px"}}
+     (when label
+       (div
+        {:font-weight 900
+         :text-align  "center"}
+        (with-out-str (print label))))
+     (with-out-str (pprint data))))
 
 (defn colored-data-line [label background-color color data]
   ($ :div
-   {:style {:white-space "nowrap"
-            :height "50px"
-            :font-family :monospace
-            :width "100%"
-            :background-color background-color
-            :color color
-            :padding "1rem"
-            :border-radius "4px"
-            :margin "1px"
-            :display :grid
-            :place-items "center"}}
-   (div
-    {:max-width "300px"
-     :overflow "hidden"
-     :text-overflow "ellipsis"}
-    (when label
-      ($ :span
-       {:style
-        {:font-weight 900
-         :text-align "center"}}
-       (with-out-str (print label))
-       " "))
-    (with-out-str (print data)))))
+     {:style {:white-space "nowrap"
+              :height "50px"
+              :font-family :monospace
+              :width "100%"
+              :background-color background-color
+              :color color
+              :padding "1rem"
+              :border-radius "4px"
+              :margin "1px"
+              :display :grid
+              :place-items "center"}}
+     (div
+      {:max-width "300px"
+       :overflow "hidden"
+       :text-overflow "ellipsis"}
+      (when label
+        ($ :span
+           {:style
+            {:font-weight 900
+             :text-align "center"}}
+           (with-out-str (print label))
+           " "))
+      (with-out-str (print data)))))
 
 (defn data [& datas]
   ($ :div
-   (for [[i data] (map-indexed vector datas)]
-     ($ :div
-        {:key i}
-        (kui/data data)))))
+     (for [[i data] (map-indexed vector datas)]
+       ($ :div
+          {:key i}
+          (kui/data data)))))
 
 (defn data-card-content [text v]
   ($ mui/CardContent
@@ -794,8 +793,8 @@
 (defnc Spacer [{:keys [width height]}]
   (let [theme (mui-styles/useTheme)]
     ($ :div
-     {:style {:width  (-> theme (.spacing (or width 1)))
-              :height (-> theme (.spacing (or width 1)))}})))
+       {:style {:width  (-> theme (.spacing (or width 1)))
+                :height (-> theme (.spacing (or width 1)))}})))
 
 (defnc Icon [{:keys [name theme]}]
   ($ :div
@@ -836,9 +835,9 @@
 (defnc Stack [{:keys [children spacing]}]
   (let [theme (mui-styles/useTheme)]
     ($ :div
-     {:style {:display :grid
-              :grid-gap (-> theme (.spacing (or spacing 1)))}}
-     children)))
+       {:style {:display :grid
+                :grid-gap (-> theme (.spacing (or spacing 1)))}}
+       children)))
 
 (defnc Flexbox [{:keys [children spacing style]}]
   (let [children (if (seqable? children)
@@ -846,15 +845,15 @@
                    [children])
         theme    (mui-styles/useTheme)]
     ($ :div
-     {:style {:display :flex
+       {:style {:display :flex
               ;; FIXME :gap (-> theme (.spacing (or spacing 1)))
-              }}
-     (for [[idx child] (map-indexed vector children)]
-       ($ :div
-        {:key   idx
-         :style (merge  {:margin-right (-> theme (.spacing (or spacing 1)))}
-                        style)}
-        child)))))
+                }}
+       (for [[idx child] (map-indexed vector children)]
+         ($ :div
+            {:key   idx
+             :style (merge  {:margin-right (-> theme (.spacing (or spacing 1)))}
+                            style)}
+            child)))))
 
 (defnc Link--no-styles [{:keys [to on-click children]}]
   ($ Link
@@ -1380,11 +1379,11 @@
                    (cond
                      (keyword? icon)
                      ($ :div {:class (str "material-icons" (when theme (str "-" theme)))}
-                            (name icon))
+                        (name icon))
 
                      (string? icon)
                      ($ :div {:class (str "material-icons" (when theme (str "-" theme)))}
-                            icon)
+                        icon)
 
                      :else icon))]
     ($ mui/IconButton
@@ -1435,12 +1434,12 @@
       (let [children (->> children
                           (remove nil?))]
         ($ :div
-         {:class "CardRow"
-          :style {:display :grid
-                  :grid-template-columns (or grid-template-columns
-                                             (str "repeat(" (count children) ", auto)"))
-                  :grid-gap gap}}
-         children)))))
+           {:class "CardRow"
+            :style {:display :grid
+                    :grid-template-columns (or grid-template-columns
+                                               (str "repeat(" (count children) ", auto)"))
+                    :grid-gap gap}}
+           children)))))
 
 (def FieldLabel form-ui/FieldLabel)
 (def Field form-ui/Field)
@@ -1681,17 +1680,14 @@
 (defnc AppFrame-inner [{:keys [children spa background-color]}]
   (let [class (use-app-styles-class)]
     (reset! form-ui/DIALOG-CLASS class)
-    (<>
-     ($ mui/CssBaseline)
-     (div {:id     "AppFrame.inner"
-           :background-color background-color
-           :class  class
-           :height "100%"}
-          ($ AuthCompletedGuard
-             ($ router/BrowserRouter {}
-                ($ ScrollToTop)
-                ($ PageSwitch {:spa spa}
-                   children)))))))
+    (div {:id     "AppFrame.inner"
+          :background-color background-color
+          :class  class
+          :height "100%"}
+         ($ AuthCompletedGuard
+            ($ ScrollToTop)
+            ($ PageSwitch {:spa spa}
+               children)))))
 
 (defnc AppFrame [{:keys [children]}]
   ;; (log ::render-AppFrame)
@@ -1702,21 +1698,18 @@
                             :uid        uid}
         update-app-context (-> spa :update-app-context)
         spark-context      (u/safe-apply update-app-context [spark-context])]
-
-    ($ mui/ThemeProvider
+    ($ kui/AppWrapper
        {:theme (-> spa :theme)}
        (provider
         {:context SPARK_CONTEXT
          :value   spark-context}
-        ($ kui.core/ErrorBoundary
-           ($ AppFrame-inner {:spa spa}
-              children))))))
+        ($ AppFrame-inner {:spa spa}
+           children)))))
 
 (defn load-spa [spa]
   (log ::load-spa
        :spa spa)
   (let [spa (-> spa
-                (update :theme styles/adapt-theme)
                 (update :styles styles/adapt-styles))]
     (reset! SPA spa)
     (kui/mount ($ (-> spa :root-component)) "app")))
