@@ -1,6 +1,6 @@
 (ns spark.debug-ui
   (:require
-   [spark.debug :as debug]
+   [kunagi.utils.debug :as debug]
    [spark.ui :as ui :refer [def-ui $]]))
 
 (def use-active (ui/atom-hook debug/ACTIVE))

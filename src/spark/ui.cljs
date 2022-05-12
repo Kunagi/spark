@@ -44,7 +44,7 @@
    [spark.env :as env]
    [spark.money :as money]
    [spark.local :as local]
-   [spark.debug :as debug]
+   [kunagi.utils.debug :as debug]
 
    [spark.firebase.storage :as storage]
    [spark.runtime :as runtime]
