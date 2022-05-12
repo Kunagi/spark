@@ -102,8 +102,7 @@
   (let [col-id (-> Doc schema-opts :firestore/collection)]
     (when-not col-id
       (js/console.error "Missing :firestore/collection in" Doc))
-    (when-not (= "singletons" col-id)
-      (definitions/reg-definition :doc-schema (-> Doc second :doc-schema/id) Doc))
+    (definitions/reg-definition :spark/doc-schema (-> Doc second :doc-schema/id keyword) {:malli Doc})
     (firestore/reg-doc-schema col-id Doc))
   Doc)
 
@@ -113,7 +112,7 @@
              :string :string])
   (m/schema [:map
              ""
-             [ :string]]))
+             [:string]]))
 
 (defn doc-schema? [thing]
   (schema-type-of? :doc-schema thing))
