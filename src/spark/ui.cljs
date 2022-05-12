@@ -33,6 +33,8 @@
 
    [kunagi.mui.api :as kui]
    [kunagi.mui.core :as kui.core]
+   [kunagi.utils.debug :as debug]
+   [kunagi.mui.pages :as pages]
 
    [spark.logging :refer [log]]
    [spark.utils :as u]
@@ -44,7 +46,6 @@
    [spark.env :as env]
    [spark.money :as money]
    [spark.local :as local]
-   [kunagi.utils.debug :as debug]
 
    [spark.firebase.storage :as storage]
    [spark.runtime :as runtime]
@@ -52,8 +53,7 @@
    [spark.auth :as auth]
 
    [spark.ui.styles :as styles]
-   [spark.ui.showcase :as showcase]
-   [spark.pages :as pages]))
+   [spark.ui.showcase :as showcase]))
 
 ;; * basics
 
@@ -74,7 +74,6 @@
 (def create-ref kui/create-ref)
 
 (def reg-showcase showcase/reg-showcase)
-(def reg-page pages/reg-page)
 
 (def StringVectorChips form-ui/StringVectorChips)
 (def FormCardArea form-ui/FormCardArea)

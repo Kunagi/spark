@@ -19,9 +19,7 @@
 (defmacro div [& body] `(kunagi.mui.api/div ~@body))
 (defmacro span [& body] `(kunagi.mui.api/span ~@body))
 
-(defmacro def-page  [sym opts]
-  (let [opts (spark/complete-opts opts sym "page")]
-    `(def ~sym (reg-page ~opts))))
+(defmacro def-page [& body] `(kunagi.mui.pages/def-page ~@body))
 
 (defmacro def-ui [type params & body]
   (let [[docstring params body] (if (string? params)

@@ -97,12 +97,17 @@
 ;;; Doc
 ;;;
 
+
 (defn init-doc-schema [Doc]
   (m/schema Doc)
   (let [col-id (-> Doc schema-opts :firestore/collection)]
     (when-not col-id
       (js/console.error "Missing :firestore/collection in" Doc))
-    (definitions/reg-definition :spark/doc-schema (-> Doc second :doc-schema/id keyword) {:malli Doc})
+    (definitions/reg-definition
+      {:definition/type :spark/doc-schema
+       :definition/id (-> Doc second :doc-schema/id keyword)
+       ;; :malli Doc
+       })
     (firestore/reg-doc-schema col-id Doc))
   Doc)
 
@@ -139,11 +144,6 @@
   (or (-> Doc schema-opts :spark/id-generator)
       (fn [_context] (firestore/new-id))))
 
-(defn doc-schema-router-param [Doc]
-  (assert-doc-schema Doc)
-  (str ":"
-       (-> Doc schema-opts :doc-schema/symbol (str "Id"))))
-
 (defn doc-schema-page-param [Doc]
   (assert-doc-schema Doc)
   (-> Doc schema-opts :doc-schema/symbol (str "-id") csk/->kebab-case-keyword))
@@ -174,26 +174,6 @@
 
 (defn subdoc-schema? [thing]
   (schema-type-of? :subdoc-schema thing))
-
-(defn assert-subdoc-schema [Subdoc]
-  ;; FIXME dev only
-  (when-not (subdoc-schema? Subdoc)
-    (throw (ex-info "subdoc schema expected"
-                    {:value Subdoc}))))
-
-(defn subdoc-schema-router-param [Subdoc]
-  (assert-subdoc-schema Subdoc)
-  (str ":"
-       (-> Subdoc schema-opts :subdoc-schema/symbol (str "Id"))))
-
-(defn subdoc-schema-id-generator [Subdoc]
-  (or (-> Subdoc schema-opts :spark/id-generator)
-      (fn [_context] (firestore/new-id))))
-
-(defn new-subdoc-id [Subdoc context]
-  (-> Subdoc
-      subdoc-schema-id-generator
-      (apply context)))
 
 ;;;
 ;;; cmd
