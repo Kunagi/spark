@@ -1053,56 +1053,7 @@
   (runtime/report-error error)
   (reset! ERROR error))
 
-(defn normalize-error [error]
-  (cond
-
-    (instance? js/Error error)
-    [(-> error .-message)
-     (ex-data error)
-     (-> error .-stack)
-     (ex-cause error)]
-
-    (string? error)
-    [error]
-
-    (-> error :message)
-    [(-> error :message)
-     (-> error :data)
-     (-> error :stacktrace)
-     (-> error :cause)]
-
-    :else
-    [(str error)]))
-
-(defnc ErrorInfo [{:keys [error]}]
-  (let [[message dat stacktrace cause] (normalize-error error)
-        theme                          (use-theme)]
-    ($ Stack
-       ($ :div
-          {:style {:font-weight 900
-                   :color       (-> theme .-palette .-primary .-main)
-                   :white-space "pre-wrap"}}
-          (str message))
-       (when (seq dat)
-         ($ :div
-            {:style {:max-height "200px"
-                     :overflow   "auto"}}
-            (data dat)))
-       (when stacktrace
-         ($ :div
-            {:style {:max-height       "200px"
-                     :overflow         "auto"
-                     :font-family      "monospace"
-                     :font-size        "10px"
-                     :white-space      "pre-wrap"
-                     :background-color "#333"
-                     :color            "#6ff"
-                     :padding          "1rem"
-                     :border-radius    "4px"
-                     :margin           "1px"}}
-            stacktrace))
-       (when cause
-         ($ ErrorInfo {:error cause})))))
+(def ErrorInfo kui.core/ErrorInfo)
 
 (def-ui-showcase ::ErrorInfo
   (stack
@@ -1144,50 +1095,6 @@
             result)
           result)
         (catch :default error (show-error error))))))
-
-;; * ErrorBoundary
-
-(kui.core/defcomponent ErrorBoundary
-  (constructor [this]
-               (set! (.-state this) #js {:error nil}))
-
-  ^:static
-  (getDerivedStateFromError [this error]
-                            #js {:error error})
-
-  (render [this]
-          (if-not (.. this -state -error)
-            (.. this -props -children)
-            (div
-             {:display  :grid
-              :grid-gap 16}
-             (div
-              {:font-weight :bold
-               :font-size   "200%"
-               :text-align  :center}
-              "Sorry, we messed up!")
-
-             (div
-              {:display               :grid
-               :grid-template-columns "auto max-content max-content auto"
-               :grid-gap              8}
-              (div)
-              ($ mui/Button
-                 {:onClick #(js/location.reload)
-                  :color   "primary"
-                  :variant "contained"}
-                 "RELOAD")
-              ($ mui/Button
-                 {:onClick #(-> js/location .-href (set! "/"))
-                  :color   "primary"
-                  :variant "contained"}
-                 "HOME")
-              (div))
-
-             ($ mui/Divider)
-
-             ($ ErrorInfo
-                {:error (.. this -state -error)})))))
 
 ;;; links
 
@@ -1786,7 +1693,7 @@
                 ($ PageSwitch {:spa spa}
                    children)))))))
 
-(defnc AppFrame [{:keys [children background-color]}]
+(defnc AppFrame [{:keys [children]}]
   ;; (log ::render-AppFrame)
   (let [spa                (use-spa)
         uid                (use-uid)
@@ -1801,9 +1708,8 @@
        (provider
         {:context SPARK_CONTEXT
          :value   spark-context}
-        ($ ErrorBoundary
-           ($ AppFrame-inner {:spa spa
-                              :background-color background-color}
+        ($ kui.core/ErrorBoundary
+           ($ AppFrame-inner {:spa spa}
               children))))))
 
 (defn load-spa [spa]

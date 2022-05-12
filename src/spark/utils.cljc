@@ -112,77 +112,8 @@
 
 ;; Errors and Exceptions
 
-(defn exception-as-text [ex]
-  (cond
-
-    (nil? ex)
-    nil
-
-    (string? ex)
-    ex
-
-    #?(:cljs (instance? js/Error ex))
-    #?(:cljs (str ""
-                  (-> ^js ex .-message)
-                  (when-let [c (ex-cause ex)]
-                    (str "\n"
-                         (exception-as-text c)))))
-
-    (map? ex)
-    (if-let [message (-> ex :message)]
-      (str ""
-           message
-           (when-let [c (ex-cause ex)]
-             (str "\n"
-                  (exception-as-text c))))
-      "Error")
-
-    :else
-    (->edn ex)))
-
-(defn exception-as-data [ex]
-  (cond
-
-    (nil? ex)
-    {}
-
-    (string? ex)
-    {:message ex}
-
-    #?(:cljs (instance? js/Error ex))
-    #?(:cljs {:message (-> ^js ex .-message)
-              :data (ex-data ex)
-              :stacktrace (-> ^js ex .-stack)
-              :cause (when-let [c (ex-cause ex)]
-                       (exception-as-data c))})
-
-    (map? ex)
-    (if-let [message (-> ex :message)]
-      {:message message
-       :data (-> ex :data)
-       :stacktrace (-> ex :stacktrace)
-       :cause (when-let [cause (-> ex :cause)]
-                (exception-as-data cause))}
-      {:message nil
-       :data ex})
-
-    :else
-    {:data (->edn ex)}))
-
-(comment
-  (instance? js/Error
-             (ex-cause
-              (ex-info "ex-info error"
-                       {:with :data}
-                       (js/Error. "Some cause"))))
-
-  (:cause
-   (exception-as-data
-    (ex-info "ex-info error"
-             {:with :data}
-             (js/Error. "Some cause"))))
-  ;
-  )
+(def exception-as-text u/error->text)
+(def exception-ad-data u/error->data)
 
 ;; * unique ids
 

@@ -106,7 +106,7 @@
     (definitions/reg-definition
       {:definition/type :spark/doc-schema
        :definition/id (-> Doc second :doc-schema/id keyword)
-       ;; :malli Doc
+       :malli Doc
        })
     (firestore/reg-doc-schema col-id Doc))
   Doc)
