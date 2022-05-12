@@ -661,8 +661,8 @@
   ($ :div
    (for [[i data] (map-indexed vector datas)]
      ($ :div
-      {:key i}
-      (colored-data-block nil "#333" "#6f6" data)))))
+        {:key i}
+        (kui/data data)))))
 
 (defn data-card-content [text v]
   ($ mui/CardContent
@@ -670,9 +670,7 @@
        (div text))
      (data v)))
 
-(defn DEBUG [& datas]
-  (when (debug?)
-    (apply data datas)))
+(def DEBUG kui/DEBUG)
 
 (defnc ExpandableData [{:keys [label value]}]
   (let [[expanded set-expanded] (use-state false)]
