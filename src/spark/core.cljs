@@ -4,6 +4,8 @@
    [clojure.string :as str]
    [malli.core :as m]
 
+   [kunagi.utils.definitions :as definitions]
+
    [spark.logging :refer [log]]
    [spark.firestore :as firestore]
    [camel-snake-kebab.core :as csk]))
@@ -16,11 +18,6 @@
 
 (defn reg-test [test]
   (swap! TESTS assoc (-> test :id) test))
-
-(defonce DEFS (atom {}))
-
-(defn reg-def [type id thing]
-  (swap! DEFS assoc-in [type id] thing))
 
 ;; * entity updates
 
@@ -106,7 +103,7 @@
     (when-not col-id
       (js/console.error "Missing :firestore/collection in" Doc))
     (when-not (= "singletons" col-id)
-      (reg-def :doc-schema (get Doc :doc-schema/id) Doc))
+      (definitions/reg-definition :doc-schema (-> Doc second :doc-schema/id) Doc))
     (firestore/reg-doc-schema col-id Doc))
   Doc)
 
