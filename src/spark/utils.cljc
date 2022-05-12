@@ -18,6 +18,8 @@
 
    [flatland.ordered.map :as ordered.map]
 
+   [kunagi.utils :as u]
+
    [spark.rct :refer [test> def>]]))
 
 ;; http://weavejester.github.io/medley/medley.core.html
@@ -105,12 +107,8 @@
 
 ;; * EDN
 
-(defn ->edn [data]
-  (with-out-str (pprint data)))
-
-(defn read-edn [s]
-  (when s
-    (edn/read-string s)))
+(def ->edn u/->edn)
+(def read-edn u/read-edn)
 
 ;; Errors and Exceptions
 
