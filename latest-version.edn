@@ -1,1 +1,1 @@
-{:version {:major 1, :minor 0, :bugfix 9}, :git/tag "v1.0.9", :git/sha "954730368043927b2455ebefc9dfafb895d8ea28", :timestamp "2022-05-13T11:36+02:00\n"}
+{:version {:major 1, :minor 0, :bugfix 10}, :git/tag "v1.0.10", :git/sha "568a3220236492104883eaeee14af0ec6e4abdf1", :timestamp "2022-05-13T14:03+02:00\n"}
