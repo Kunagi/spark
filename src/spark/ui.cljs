@@ -87,8 +87,7 @@
 (def atom-hook kui/atom-hook)
 (def memo kui/memo)
 
-(defn use-atom [ATOM]
-  ((atom-hook ATOM)))
+(def use-atom kui/use-atom)
 
 (defn use-promise [p]
   (let [[result set-result] (use-state nil)]
