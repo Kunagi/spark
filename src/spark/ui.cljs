@@ -2116,6 +2116,11 @@
 
 ;; * Cards
 
+(def-ui LinedCard [children class]
+  ($ mui/Card
+     {:className (str  "LinedCard" " " class)}
+     children))
+
 (defnc CardContent [{:keys [to on-click href children]}]
   (cond
 
@@ -2159,6 +2164,8 @@
           :on-click on-click}
          Card)
       Card)))
+
+
 
 ;; * DataTable
 
