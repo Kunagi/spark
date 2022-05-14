@@ -3,24 +3,15 @@
   (:refer-clojure :exclude [assert pos? zero? min max tap>])
   #?(:cljs (:require-macros [spark.utils :refer [assert]]))
   (:require
-   [clojure.spec.alpha :as s]
    [clojure.string :as str]
-   [clojure.edn :as edn]
-   #?(:clj [clojure.pprint :refer [pprint]]
-      :cljs [cljs.pprint :refer [pprint]])
-
-   [tick.core :as tick]
-
+   [flatland.ordered.map :as ordered.map]
+   [kunagi.utils :as u]
    [malli.core :as malli]
    [malli.error :as malli-error]
-
    [nano-id.core :as nano-id]
-
-   [flatland.ordered.map :as ordered.map]
-
-   [kunagi.utils :as u]
-
-   [spark.rct :refer [test> def>]]))
+   #?(:clj [clojure.pprint :refer [pprint]]
+      :cljs [cljs.pprint :refer [pprint]])
+   [tick.core :as tick]))
 
 ;; http://weavejester.github.io/medley/medley.core.html
 
@@ -113,7 +104,6 @@
 ;; Errors and Exceptions
 
 (def exception-as-text u/error->text)
-(def exception-ad-data u/error->data)
 
 ;; * unique ids
 
