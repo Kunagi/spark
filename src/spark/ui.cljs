@@ -2191,8 +2191,6 @@
          Card)
       Card)))
 
-
-
 ;; * DataTable
 
 (def-ui DataTable [table records
@@ -2278,19 +2276,20 @@
                                 :text-align (-> col :align)}
                                (-> col :label))))))
 
-                   (when-let [rows (-> table :prefix-rows)]
-                     (for [[row-idx row] (map-indexed vector rows)]
-                       ($ mui/TableRow
-                          {:key row-idx}
-                          (for [[col-idx cell] (map-indexed vector row)]
-                            ($ mui/TableCell
-                               {:key col-idx}
-                               (when cell
-                                 (if-let [component (-> cell :component)]
-                                   component
-                                   (data cell))))))))
-
                    ($ mui/TableBody
+
+                      (when-let [rows (-> table :prefix-rows)]
+                        (for [[row-idx row] (map-indexed vector rows)]
+                          ($ mui/TableRow
+                             {:key row-idx}
+                             (for [[col-idx cell] (map-indexed vector row)]
+                               ($ mui/TableCell
+                                  {:key col-idx}
+                                  (when cell
+                                    (if-let [component (-> cell :component)]
+                                      component
+                                      (data cell))))))))
+
                       (for [[row-idx record] (map-indexed vector records)]
                         ($ mui/TableRow
                            {:key (or (record-id-getter record)
