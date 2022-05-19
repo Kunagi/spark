@@ -1,6 +1,7 @@
 (ns spark.gcf.cmd
   (:require-macros [spark.gcf.cmd :refer [def-cmd]])
   (:require
+   [kunagi.utils :as ku]
    [spark.logging :refer [log]]
    [spark.utils :as u]
    [spark.money :as money]
@@ -106,7 +107,7 @@
           (.catch (fn [error]
                     (log ::handle-cmd-call>--catch!!!!!!
                          :error error)
-                    (u/resolve> {:_spark-cmd-error (u/exception-as-data error)})))))))
+                    (u/resolve> {:_spark-cmd-error (ku/error->data error)})))))))
 
 (def default-commands-map
   {:dummy {:public true
