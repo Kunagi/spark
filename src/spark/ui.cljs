@@ -53,7 +53,8 @@
    [spark.auth :as auth]
 
    [spark.ui.styles :as styles]
-   [spark.ui.showcase :as showcase]))
+   [spark.ui.showcase :as showcase]
+   [kunagi.mui.api :as ui]))
 
 ;; * basics
 
@@ -893,7 +894,20 @@
 
 (def use-offline (atom-hook browser/OFFLINE))
 (def use-width (atom-hook browser/WIDTH))
-(def use-height (atom-hook browser/HEIGHT))
+
+(defn use-height []
+  (let [[height set-height] (ui/use-state js/window.innerHeight)]
+
+    (ui/use-effect
+     :once
+     (let [el (fn []
+                (let [new-height js/window.innerHeight]
+                  (when (not= height new-height)
+                    (set-height height))))]
+       (js/window.addEventListener "resize" el)
+       #(js/window.removeEventListener "resize" el)))
+
+    height))
 
 (defonce SPA (atom nil))
 (def use-spa (atom-hook SPA))
