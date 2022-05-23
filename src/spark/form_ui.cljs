@@ -100,12 +100,14 @@
                                                         (- 0 step)
                                                         -1))
                                    :variant "contained"
+                                   :color "default"
                                    :size "small"
                                    :className "FormPlusMinusAdornmentButton"}
                                   "-")
                                ($ mui/Button
                                   {:onClick #(inc-dec (or step 1))
                                    :variant "contained"
+                                   :color "default"
                                    :size "small"
                                    :className "FormPlusMinusAdornmentButton"}
                                   "+"))))
@@ -521,12 +523,9 @@
             ($ mui/Button
                {:onClick #(set-expanded true)
                 :variant "contained"
+                :color "default"
                 :size "small"}
-               "Mehr anzeigen")
-            #_($ :a
-                 {:onClick #(set-expanded true)
-                  :style {:cursor "pointer"}}
-                 "Mehr anzeigen..."))))))
+               "Mehr anzeigen"))))))
 
 (defmethod create-input "checkboxes" [field]
   (log ::create-input
@@ -618,8 +617,8 @@
                       (then result)))
 
         cancel (fn []
-                 (when-let [ on-cancel (or on-cancel
-                                           (-> form :on-cancel))]
+                 (when-let [on-cancel (or on-cancel
+                                          (-> form :on-cancel))]
                    (on-cancel))
                  (close nil))
 
