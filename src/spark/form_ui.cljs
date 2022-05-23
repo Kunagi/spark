@@ -618,7 +618,8 @@
                       (then result)))
 
         cancel (fn []
-                 (when on-cancel
+                 (when-let [ on-cancel (or on-cancel
+                                           (-> form :on-cancel))]
                    (on-cancel))
                  (close nil))
 
