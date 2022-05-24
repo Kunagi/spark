@@ -1091,7 +1091,11 @@
   (runtime/report-error error)
   (reset! ERROR error))
 
-(def ErrorInfo kui.core/ErrorInfo)
+(def-ui ErrorInfo [error]
+  ($ mui/Card
+     ($ mui/CardContent
+        ($ kui.core/ErrorInfo {:error error})))
+  )
 
 (def-ui-showcase ::ErrorInfo
   (stack
