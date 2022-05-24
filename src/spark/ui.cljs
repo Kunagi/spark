@@ -2036,7 +2036,7 @@
 
 ;; * db dialogs
 
-(defn show-entity-form-dialog> [entity fields]
+(defn show-entity-form-dialog> [entity fields on-changed]
   (log ::show-entity-form-dialog>
        :entity entity
        :fields fields)
@@ -2050,7 +2050,8 @@
                               fields))
     :submit (fn [values]
               (when values
-                (db-update> entity values)))}))
+                (p/let [_ (db-update> entity values)]
+                  (when on-changed (on-changed values)))))}))
 
 ;; * db components
 
@@ -2058,7 +2059,8 @@
                                           label children
                                           entity field
                                           value-suffix display
-                                          description]}]
+                                          description
+                                          on-changed]}]
   (let [field (cond
                 (map? field) field
                 (spark/field-schema? field) (get field 1))
@@ -2128,7 +2130,11 @@
                            (when (and value value-suffix)
                              (str " " value-suffix))))
         on-click        (or on-click
-                            #(show-entity-form-dialog> entity [field]))]
+                            #(show-entity-form-dialog>
+                              entity [field]
+                              (when on-changed
+                                (fn [values]
+                                  (on-changed (get values field-id))))))]
     ($ mui/CardActionArea
        {:onClick on-click}
        ;; (data {:field-id field-id
