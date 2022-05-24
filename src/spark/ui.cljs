@@ -1094,8 +1094,7 @@
 (def-ui ErrorInfo [error]
   ($ mui/Card
      ($ mui/CardContent
-        ($ kui.core/ErrorInfo {:error error})))
-  )
+        ($ kui.core/ErrorInfo {:error error}))))
 
 (def-ui-showcase ::ErrorInfo
   (stack
