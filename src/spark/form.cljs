@@ -225,6 +225,7 @@
           max-value (-> field :max)]
       (when value
         (cond
+          (not (money/money? value))  "Ungültiger EUR-Betrag."
           (and min-value (money/< value min-value)) (str "Minimum: " (local/format-eur min-value))
           (and max-value (money/> value max-value)) (str "Maximum: " (local/format-eur max-value)))))))
 

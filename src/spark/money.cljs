@@ -68,6 +68,7 @@
            false))))
 
 (comment
+  (money? "b")
   (money? "22")
   (money? "22c")
   (money? "c22c"))
