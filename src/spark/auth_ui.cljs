@@ -152,7 +152,7 @@ Bitte E-Mail Adresse eingeben.")
                                           (swap! auth/TELEPHONE_SIGN_IN assoc
                                                  :telephone telephone
                                                  :status :sending-sms)
-                                          (auth/send-sign-in-code-to-telephone
+                                          (auth/send-sign-in-code-to-telephone>
                                            (coerce-telephone telephone)))))))
 
         continue-with-code (fn []
@@ -166,6 +166,14 @@ Bitte E-Mail Adresse eingeben.")
                         {:text     "Abbrechen"
                          :variant  "text"
                          :on-click #(reset! auth/TELEPHONE_SIGN_IN nil)})]
+
+    (ui/use-effect
+     :once
+     (when (and telephone
+                (-> status :auto-send-sms))
+       (continue-with-telephone))
+     nil)
+
     (ui/stack
      ($ RecaptchaContainer)
      (when goog.DEBUG (ui/data status))
@@ -245,7 +253,7 @@ Bitte gib hier den empfangenen Code ein.")
 
 ;; * Selector
 
-(def-ui LoginSelector [methods]
+(def-ui LoginSelector [methods opts]
   (let [email-sign-in (use-email-sign-in)
         telephone-sign-in (use-telephone-sign-in)]
 
@@ -254,7 +262,7 @@ Bitte gib hier den empfangenen Code ein.")
      (when (-> methods count (= 1))
        (case (first methods)
          :email (auth/sign-in-with-email)
-         :telephone (auth/sign-in-with-telephone)
+         :telephone (auth/sign-in-with-telephone (-> opts :telephone))
          :google (auth/sign-in-with-google)
          :apple (auth/sign-in-with-apple)
          :microsoft (auth/sign-in-with-microsoft)
@@ -295,17 +303,22 @@ Bitte gib hier den empfangenen Code ein.")
                          ($ ui/Button
                             {:text     "Mobiltelefon / SMS"
                              :id       "telephone-sign-in-button"
-                             :on-click auth/sign-in-with-telephone}))
+                             :on-click #(auth/sign-in-with-telephone
+                                         (-> opts :telephone))}))
              :email ($ ui/Button
                        {:text     "E-Mail"
                         :on-click auth/sign-in-with-email})
              (ui/data method))))
         ($ :div))))))
 
-(defn show-sign-in-selector-dialog [methods]
-  (log ::show-sign-in-selector-dialog
-       :methods methods)
-  (ui/show-dialog {:id      "sign-in"
-                   ;; :title   "Identifizierung"
-                   :content ($ LoginSelector
-                               {:methods methods})}))
+(defn show-sign-in-selector-dialog
+  ([methods]
+   (show-sign-in-selector-dialog methods {}))
+  ([methods opts]
+   (log ::show-sign-in-selector-dialog
+        :methods methods)
+   (ui/show-dialog {:id      "sign-in"
+                    ;; :title   "Identifizierung"
+                    :content ($ LoginSelector
+                                {:methods methods
+                                 :opts opts})})))

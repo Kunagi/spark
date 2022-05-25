@@ -244,11 +244,13 @@
                (fn [result]
                  (js/console.log "AUTH FAILURE" result))))))
 
-(defn sign-in []
-  ;; (browser/webkit-post-message "iosapp" "login")
-  (let [sign-in-f @SIGN_IN-F]
-    (u/assert sign-in-f "Missing sign-in-f")
-    (sign-in-f)))
+(defn sign-in
+  ([]
+   (sign-in {}))
+  ([opts]
+   (let [sign-in-f @SIGN_IN-F]
+     (u/assert sign-in-f "Missing sign-in-f")
+     (sign-in-f opts))))
 
 (defn sign-out> []
   (js/localStorage.removeItem "spark.uid")
@@ -287,13 +289,7 @@
 
 (defonce TELEPHONE_SIGN_IN (atom nil))
 
-(defn sign-in-with-telephone []
-  (log ::sign-in-with-telephone)
-  (reset! TELEPHONE_SIGN_IN {:status :input-telephone
-                             :telephone (when goog.DEBUG "+16505551234")
-                             :url    (-> js/window.location.href)}))
-
-(defn send-sign-in-code-to-telephone [telephone]
+(defn send-sign-in-code-to-telephone> [telephone]
   (-> (firebase-auth/signInWithPhoneNumber (auth) telephone js/window.recaptchaVerifier)
       (.then (fn [^js result]
                (log ::sign-in-code-sent-to-telephone
@@ -305,6 +301,18 @@
       (.catch (fn [^js error]
                 ;; FIXME: reset recaptcha
                 (swap! TELEPHONE_SIGN_IN assoc :error error)))))
+
+(defn sign-in-with-telephone [telephone]
+  (log ::sign-in-with-telephone
+       :telephone telephone)
+  (let [telephone (or telephone
+                      (when goog.DEBUG "+16505551234"))]
+    (reset! TELEPHONE_SIGN_IN {:status :input-telephone
+                               :telephone telephone
+                               :auto-send-sms (boolean (and telephone
+                                                            (not goog.DEBUG)))
+                               :url (-> js/window.location.href)})))
+
 
 (defn sign-in-with-telephone-code [code]
   (let [confirmation-result (:confirmation-result @TELEPHONE_SIGN_IN)]
