@@ -269,8 +269,8 @@
              (exists? js/webkit.messageHandlers) js/webkit.messageHandlers
              (.hasOwnProperty js/webkit.messageHandlers message-handler-name))
     (when-let [message-handler (aget js/webkit.messageHandlers message-handler-name)]
-      (-> ^js message-handler
-          (.postMessage (clj->js message-body))))))
+      (-> ^js message-handler (.postMessage (clj->js message-body)))
+      true)))
 
 (comment
   (webkit-post-message "test" "hallo"))
