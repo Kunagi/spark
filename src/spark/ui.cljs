@@ -893,7 +893,6 @@
 ;;;
 
 (def use-offline (atom-hook browser/OFFLINE))
-(def use-width (atom-hook browser/WIDTH))
 
 (defn use-height []
   (let [[height set-height] (ui/use-state js/window.innerHeight)]
@@ -908,6 +907,20 @@
        #(js/window.removeEventListener "resize" el)))
 
     height))
+
+(defn use-width []
+  (let [[width set-width] (ui/use-state js/window.innerWidth)]
+
+    (ui/use-effect
+     :once
+     (let [el (fn []
+                (let [new-width js/window.innerWidth]
+                  (when (not= width new-width)
+                    (set-width width))))]
+       (js/window.addEventListener "resize" el)
+       #(js/window.removeEventListener "resize" el)))
+
+    width))
 
 (defonce SPA (atom nil))
 (def use-spa (atom-hook SPA))
