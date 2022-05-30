@@ -257,6 +257,7 @@
   (u/=> (firebase-auth/signOut (auth))
         (fn [result]
           (browser/webkit-post-message "iosapp" "logout")
+          (browser/webkit-post-message "iosapp" (u/->json {:message "logout"}))
           (redirect-to-home)
           result)))
 
