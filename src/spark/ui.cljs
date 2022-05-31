@@ -983,6 +983,7 @@
          :onClose   #(hide-dialog (-> dialog :id))
          :className class}
         ;; (data dialog-id)
+        ;; (DEBUG dialog)
         (when-let [title (-> dialog :title)]
           (div
            (when (-> dialog :title-close-button)
@@ -997,10 +998,14 @@
         ($ mui/DialogContent
            (stack
             (-> dialog :content)
-            (when (-> dialog :cancel-button)
+            (when (or (-> dialog :cancel-button)
+                      (-> dialog :on-cancel))
               (center
                ($ mui/Button
-                  {:onClick #(hide-dialog (-> dialog :id))}
+                  {:onClick (fn []
+                              (hide-dialog (-> dialog :id))
+                              (when-let [on-cancel (-> dialog :on-cancel)]
+                                (on-cancel)))}
                   (or (-> dialog :cancel-button-text)
                       (local/text :cancel)))))))))))
 
@@ -1811,7 +1816,9 @@
                              :content SelectionList)]
     (show-dialog dialog)))
 
-(defnc Confirmation [{:keys [text confirmation-text on-confirm]}]
+(defnc Confirmation [{:keys [text content
+                             confirmation-text cancel-button-text
+                             on-confirm on-cancel]}]
   (let [hide-dialog (use-hide-dialog)
         confirm (fn []
                   (p/let [_ (on-confirm)]
@@ -1821,12 +1828,16 @@
       {:text-align :center
        :font-weight :bold}
       text)
+     content
      (center
       (flex
        ($ Button
-          {:text (local/text :cancel)
+          {:text (or cancel-button-text
+                     (local/text :cancel))
            :variant :text
-           :on-click hide-dialog})
+           :on-click (fn []
+                       (p/let [_ (when on-cancel (on-cancel))]
+                         (hide-dialog)))})
        ($ Button
           {:text (or confirmation-text
                      (local/text :ok))
@@ -1834,12 +1845,16 @@
 
 (defn show-confirmation-dialog> [dialog]
   (let [dialog-id     (str "selection-list_" (u/nano-id))
-        dialog        (assoc dialog
-                             :id dialog-id
-                             :content ($ Confirmation
-                                         {:text (-> dialog :text)
-                                          :confirmation-text (-> dialog :confirmation-text)
-                                          :on-confirm (-> dialog :on-confirm)}))]
+        dialog        (-> dialog
+                          (assoc :id dialog-id
+                                 :content ($ Confirmation
+                                             {:text (-> dialog :text)
+                                              :content (-> dialog :content)
+                                              :confirmation-text (-> dialog :confirmation-text)
+                                              :on-confirm (-> dialog :on-confirm)
+                                              :cancel-button-text (-> dialog :cancel-button-text)
+                                              :on-cancel (-> dialog :on-cancel)}))
+                          (dissoc :on-cancel))]
     (show-dialog> dialog)))
 
 (defn show-confirmation-dialog [dialog]
