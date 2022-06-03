@@ -1786,7 +1786,10 @@
          {:padding 64}
          (div
           {:text-align :center}
-          (or info-text "A new version is available"))
+          (or info-text "A new version is available")
+          (ui/div
+           {:font-size 10}
+           current-version " -> " available-version))
          (center
           ($ Button
              {:on-click #(js/window.location.reload)
