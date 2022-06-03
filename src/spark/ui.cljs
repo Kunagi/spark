@@ -1025,7 +1025,9 @@
                      :options
                      (remove nil?))]
     (stack-3
-     message
+     (ui/div
+      {:white-space :pre-wrap}
+      message)
      (if (seq options)
        (center
         (stack
