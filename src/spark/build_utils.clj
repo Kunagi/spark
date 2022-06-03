@@ -38,7 +38,8 @@
   (npm-install ".")
   (npm-install "firebase/functions")
   (kb/process {:command-args ["clojure" "-M:shadow-cljs-release"
-                           "--config-merge" (str "{:release-version \"v" version "\"}")]}))
+                           ;; "--config-merge" (str "{:release-version \"v" version "\"}")
+                              ]}))
 
 (defn firebase-deploy [project-id functions?]
   (print-task "firebase deploy")
@@ -62,7 +63,7 @@
      :as opts}]
    (spit "src/gcf-tap.edn" nil)
    (firebase-build)
-   (update-references-to-build-artifacts)
+   ;; (update-references-to-build-artifacts)
    (when pre-deploy-hook (pre-deploy-hook))
    (firebase-deploy firebase-project-id (get opts :firebase-functions true))
    (when post-deploy-hook (post-deploy-hook))
