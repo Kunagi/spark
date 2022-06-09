@@ -99,7 +99,7 @@
                              (clj->js {:style    "currency"
                                        :currency "EUR"}))))
 
-(defn- format-eur [value]
+(defn format-eur [value]
   (when value
     (-> eur-number-format
         (.format value)
@@ -170,14 +170,15 @@
                                 (let [field-id (-> field field-id)
                                       value    (or (-> values (get field-id))
                                                    (-> field :value)
-                                                   (-> field :default-value))
-                                      value    (prepare-field-value value field)]
+                                                   (-> field :default-value))]
                                   (assoc values field-id value)))
                               (or (-> form :values) {}) fields))
         form   (update form :fields
                        (fn [fields]
                          (mapv (fn [field]
-                                 (assoc field :value (get-in form [:values (:id field)])))
+                                 (let [value (get-in form [:values (:id field)])
+                                       value (prepare-field-value value field)]
+                                   (assoc field :value value)))
                                fields)))]
     (log ::initialized
          :form form)
