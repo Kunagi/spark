@@ -97,8 +97,11 @@
    (format-date @LANG v))
   ([lang v]
    (when v
-     (->> (u/->date v)
-          (tick/format (formatter--date lang))))))
+     (if (and (string? v)
+              (str/blank? v))
+       nil
+       (->> (u/->date v)
+            (tick/format (formatter--date lang)))))))
 
 (comment
  "string" (format-date :de "2020-01-01")
