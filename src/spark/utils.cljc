@@ -418,13 +418,13 @@
        (remove #(str/includes? s %))
        empty?))
 
-(defn search [searchtext candidates candidate-values]
+(defn search [searchtext candidates candidate-values min-chars]
   (let [words (->> (str/split searchtext #"\s")
                    (map str/trim))
         shortest-word-len (->> words
                                (map count)
                                (apply clojure.core/max))]
-    (when (-> shortest-word-len (>= 3))
+    (when (-> shortest-word-len (>= min-chars))
       (let [words (->> words
                        (map str/lower-case))
             matches? (fn [candidate]
