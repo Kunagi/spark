@@ -136,8 +136,8 @@
   (u/assert (-> cmd :public boolean?) "Invalid cmd" cmd)
   (u/assert (-> cmd :f>) "Invalid cmd" cmd)
   (let [id (-> cmd :id)]
-    (log ::reg-cmd
-         :id id)
+    ;; (log ::reg-cmd
+    ;;      :id id)
     (swap! CMDS assoc id cmd)
     cmd))
 
