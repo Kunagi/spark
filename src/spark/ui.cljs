@@ -2359,9 +2359,13 @@
                                    value (cond
                                            (map? record) (get record record-key)
                                            (vector? record) (get record col-idx)
-                                           :else record)]
+                                           :else record)
+                                   on-click (-> col :on-click)]
                                ($ mui/TableCell
-                                  {:key (or (-> col :id) (-> col :label))}
+                                  {:key (or (-> col :id) (-> col :label))
+                                   :onClick (when on-click
+                                              #(on-click record))
+                                   :className (when on-click "CursorPointer")}
                                   (div
                                    {:text-align (-> col :align)}
                                    ((-> col :format) value))))))))
