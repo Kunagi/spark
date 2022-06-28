@@ -2277,11 +2277,14 @@
                                                 (env/formatter-from-env format)))
                                             (env/formatter-from-env type))
                                  record-key (or (-> col :record-key)
-                                                (-> col :id))]
+                                                (-> col :id))
+                                 no-wrap (contains? #{:eur :date :time :date+time}
+                                                    (-> col :type))]
                              (assoc col
                                     :align align
                                     :format format
-                                    :record-key record-key))
+                                    :record-key record-key
+                                    :no-wrap no-wrap))
                            {:label col
                             :format str
                             :record-key col}))))
@@ -2367,7 +2370,8 @@
                                               #(on-click record))
                                    :className (when on-click "CursorPointer")}
                                   (div
-                                   {:text-align (-> col :align)}
+                                   {:text-align (-> col :align)
+                                    :white-space "nowrap"}
                                    ((-> col :format) value))))))))
 
                    ($ mui/TableHead
