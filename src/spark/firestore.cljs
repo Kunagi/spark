@@ -97,7 +97,9 @@
                      :firestore/doc-path
                      :firestore/path
                      :firestore/create
-                     :db/ref)]
+                     :firestore/exists?
+                     :db/ref
+                     :db/exists)]
     (reduce (fn [data [k v]]
               (if (map? v)
                 (assoc data k (remove-metadata v))
