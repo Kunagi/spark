@@ -32,6 +32,9 @@
 (defn doc-exists? [doc]
   (firestore/doc-exists? doc))
 
+(defn doc-remove-metadata [doc]
+  (firestore/remove-metadata doc))
+
 (defn doc-id [doc]
   (firestore/doc-id doc))
 
