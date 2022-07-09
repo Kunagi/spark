@@ -5,8 +5,6 @@
    [goog.object :as gobj]
    [promesa.core :as p]
 
-   ;; must be compatible with admin sdk ["firebase/firestore" :as firebase-firestore]
-
    [spark.env-config :as env-config]
    [spark.logging :refer [log]]
    [spark.utils :as u]))
@@ -31,6 +29,7 @@
 (s/def ::opt-path (s/or :nil-path nil?
                         :non-nil-path ::path))
 
+;; FIXME deprecated
 (defn ^js firestore []
   (if-let [firestore (env-config/get! :firestore)]
     firestore
