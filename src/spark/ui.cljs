@@ -26,6 +26,7 @@
    [helix.core :as helix]
    [tick.core :as tick]
 
+   ["firebase/firestore" :as firebase-firestore]
    ["react-router-dom" :as router]
 
    ["@mui/material" :as mui]
@@ -332,7 +333,7 @@
                                  :exception error))
               debug-id [path (u/nano-id)]
               _ (debug/reg-item :doc debug-id)
-              firestore-unsubscribe (.onSnapshot ref on-snapshot on-error)
+              firestore-unsubscribe (firebase-firestore/onSnapshot ref on-snapshot on-error)
               unsubscribe (fn []
                             (debug/unreg-item :doc debug-id)
                             (firestore-unsubscribe))]
@@ -387,7 +388,7 @@
                                                                   :path path
                                                                   :exception error)
                                                              (add-doc nil))
-                                               unsubscribe (.onSnapshot ref on-snapshot on-error)]
+                                               unsubscribe (firebase-firestore/onSnapshot ref on-snapshot on-error)]
 
                                            unsubscribe))))
                                 doall)]
@@ -432,7 +433,7 @@
                              (log-error error)))
              debug-id [path (u/nano-id)]
              _ (debug/reg-item :col debug-id)
-             firestore-unsubscribe (.onSnapshot col-ref on-snap on-error)
+             firestore-unsubscribe (firebase-firestore/onSnapshot col-ref on-snap on-error)
              unsubscribe (fn []
                            (debug/unreg-item :col debug-id)
                            (firestore-unsubscribe))]

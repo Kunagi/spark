@@ -5,7 +5,8 @@
    ["fs" :as fs]
 
    ["@peculiar/webcrypto" :refer [Crypto]]
-   ["firebase-admin" :as admin]
+   ["firebase-admin/app" :as firebase-app]
+   ["firebase-admin/firestore" :as firebase-firestore]
    ["firebase-functions" :as functions]
 
    [spark.env-config :as env-config]))
@@ -39,9 +40,13 @@
   (set! js/crypto (Crypto.))
 
   ;; Firebase
-  (-> admin .initializeApp)
-  (env-config/set! :firestore (-> admin .firestore))
-  (env-config/set! :firebase-storage (-> admin .storage))
+  (let [firebase-app (firebase-app/initializeApp)
+        firestore (firebase-firestore/getFirestore)]
+    (env-config/set! :firebase-app firebase-app)
+    (env-config/set! :firestore firestore))
+  ;; (-> admin .initializeApp)
+  ;; (env-config/set! :firestore (-> admin .firestore))
+  ;; (env-config/set! :firebase-storage (-> admin .storage))
 
   ;;
   (when goog.DEBUG

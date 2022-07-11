@@ -1,22 +1,19 @@
 (ns spark.init-spa
   (:require
 
-   ["firebase/compat/app" :default firebase]
-   ["firebase/compat/firestore"]
+   ["firebase/app" :as firebase-app]
+   ;; ["firebase/compat/app" :default firebase]
+   ;; ["firebase/compat/firestore"]
 
    [spark.utils :as u]
    [spark.env-config :as env-config]))
 
 (defn initialize [app-config]
-  (let [firebase-app (-> firebase
-                         (.initializeApp
-                          (clj->js app-config)))]
-    (env-config/set! :firebase-app firebase-app)
-    (env-config/set! :firebase firebase)
-    (set! js/window.firebase firebase))
+  (let [firebase-app (firebase-app/initializeApp (clj->js app-config))]
+    (env-config/set! :firebase-app firebase-app))
 
   ;; Firebase Firestore
-  (let [firestore (-> firebase .firestore)]
+  #_(let [firestore (-> firebase .firestore)]
     (u/assert firestore "Firebase Firestore not initialized")
     (when goog.DEBUG (-> firestore (.useEmulator "localhost" 8080)))
     (env-config/set! :firestore firestore)))

@@ -5,6 +5,8 @@
    [goog.object :as gobj]
    [promesa.core :as p]
 
+   ["firebase/firestore" :as firebase-firestore]
+
    [spark.env-config :as env-config]
    [spark.logging :refer [log]]
    [spark.utils :as u]))
@@ -29,27 +31,30 @@
 (s/def ::opt-path (s/or :nil-path nil?
                         :non-nil-path ::path))
 
-;; FIXME deprecated
-(defn ^js firestore []
-  (if-let [firestore (env-config/get! :firestore)]
-    firestore
-    (throw (js/Error. "FIRESTORE atom not initialized!"))))
+(defn- initialize []
+  (log ::initialize)
+  (let [firebase-app (env-config/get! :firebase-app)
+        _ (u/assert firebase-app)
+        _ (u/assert firebase-firestore/getFirestore)
+        service (or #_(env-config/get! :firestore nil)
+                    (let [service (firebase-firestore/getFirestore firebase-app)]
+                      (when ^boolean goog.DEBUG
+                        (firebase-firestore/connectFirestoreEmulator service "localhost" 8080))
+                      service))]
+    service))
+
+(def firestore (memoize initialize))
 
 ;;; * helpers
 
-(defn ^js FieldValue []
-  (if (exists? js/firebase)
-    (-> js/firebase.firestore.FieldValue)
-    (-> (js/require "firebase-admin") .-firestore .-FieldValue)))
-
 (defn ^js array-remove [elements]
-  (-> ^js (FieldValue) .-arrayRemove (apply (clj->js elements))))
+  (firebase-firestore/arrayRemove (clj->js elements)))
 
 (defn ^js array-union [elements]
-  (-> ^js (FieldValue) .-arrayUnion (apply (clj->js elements))))
+  (firebase-firestore/arrayUnion (clj->js elements)))
 
 (defn ^js timestamp []
-  (-> ^js (FieldValue) .serverTimestamp))
+  (firebase-firestore/serverTimestamp))
 
 (declare inject-FieldValues)
 
@@ -73,7 +78,7 @@
                                (array-union elements))
       (= k :db/array-remove) (array-remove (second v))
       (= k :db/timestamp)    (timestamp)
-      (= k :db/delete)       (-> ^js (FieldValue) .delete)
+      (= k :db/delete)       (firebase-firestore/deleteField)
       :else                  nil)))
 
 (comment
@@ -154,9 +159,7 @@
       (or (string? data) (number? data) (boolean? data))
       (js->clj data)
 
-      (instance? (if (exists? js/firebase)
-                   (-> js/firebase.firestore.Timestamp)
-                   (-> (js/require "firebase-admin") .-firestore .-Timestamp))
+      (instance? firebase-firestore/Timestamp
                  data)
       (-> data .toDate)
 
@@ -297,15 +300,18 @@
 (defn- fs-collection [source path-elem]
   (if (map? path-elem)
     (let [{:keys [id wheres where]} path-elem
-          wheres                    (if where
-                                      (conj wheres where)
-                                      wheres)
-          wheres                    (remove nil? wheres)
-          collection                (-> ^js source (.collection id))]
-      (reduce (fn [collection [attr op val]]
-                (-> ^js collection (.where attr op (clj->js val))))
-              collection wheres))
-    (-> ^js source (.collection path-elem))))
+          wheres (if where
+                   (conj wheres where)
+                   wheres)
+          wheres (remove nil? wheres)
+          collection (firebase-firestore/collection source id)]
+      (if (seq wheres)
+        (reduce (fn [query [attr op val]]
+                  (firebase-firestore/query query
+                                            (firebase-firestore/where attr op (clj->js val))))
+                collection wheres)
+        collection))
+    (firebase-firestore/collection source path-elem)))
 
 (defn ^js ref [path]
   ;; (log ::ref
@@ -326,38 +332,30 @@
 
           col
           (recur nil
-                 (-> ^js col (.doc (first path)))
+                 (firebase-firestore/doc col (first path))
                  (rest path))
 
           :else
-          (recur (-> (firestore) (fs-collection (first path)))
+          (recur (fs-collection (firestore) (first path))
                  nil
                  (rest path)))))))
 
 ;;;
 
 (defn doc> [path]
-  (js/Promise.
-   (fn [resolve reject]
-     (-> (ref path)
-         .get
-         (.then (fn [^js doc]
-                  (resolve (wrap-doc doc)))
-                reject)))))
+  (p/let [doc (firebase-firestore/getDoc (ref path))]
+    (wrap-doc doc)))
 
 (defn col> [path]
   ;; (log ::col>
   ;;      :path path)
-  (js/Promise.
-   (fn [resolve reject]
-     (-> (ref path)
-         .get
-         (.then (fn [^js query-snapshot]
-                  (resolve (wrap-docs query-snapshot)))
-                reject)))))
+  (p/let [query-snapshot (firebase-firestore/getDocs (ref path))]
+    (wrap-docs query-snapshot)))
 
 (defn cols-names> []
-  (u/=> (-> (firestore) .listCollections)
+  ;; FIXME
+  (throw (ex-info "Implementation broken!" {}))
+  (u/=> (-> (firestore) firebase-firestore/listCollections)
         #(mapv (fn [^js col] (.-id col)) %)))
 
 (defn create-doc>
@@ -369,6 +367,7 @@
        :data data)
   (s/assert ::path path)
   (let [^js ref  (ref path)
+        ;; FIXME
         col-ref? (-> ref .-where boolean)]
     (if col-ref?
       (-> ref (.add (unwrap-doc data)))
@@ -381,7 +380,7 @@
   (-> doc
       doc-path
       ref
-      (.set ^js (unwrap-doc doc))))
+      (firebase-firestore/setDoc ^js (unwrap-doc doc))))
 
 (defn update-fields>
   "Updates fields in an existing document."
@@ -393,7 +392,7 @@
   (s/assert map? fields)
   (-> doc-path
       ref
-      (.update (unwrap-doc fields))))
+      (firebase-firestore/updateDoc (unwrap-doc fields))))
 
 (defn- flatten-entity-map
   ([m]
@@ -430,7 +429,7 @@
   [doc-or-path]
   (log ::delete-doc
        :doc doc-or-path)
-  (-> doc-or-path ref .delete))
+  (-> doc-or-path ref firebase-firestore/deleteDoc))
 
 (defn load-and-save>
   "Load, update and save/delete.
@@ -470,10 +469,15 @@
         :path        path
         :transaction (boolean transaction))
    (let [ref      (ref path)
-         col-ref? (-> ref .-where boolean)]
+         ;; FIXME
+         col-ref? (-> ref .-where boolean)
+         _ (tap> {:ref ref
+                  :path path
+                  :col-ref? col-ref?})
+         ]
      (u/=> (if transaction
              (.get transaction ref)
-             (.get ref))
+             (firebase-firestore/getDoc ref))
            (fn [^js result]
              ;; (log ::get>--2
              ;;      :path path
@@ -516,12 +520,12 @@
               ;;           (.update transaction ref data)
               ;;           (.set transaction ref data (clj->js {:merge true}))     )))
               ;;
-              (-> (.update ref js-data)
+              (-> (firebase-firestore/updateDoc ref js-data)
                   (.catch (fn [_err]
-                            (.set ref js-data (clj->js {:merge true}))))))
+                            (firebase-firestore/setDoc ref js-data (clj->js {:merge true}))))))
             (if transaction
               (u/resolve> (.update transaction ref js-data))
-              (.update ref js-data)))
+              (firebase-firestore/updateDoc ref js-data)))
           (fn [_] tx-data))))
 
 (defn- set>--delete-doc> [^js transaction tx-data]
@@ -530,7 +534,7 @@
         ref  (ref path)]
     (u/=> (if transaction
             (u/resolve> (.delete transaction ref))
-            (.delete ref))
+            (firebase-firestore/deleteDoc ref))
           (fn [_] tx-data))))
 
 (defn subdoc-prefix-from-db-ref [db-ref]
@@ -625,16 +629,16 @@
   (log ::transact>)
   (let [starttime (js/Date.)]
     (if (fn? transaction>)
-      (-> (firestore)
-          (.runTransaction
-           (fn [^js transaction]
-             (log ::transact>--2
-                  :runtime (- (-> (js/Date.) .getTime) (-> starttime .getTime)))
-             (p/let [result (transaction> {:get> (partial get> transaction)
-                                           :set> (partial set> transaction)})]
-               (log ::transact>--fn-completed
-                    :result result)
-               result))))
+      (firebase-firestore/runTransaction
+       (firestore)
+       (fn [^js transaction]
+         (log ::transact>--2
+              :runtime (- (-> (js/Date.) .getTime) (-> starttime .getTime)))
+         (p/let [result (transaction> {:get> (partial get> transaction)
+                                       :set> (partial set> transaction)})]
+           (log ::transact>--fn-completed
+                :result result)
+           result)))
       (set> transaction>))))
 
 (comment

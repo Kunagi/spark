@@ -91,7 +91,7 @@
 (defn report-error [error]
   (js/console.log error)
   (when-not ^boolean js/goog.DEBUG
-    (when (exists? js/firebase.analytics)
+    #_(when (exists? js/firebase.analytics)
       (-> js/firebase
           .analytics
           (.logEvent "exception" #js {:description error})))))
