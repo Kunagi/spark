@@ -68,6 +68,8 @@
   ([path]
    (firestore/get> (coerce-path path)))
   ([entity-type id]
+   (u/assert entity-type)
+   (u/assert id)
    (get> (entity-type->ref entity-type id))))
 
 (comment
