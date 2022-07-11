@@ -40,7 +40,7 @@
 (defn ^js FieldValue []
   (if (exists? js/firebase)
     (-> js/firebase.firestore.FieldValue)
-    (-> (js/require "firebase-admin") .-firestore .-FieldValue)))
+    (-> (js/require "firebase-admin/firestore") .-FieldValue)))
 
 (defn ^js array-remove [elements]
   (-> ^js (FieldValue) .-arrayRemove (apply (clj->js elements))))
@@ -156,7 +156,7 @@
 
       (instance? (if (exists? js/firebase)
                    (-> js/firebase.firestore.Timestamp)
-                   (-> (js/require "firebase-admin") .-firestore .-Timestamp))
+                   (-> (js/require "firebase-admin/firestore") .-Timestamp))
                  data)
       (-> data .toDate)
 
