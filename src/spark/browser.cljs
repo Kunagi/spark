@@ -186,11 +186,12 @@
 ;; windows
 
 (defn- callback-on-window-closed [^js window callback]
-  (js/setTimeout (fn []
-                   (if (-> window .-closed)
-                     (callback window)
-                     (callback-on-window-closed window callback)))
-                 300))
+  (when window
+    (js/setTimeout (fn []
+                     (if (-> window .-closed)
+                       (callback window)
+                       (callback-on-window-closed window callback)))
+                   300)))
 
 (defn open-window> [url target]
   (u/promise>
@@ -200,6 +201,9 @@
 (comment
   (js/window.open "http://koczewski.de" "_blank")
   (open-window> "http://koczewski.de" "_blank"))
+
+(defn open-window [url target]
+  (js/window.open url target))
 
 ;; * Misc
 
@@ -296,7 +300,6 @@
                                              (when (not= height @HEIGHT)
                                                (reset! HEIGHT height)))))
     :registered))
-
 
 ;; sharing
 
