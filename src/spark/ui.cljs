@@ -1911,7 +1911,8 @@
                  :class          class})))
 
 (defnc StorageImageActionArea
-  [{:keys [id storage-path upload-text
+  [{:keys [id storage-path
+           upload-text upload-div-class
            img-style div-style
            on-url-changed
            label
@@ -1973,7 +1974,8 @@
                   :else ($ mui/Avatar
                            {:src url}))
                 (div
-                 {:class "MuiButtonBase-root MuiButton-root MuiButton-contained"}
+                 {:class (str "MuiButtonBase-root MuiButton-root MuiButton-contained "
+                              upload-div-class)}
                  (or upload-text "Bild auswählen..."))))
             children))))))
 
