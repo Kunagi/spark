@@ -1810,16 +1810,20 @@
 
 (defn show-selection-list-dialog [dialog]
   (let [dialog-id     (str "selection-list_" (u/nano-id))
-        SelectionList ($ SelectionList
-                         {:items     (-> dialog :items)
-                          :on-select (fn [item]
-                                       (hide-dialog dialog-id)
-                                       ((or (-> item :on-select)
-                                            (-> dialog :on-select)) item))})
-        dialog        (assoc dialog
-                             :id dialog-id
-                             :content SelectionList)]
-    (show-dialog dialog)))
+        items (-> dialog :items)
+        on-select (fn [item]
+                    (hide-dialog dialog-id)
+                    ((or (-> item :on-select)
+                         (-> dialog :on-select)) item))]
+    (if (-> items count (= 1))
+      (u/later> 1 #(on-select (first items)))
+      (let [SelectionList ($ SelectionList
+                             {:items     items
+                              :on-select on-select})
+            dialog        (assoc dialog
+                                 :id dialog-id
+                                 :content SelectionList)]
+        (show-dialog dialog)))))
 
 (defnc Confirmation [{:keys [text content
                              confirmation-text cancel-button-text
