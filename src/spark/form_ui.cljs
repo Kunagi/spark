@@ -667,12 +667,13 @@
              {:style {:display "grid"
                       :grid-gap "8px"}}
              (for [field (get form :fields)]
-               ($ FormField
-                  {:key         (-> field :id)
-                   :field       field
-                   :form        form
-                   :on-submit   on-submit
-                   :update-form update-form})))
+               (when-not (-> field :hidden)
+                 ($ FormField
+                    {:key         (-> field :id)
+                     :field       field
+                     :form        form
+                     :on-submit   on-submit
+                     :update-form update-form}))))
 
           (get form :content)
           ;; (ui/data form)
