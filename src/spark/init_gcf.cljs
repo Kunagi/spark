@@ -24,6 +24,10 @@
   (on-tap "world"))
 
 (defn install-tap-capture []
+  (fs/writeFile "../../src/gcf-tap.edn"
+                "[]"
+                (fn []))
+  (reset! TAPS '())
   (add-tap on-tap))
 
 (comment

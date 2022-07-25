@@ -464,10 +464,10 @@
                                 :type (type v)}))))))
 
 (comment
- "js.Date" (->instant (js/Date. "2020-01-01")) := (tick/instant (js/Date. "2020-01-01"))
- "millis" (->instant 1577870520000) := (tick/instant 1577870520000)
- "string" (->instant "2020-01-01T10:00:00") := (tick/instant "2020-01-01T10:00:00")
- "map" (->instant {:_seconds 1633078276, :_nanoseconds 210000000}))
+  "js.Date" (->instant (js/Date. "2020-01-01")) := (tick/instant (js/Date. "2020-01-01"))
+  "millis" (->instant 1577870520000) := (tick/instant 1577870520000)
+  "string" (->instant "2020-01-01T10:00:00") := (tick/instant "2020-01-01T10:00:00")
+  "map" (->instant {:_seconds 1633078276, :_nanoseconds 210000000}))
 
 #?(:cljs
    (defn ->date
@@ -480,11 +480,11 @@
          :else (-> v ->instant tick/date)))))
 
 (comment
- "nil" (->date nil) := nil
- "tick/date" (->date (tick/date "2020-01-01")) := (tick/date "2020-01-01")
- "js.Date" (->date (js/Date. "2020-01-01")) := (tick/date "2020-01-01")
- "millis" (->date 1577870520000) := (tick/date "2020-01-01")
- "string" (->date "2020-01-01") := (tick/date "2020-01-01"))
+  "nil" (->date nil) := nil
+  "tick/date" (->date (tick/date "2020-01-01")) := (tick/date "2020-01-01")
+  "js.Date" (->date (js/Date. "2020-01-01")) := (tick/date "2020-01-01")
+  "millis" (->date 1577870520000) := (tick/date "2020-01-01")
+  "string" (->date "2020-01-01") := (tick/date "2020-01-01"))
 
 #?(:cljs
    (defn ->time
@@ -497,11 +497,11 @@
          :else (-> v ->instant tick/time)))))
 
 (comment
- "nil" (->time nil) := nil
- "tick/time " (->time (tick/time "12:23")) := (tick/time "12:23")
- "js.Date" (->time (js/Date. "2020-01-01T12:23")) := (tick/time "12:23")
- "millis" (->time 1577870520000) := (tick/time "10:22")
- "string" (->time "12:23") := (tick/time "12:23"))
+  "nil" (->time nil) := nil
+  "tick/time " (->time (tick/time "12:23")) := (tick/time "12:23")
+  "js.Date" (->time (js/Date. "2020-01-01T12:23")) := (tick/time "12:23")
+  "millis" (->time 1577870520000) := (tick/time "10:22")
+  "string" (->time "12:23") := (tick/time "12:23"))
 
 ;; (defn ->zoned-time [tz v]
 ;;   (when (and tz v)
@@ -777,8 +777,7 @@
                                                        error)
                                                   {:error error
                                                    :result result}
-                                                  error))
-                                  )
+                                                  error)))
                                 (-> result .-value)))
                          vec)))))))
 
@@ -788,7 +787,6 @@
 
   (tap> (all> [(js/Promise.resolve "a")
                (js/Promise.reject "boom!")]))
-
 
   (all>
    (promise> (fn [resolve]
@@ -815,6 +813,13 @@
    (all-in-sequence>
     (as> "#1")
     (as> "#2"))))
+
+#?(:cljs
+   (defn sleep> [millis]
+     (js/Promise.
+      (fn [resolve _]
+        (js/setTimeout #(resolve millis)
+                       millis)))))
 
 #?(:cljs
    (defn later> [wait-millis f]
