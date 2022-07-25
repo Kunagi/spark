@@ -287,7 +287,8 @@
         input-props (assoc input-props
                            :min min-value
                            :max max-value
-                           :step "0.01")]
+                           :step "0.01"
+                           :inputmode "decimal")]
     (create-input (assoc field
                          :type "text"
                          :input-type "number"
