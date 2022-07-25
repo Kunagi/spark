@@ -281,10 +281,18 @@
 ;; MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink      MuiInputLabel-marginDense MuiInputLabel-outlined MuiFormLabel-filled Mui-required Mui-required
 
 (defmethod create-input "eur" [field]
-  (create-input (assoc field
-                       :type "text"
-                       :input-type "text"
-                       :end-adornment "€")))
+  (let [input-props (-> field :input-props)
+        min-value (-> field :min)
+        max-value (-> field :max)
+        input-props (assoc input-props
+                           :min min-value
+                           :max max-value
+                           :step "0.01")]
+    (create-input (assoc field
+                         :type "text"
+                         :input-type "number"
+                         :input-props input-props
+                         :end-adornment "€"))))
 
 (defmethod create-input "tel" [field]
   (create-input (assoc field
