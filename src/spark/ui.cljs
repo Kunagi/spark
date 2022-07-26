@@ -2209,7 +2209,7 @@
      {:className (str  "LinedCard" " " class)}
      children))
 
-(defnc CardContent [{:keys [to on-click href children]}]
+(defnc CardContent [{:keys [to on-click href target children]}]
   (cond
 
     on-click
@@ -2227,7 +2227,8 @@
 
     href
     ($ mui/CardActionArea
-       {:href href}
+       {:href href
+        :target target}
        ($ mui/CardContent
           children))
 
