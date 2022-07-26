@@ -3,11 +3,9 @@
   (:require
 
    ["dinero.js" :as dinero]
-   [spark.utils :as u]
-   ))
+   [spark.utils :as u]))
 
 ;; https://dinerojs.com/
-
 
 (comment
   (def m (dinero (clj->js {:amount 23 :currency "EUR"})))
@@ -16,7 +14,6 @@
   (type m)
   (-> m .toObject)
   (-> m .hasCents))
-
 
 (defonce DEFAULT_CURRENCY (atom "EUR"))
 
@@ -31,7 +28,9 @@
       (money {:amount (* v 100)})
 
       (string? v)
-      (money {:amount (-> (u/parse-float v) (* 100) int)})
+      (money {:amount (-> (u/parse-float v)
+                          (* 100)
+                          (js/Math.round 2))})
 
       (map? v)
       (let [amount   (or (-> v :amount) 0)
@@ -47,9 +46,10 @@
       (throw (ex-info (str "Unsupported money value: " v)
                       {:v v})))))
 
-
-
 (comment
+  (.toObject (money "20"))
+  (.toObject (money "2.30"))
+
   (.toObject (money {:amount 2200}))
   (.toObject (money 0))
   (.toObject (money "22.11"))
@@ -57,8 +57,7 @@
   (.toObject (money "22.22x"))
   (.toObject (money "c22.22x"))
 
-  (-> (money "23.42") .getAmount (/ 100) type)
-  )
+  (-> (money "23.42") .getAmount (/ 100) type))
 
 (defn money? [v]
   (and v
@@ -117,6 +116,9 @@
         (str s ".00")))))
 
 (comment
+  (-> (money "20")
+      (.subtract (money "2.30"))
+      (->str))
   (-> (money "2")  ->str)
   (-> (money "2.1")  ->str)
   (-> (money "2.12")  ->str))
@@ -130,9 +132,7 @@
     (-> (money m) .getAmount)
 
     :else
-    (->cents (money m))
-
-    ))
+    (->cents (money m))))
 
 (defn ->number [m]
   (when-let [cents (->cents m)]
@@ -156,6 +156,7 @@
     m2 m2))
 
 (comment
+  (->str (subtract "20" "2.30"))
   (->str (subtract "10" 1))
   (->str (subtract "10" nil))
   (->str (subtract nil 2)))
@@ -212,8 +213,7 @@
 (comment
   (> "10" "5")
   (> "5" "10")
-  (> "1.2" "1.1" "1")
-  )
+  (> "1.2" "1.1" "1"))
 
 (defn < [& vals]
   (->> vals
