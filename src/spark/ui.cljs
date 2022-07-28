@@ -2027,8 +2027,10 @@
   [{:keys [id storage-path upload-text
            label
            on-change
-           read-only]}]
+           read-only
+           max-files]}]
   (let [id (or id (u/nano-id))
+        max-files (or max-files 99)
         [storage-files reload-storage-files] (use-storage-files storage-path)
         open-file-selector #(-> (js/document.getElementById id)
                                 .click)
@@ -2055,7 +2057,8 @@
           :append-filename true
           :on-upload-started on-upload-started
           :then         on-uploaded})
-      (if uploading?
+      (if (or uploading?
+              (not storage-files))
         ($ mui/CircularProgress)
         (stack
          ($ StorageFilesButtons
@@ -2067,7 +2070,9 @@
                                                  (js/setTimeout
                                                   #(reload-storage-files)
                                                   500))))}]})
-         (when-not read-only
+         (when (and storage-files
+                    (not read-only)
+                    (-> storage-files count (< max-files)))
            (flex
             ($ Button
                {:text (or upload-text "Datei hinzufügen...")
