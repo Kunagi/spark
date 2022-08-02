@@ -312,14 +312,16 @@
         ;; value     (field-value-internal form field-id)
         ;; value     (coerce-value value form field-id)
         value (get-in form [:values field-id])
-        error     (when (and  (-> field :required?)
-                              (if (-> field :type (= :checkbox))
-                                (not value)
-                                (nil? value)))
+        error     (when (and (-> field :required?)
+                             (if (-> field :type (= :checkbox))
+                               (not value)
+                               (nil? value)))
                     (local/text :form-field-input-required))
         validator (field-validator form field-id)
         error     (or error
-                      (when (and value validator)
+                      (when (and validator
+                                 (or value
+                                     (-> field :type (= :checkbox))))
                         (try
                           (validator value form)
                           (catch :default ex
@@ -360,7 +362,7 @@
   ;; (log ::on-field-value-change
   ;;      :values (-> form :values)
   ;;      :field field-id
-  ;;      :value new-value)
+  ;;      :value new-value-internal)
   ;; TODO Optimization: call on-change only if external value changed
   (let [new-value-external (coerce-value new-value-internal form field-id)
         ;; _ (tap> {:id field-id
