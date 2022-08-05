@@ -4,7 +4,6 @@
    [clojure.string :as str]
    [cljs.pprint :refer [pprint]]
 
-
    ["firebase-functions" :as functions]
 
    [spark.logging :refer [log]]
@@ -26,9 +25,7 @@
    (-> functions .config)))
 
 (comment
-  (js/console.log (-> functions .config))
-
-  )
+  (js/console.log (-> functions .config)))
 
 ;; * response formatting
 
@@ -41,8 +38,7 @@
 " text "
     </div>
   </body>
-</html>")
-  )
+</html>"))
 
 (defn exception-text [ex]
   (when ex
@@ -68,8 +64,6 @@
     :else (str val)
     ;; :else (js/JSON.stringify val)
     ))
-
-
 ;; * region
 
 (defn region--europe-west1 []
@@ -85,7 +79,6 @@
       .-https
       (.onRequest handler)))
 
-
 (defn on-request> [handler>]
   (on-request
    (fn [req res]
@@ -94,7 +87,6 @@
                 (fn [error]
                   (js/console.error error)
                   (-> res (.status 500) (.send error))))))))
-
 
 (defn on-request--format-output> [handler>]
   (on-request
@@ -105,20 +97,24 @@
                        (.set "Access-Control-Allow-Origin" "*")
                        (.status 200)
                        (.send (format-response %)))
-                  #(-> res
-                       (.set "Access-Control-Allow-Origin" "*")
-                       (.status 500)
-                       (.send (str "<h1>Error</h1>\n\n"
-                                   (format-response (str %)))))))
+                  (fn [error]
+                    (js/console.error error)
+                    (log ::request-hander-failed
+                         :exception error)
+                    (-> res
+                        (.set "Access-Control-Allow-Origin" "*")
+                        (.status 500)
+                        (.send (str "<h1>Error</h1>\n\n"
+                                    (format-response (str error))))))))
        (catch :default ex
+         (js/console.error ex)
          (log ::request-hander-failed
               :exception ex)
          (-> res
              (.set "Access-Control-Allow-Origin" "*")
              (.status 500)
              (.send (str "<h1>Error</h1>\n\n"
-                         (format-response ex))))
-         )))))
+                         (format-response ex)))))))))
 
 ;; * on-schedule
 
@@ -131,8 +127,7 @@
       (.schedule schedule-pattern)
       (.timeZone "Europe/Berlin")
       (.onRun (fn [^js context]
-                (handler> context)))
-      ))
+                (handler> context)))))
 
 ;; * on-call
 
@@ -212,9 +207,7 @@
       .-storage
       .object
       (.onFinalize (fn [^js object]
-                     (u/as> (handler> object)))))
-  )
-
+                     (u/as> (handler> object))))))
 
 ;; * errors
 
