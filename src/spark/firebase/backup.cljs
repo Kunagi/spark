@@ -101,7 +101,7 @@
      (tick/now))))
 
 (defn backup-all-except> [bucket-name exceptions]
-  (log ::backup-all>
+  (log ::backup-all-except>
        :bucket bucket-name
        :exceptions exceptions)
   (let [bucket (bucket bucket-name)
