@@ -130,4 +130,6 @@
   (backup-all-except> bucket-name exceptions))
 
 (defn exports [bucket-name exceptions]
-  {:backup (gcf/on-request> (partial handle-on-backup> bucket-name exceptions))})
+  {:backup (gcf/on-request> (partial handle-on-backup> bucket-name exceptions)
+                            {:timeoutSeconds 540
+                             :memory "1GB"})})

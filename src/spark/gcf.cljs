@@ -74,19 +74,29 @@
 
 ;; * on-request
 
-(defn on-request [handler]
-  (-> (region--europe-west1)
-      .-https
-      (.onRequest handler)))
+(defn on-request
+  ([handler]
+   (on-request handler nil))
+  ([handler run-with-opts]
+   (let [function-builder ^js (region--europe-west1)
+         function-builder (-> function-builder
+                              (.runWith (clj->js (or run-with-opts {}))))]
+     (-> function-builder
+         .-https
+         (.onRequest handler)))))
 
-(defn on-request> [handler>]
-  (on-request
-   (fn [req res]
-     (-> (u/as> (handler> req))
-         (.then #(-> res
-                     (.set "Access-Control-Allow-Origin" "*")
-                     (.status 200)
-                     (.send %)))))))
+(defn on-request>
+  ([handler>]
+   (on-request handler> nil))
+  ([handler> run-with-opts]
+   (on-request
+    (fn [req res]
+      (-> (u/as> (handler> req))
+          (.then #(-> res
+                      (.set "Access-Control-Allow-Origin" "*")
+                      (.status 200)
+                      (.send %)))))
+    run-with-opts)))
 
 (defn on-request--format-output> [handler>]
   (on-request
