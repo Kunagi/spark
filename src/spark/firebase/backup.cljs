@@ -1,6 +1,7 @@
 (ns spark.firebase.backup
   (:require
    [tick.core :as tick]
+   [promesa.core :as p]
    ["firebase-admin" :as admin]
 
    [spark.logging :refer [log]]
@@ -19,7 +20,7 @@
   (-> ^js bucket (.file path)))
 
 (comment
-  (u/=> (firestore/col> [ "radars"])
+  (u/=> (firestore/col> ["radars"])
         (fn [result]
           (js/console.log "DEBUG-1" result))))
 
@@ -30,8 +31,7 @@
            writable (-> ^js f .createWriteStream)]
        (-> writable ^js (.on "finish" #(resolve path)))
        (-> writable ^js (.write value))
-       (-> writable ^js .end)
-       ))))
+       (-> writable ^js .end)))))
 
 (comment
   (-> (bucket "happygast-backup") .-acl .get)
@@ -52,8 +52,7 @@
     (u/=> (write-doc> bucket path doc)
           (fn [result]
             (write-next-doc> bucket path (rest docs) (conj results result))))
-    (u/as> results))
-  )
+    (u/as> results)))
 
 (defn write-col> [bucket path col-name docs]
   (let [path (str path "/" col-name ".edn")
@@ -76,8 +75,7 @@
                  :docs (count docs))
             (write-col> bucket path col-name docs)
             #_(write-next-doc> bucket path docs [])
-            #_(u/all> (map (partial write-doc> bucket path) docs))
-            ))))
+            #_(u/all> (map (partial write-doc> bucket path) docs))))))
 
 (defn- backup-next-col> [bucket path cols-names results]
   (if-let [col-name (first cols-names)]
@@ -90,8 +88,7 @@
   (backup-next-col> bucket path cols-names [])
   #_(u/all>
      (map #(backup-col> bucket path %)
-          cols-names))
-  )
+          cols-names)))
 
 (def date-path-format (tick/formatter "yyyy/MM/dd"))
 
@@ -103,27 +100,29 @@
      "/"
      (tick/now))))
 
-(defn backup-all> [bucket-name]
+(defn backup-all-except> [bucket-name exceptions]
   (log ::backup-all>
-       :bucket bucket-name)
+       :bucket bucket-name
+       :exceptions exceptions)
   (let [bucket (bucket bucket-name)
         path   (date-path)]
-    (u/=> (firestore/cols-names>)
-          (fn [cols-names]
-            (backup-cols> bucket path cols-names)))))
+    (p/let [cols-names (firestore/cols-names>)
+            exceptions (into #{} exceptions)
+            cols-names (->> cols-names
+                            (remove #(contains? exceptions %)))]
+      (backup-cols> bucket path cols-names))
+    ))
+
+(defn backup-all> [bucket-name]
+  (backup-all-except> bucket-name #{}))
 
 (comment
   (-> (backup-all> "happygast-backup")
       u/tap>))
 
+(defn handle-on-backup> [bucket-name exceptions ^js _req]
+  (backup-all-except> bucket-name exceptions))
 
-(defn handle-on-backup> [bucket-name ^js _req]
-  (backup-all> bucket-name))
-
-(defn exports [bucket-name]
-  {
-
-   :backup
-   (gcf/on-request--format-output> (partial handle-on-backup> bucket-name))
-
-   })
+(defn exports [bucket-name exceptions]
+  {:backup
+   (gcf/on-request--format-output> (partial handle-on-backup> bucket-name exceptions))})
