@@ -57,7 +57,10 @@
 (defn write-col> [bucket path col-name docs]
   (let [path (str path "/" col-name ".edn")
         colmap (reduce (fn [m doc]
-                         (assoc m (:id doc) doc))
+                         (assoc m
+                                (or (:id doc)
+                                    (:db/id doc))
+                                doc))
                        {} docs)
         s    (u/->edn colmap)]
     (write-string> bucket path s)))
