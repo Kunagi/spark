@@ -83,10 +83,10 @@
   (on-request
    (fn [req res]
      (-> (u/as> (handler> req))
-         (.then #(-> res (.status 200) (.send %))
-                (fn [error]
-                  (js/console.error error)
-                  (-> res (.status 500) (.send error))))))))
+         (.then #(-> res
+                     (.set "Access-Control-Allow-Origin" "*")
+                     (.status 200)
+                     (.send %)))))))
 
 (defn on-request--format-output> [handler>]
   (on-request

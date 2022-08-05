@@ -68,14 +68,17 @@
        :path path
        :col col-name)
   (let [date-start (js/Date.)]
-    (u/=> (firestore/col> [col-name])
-          (fn [docs]
-            (log ::backup-col>--loaded
-                 :runtime (- (-> (js/Date.) .getTime) (-> date-start .getTime))
-                 :docs (count docs))
-            (write-col> bucket path col-name docs)
-            #_(write-next-doc> bucket path docs [])
-            #_(u/all> (map (partial write-doc> bucket path) docs))))))
+    (p/let [docs (firestore/col> [col-name])
+            date-loaded (js/Date.)
+            result (write-col> bucket path col-name docs)
+            date-written (js/Date.)
+            _ (log ::backup-col>--completed
+                   :col col-name
+                   :docs (count docs)
+                   :runtime-load (- (-> date-loaded .getTime) (-> date-start .getTime))
+                   :runtime-write (- (-> date-written .getTime) (-> date-loaded .getTime))
+                   :runtime-total (- (-> date-written .getTime) (-> date-start .getTime)))]
+      result)))
 
 (defn- backup-next-col> [bucket path cols-names results]
   (if-let [col-name (first cols-names)]
@@ -111,8 +114,7 @@
             exceptions (into #{} exceptions)
             cols-names (->> cols-names
                             (remove #(contains? exceptions %)))]
-      (backup-cols> bucket path cols-names))
-    ))
+      (backup-cols> bucket path cols-names))))
 
 (defn backup-all> [bucket-name]
   (backup-all-except> bucket-name #{}))
@@ -125,5 +127,4 @@
   (backup-all-except> bucket-name exceptions))
 
 (defn exports [bucket-name exceptions]
-  {:backup
-   (gcf/on-request--format-output> (partial handle-on-backup> bucket-name exceptions))})
+  {:backup (gcf/on-request--format-output> (partial handle-on-backup> bucket-name exceptions))})
