@@ -94,11 +94,12 @@
 
 (defn date-path []
   (let [now  (tick/now)
-        date (tick/date now)]
+        date (tick/date now)
+        time (tick/time now)]
     (str
      (tick/format date-path-format date)
      "/"
-     (tick/now))))
+     time)))
 
 (defn backup-all-except> [bucket-name exceptions]
   (log ::backup-all-except>
