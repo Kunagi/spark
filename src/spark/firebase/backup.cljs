@@ -127,4 +127,4 @@
   (backup-all-except> bucket-name exceptions))
 
 (defn exports [bucket-name exceptions]
-  {:backup (gcf/on-request--format-output> (partial handle-on-backup> bucket-name exceptions))})
+  {:backup (gcf/on-request> (partial handle-on-backup> bucket-name exceptions))})
