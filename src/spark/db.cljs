@@ -64,6 +64,9 @@
 
 ;; * read
 
+(defn cols-names> []
+  (firestore/cols-names>))
+
 (defn get>
   ([path]
    (firestore/get> (coerce-path path)))
