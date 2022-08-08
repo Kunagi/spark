@@ -36,7 +36,11 @@
   ([bucket-name path]
    (cond
      (string? path)
-     (firebase-storage/ref (default-storage) path)
+     (firebase-storage/ref
+      (if bucket-name
+        (storage bucket-name)
+        (default-storage))
+      path)
 
      (vector? path)
      (reduce (fn [ref path-element]

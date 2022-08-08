@@ -512,22 +512,25 @@
 (defn delete-storage-file> [path]
   (storage/delete> path))
 
-(defn use-storage-files [path]
-  (let [[files set-files] (use-state [])
-        reload-f          (fn []
-                            (-> (storage/list-files> path)
-                                (.then (fn [^js result]
-                                         (set-files (->> result
-                                                         .-items
-                                                         (map (fn [^js item]
-                                                                (.-fullPath item)))))))))]
+(defn use-storage-files
+  ([path]
+   (use-storage-files nil path))
+  ([bucket-name path]
+   (let [[files set-files] (use-state [])
+         reload-f          (fn []
+                             (-> (storage/list-files> bucket-name path)
+                                 (.then (fn [^js result]
+                                          (set-files (->> result
+                                                          .-items
+                                                          (map (fn [^js item]
+                                                                 (.-fullPath item)))))))))]
 
-    (use-effect
-     (str path)
-     (reload-f)
-     nil)
+     (use-effect
+      (str path)
+      (reload-f)
+      nil)
 
-    [files reload-f]))
+     [files reload-f])))
 
 (defonce STORAGE_URLS_CACHE (atom {}))
 (def use-storage-urls-cache (atom-hook STORAGE_URLS_CACHE))
@@ -2024,14 +2027,14 @@
          :edit-options edit-options}))))
 
 (defnc StorageFilesUploader
-  [{:keys [id storage-path upload-text
+  [{:keys [id storage-path bucket-name upload-text
            label
            on-change
            read-only
            max-files]}]
   (let [id (or id (u/nano-id))
         max-files (or max-files 99)
-        [storage-files reload-storage-files] (use-storage-files storage-path)
+        [storage-files reload-storage-files] (use-storage-files bucket-name storage-path)
         open-file-selector #(-> (js/document.getElementById id)
                                 .click)
         [uploading? set-uploading] (use-state false)
@@ -2054,6 +2057,7 @@
          {:id           id
           ;; :accept       "image/jpeg"
           :storage-path storage-path
+          :bucket-name bucket-name
           :append-filename true
           :on-upload-started on-upload-started
           :then         on-uploaded})
