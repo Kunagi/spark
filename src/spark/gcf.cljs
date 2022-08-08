@@ -87,7 +87,7 @@
 
 (defn on-request>
   ([handler>]
-   (on-request handler> nil))
+   (on-request> handler> nil))
   ([handler> run-with-opts]
    (on-request
     (fn [req res]
