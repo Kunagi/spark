@@ -1,11 +1,14 @@
 (ns spark.firebase.backup
   (:require
+   [clojure.string :as str]
    [tick.core :as tick]
    [promesa.core :as p]
    ["firebase-admin" :as admin]
+   ["stream" :as stream]
 
    [spark.logging :refer [log]]
    [spark.firestore :as firestore]
+   [spark.db :as db]
    [spark.utils :as u]
    [spark.gcf :as gcf]))
 
@@ -107,24 +110,78 @@
      "/"
      time)))
 
+;; * Single File
+
+(defn stream-string> [^js res s]
+  (if (str/blank? s)
+    (u/resolve> res)
+    (u/promise>
+     (fn [resolve reject]
+       #_(-> res (.write s "utf-8" resolve))
+       (let [Readable (-> stream .-Readable)
+             readable (-> Readable (.from s))]
+         (-> readable (.pipe res (clj->js {:end false})))
+         (-> readable (.on "end" (fn []
+                                   (resolve res))))
+         (-> readable (.on "error" (fn [err]
+                                     (reject err)))))))))
+
+(defn stream-col> [^js res col-name]
+  (log ::stream-col-to-http-response>
+       :col col-name)
+  (p/let [docs (db/get> [{:id col-name}])
+          _ (log ::stream-col-to-http-response>--col-loaded
+                 :col col-name)
+          docs (->> docs
+                    (map db/doc-remove-metadata))
+          data {:col col-name
+                :docs (->> docs #_(take 2)) #_(count docs)} ;; FIXME
+          s (u/->edn data)
+          _ (stream-string> res s)]
+    res))
+
+(defn stream-next-col> [^js res cols-names]
+  (when (seq cols-names)
+    (p/let [_ (stream-col> res (first cols-names))]
+      (stream-next-col> res (rest cols-names)))))
+
+(defn create-backup-file> [bucket filename cols-names]
+  (p/let [;; new-auth-token  (if goog.DEBUG "geheim"
+          ;;                     (u/nano-id))
+          ;; _ (db/update> "secrets/singleton" {:backup-auth-token new-auth-token})
+
+          file (-> ^js bucket (.file (str "backup/" filename)))
+          output-stream (-> ^js file .createWriteStream)
+
+          _ (stream-string> output-stream (u/->edn {:ts (str (js/Date.))}))
+          _ (stream-next-col> output-stream cols-names)
+          ;; _ (u/all-in-sequence> (->> cols-names
+          ;;                            (map #(stream-col-to-http-response> res %))))
+
+          _ (-> output-stream .end)
+          url (-> ^js file .publicUrl)]
+    {:filename filename
+     :url url}))
+
+;; *
+
 (defn backup-all-except> [bucket-name exceptions]
   (log ::backup-all-except>
        :bucket bucket-name
        :exceptions exceptions)
   (let [bucket (bucket bucket-name)
-        path   (date-path)]
+        path   (date-path)
+        filename (str path ".edn")]
     (p/let [cols-names (firestore/cols-names>)
             exceptions (into #{} exceptions)
             cols-names (->> cols-names
-                            (remove #(contains? exceptions %)))]
-      (backup-cols> bucket path cols-names))))
+                            (remove #(contains? exceptions %)))
+            _ (create-backup-file> bucket filename cols-names)]
+      ;; (backup-cols> bucket path cols-names)
+      filename)))
 
 (defn backup-all> [bucket-name]
   (backup-all-except> bucket-name #{}))
-
-(comment
-  (-> (backup-all> "happygast-backup")
-      u/tap>))
 
 (defn handle-on-backup> [bucket-name exceptions ^js _req]
   (backup-all-except> bucket-name exceptions))

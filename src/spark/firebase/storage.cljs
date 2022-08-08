@@ -51,6 +51,14 @@
 (defn list-files> [path]
   (firebase-storage/listAll (ref path)))
 
+(defn list-files-paths> [path]
+  (-> (list-files> path)
+      (.then (fn [^js result]
+               (->> result
+                    .-items
+                    (map (fn [^js item]
+                           (.-fullPath item))))))))
+
 (defn upload-file> [file path]
   (log ::upload-file>
        :file file
