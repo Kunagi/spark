@@ -168,7 +168,7 @@
        :bucket bucket-name
        :exceptions exceptions)
   (let [bucket (bucket bucket-name)
-        path   (date-path)
+        path   (str "backup/" (date-path))
         filename (str path ".edn")]
     (p/let [cols-names (firestore/cols-names>)
             exceptions (into #{} exceptions)
