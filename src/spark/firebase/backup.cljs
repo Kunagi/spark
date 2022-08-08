@@ -150,7 +150,7 @@
           ;;                     (u/nano-id))
           ;; _ (db/update> "secrets/singleton" {:backup-auth-token new-auth-token})
 
-          file (-> ^js bucket (.file (str "backup/" filename)))
+          file (-> ^js bucket (.file filename))
           output-stream (-> ^js file .createWriteStream)
 
           _ (stream-string> output-stream (u/->edn {:ts (str (js/Date.))}))
@@ -158,10 +158,8 @@
           ;; _ (u/all-in-sequence> (->> cols-names
           ;;                            (map #(stream-col-to-http-response> res %))))
 
-          _ (-> output-stream .end)
-          url (-> ^js file .publicUrl)]
-    {:filename filename
-     :url url}))
+          _ (-> output-stream .end)]
+    {:filename filename}))
 
 ;; *
 
