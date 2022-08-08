@@ -556,6 +556,7 @@
     (set>--set-doc> transaction entity false)))
 
 (declare set>)
+(declare transact>)
 
 (defn set>
   ([tx-data]
@@ -564,7 +565,10 @@
    ;; (log ::set>
    ;;      :tx-data tx-data)
    (if (sequential? tx-data)
-     (u/all-in-sequence> (map #(set> transaction %) tx-data))
+     (if transaction
+       (u/all-in-sequence> (map #(set> transaction %) tx-data))
+       (transact> (fn [{:keys [set>]}]
+                    (u/all-in-sequence> (map #(set> %) tx-data)))))
      (if-not tx-data
        (u/no-op>)
        (let [db-ref  (-> tx-data :db/ref)
