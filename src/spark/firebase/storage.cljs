@@ -16,48 +16,69 @@
       (firebase-storage/connectStorageEmulator service "localhost" 9199))
     service))
 
-(def storage (memoize initialize))
+(def default-storage (memoize initialize))
 
-(defn storage-ref []
-  (firebase-storage/ref (storage)))
+(defn storage [bucket-name]
+  (firebase-storage/getStorage (env-config/get! :firebase-app)
+                               (str "gs://" bucket-name)))
 
-(defn ref [path]
-  (cond
-    (string? path)
-    (firebase-storage/ref (storage) path)
+(defn storage-ref
+  ([]
+   (storage-ref nil))
+  ([bucket-name]
+   (if bucket-name
+     (firebase-storage/ref (storage bucket-name))
+     (firebase-storage/ref (default-storage)))))
 
-    (vector? path)
-    (reduce (fn [ref path-element]
-              (when ref
-                (when path-element
-                  (firebase-storage/ref ref (str path-element)))))
-            (storage-ref) path)
+(defn ref
+  ([path]
+   (ref nil path))
+  ([bucket-name path]
+   (cond
+     (string? path)
+     (firebase-storage/ref (default-storage) path)
 
-    :else
-    path ; asuming it is already a ref
-    #_(throw (ex-info "Unsupported path type"
-                      {:path path
-                       :type (type path)}))))
+     (vector? path)
+     (reduce (fn [ref path-element]
+               (when ref
+                 (when path-element
+                   (firebase-storage/ref ref (str path-element)))))
+             (storage-ref bucket-name) path)
 
-(defn url> [path]
-  (js/Promise.
-   (fn [resolve _reject]
-     (let [ref (ref path)]
-       (if ref
-         (-> (firebase-storage/getDownloadURL ref)
-             (.then resolve #(resolve nil)))
-         (resolve nil))))))
+     :else
+     path                               ; asuming it is already a ref
+     #_(throw (ex-info "Unsupported path type"
+                       {:path path
+                        :type (type path)})))))
 
-(defn list-files> [path]
-  (firebase-storage/listAll (ref path)))
+(defn url>
+  ([path]
+   (url> nil path))
+  ([bucket-name path]
+   (js/Promise.
+    (fn [resolve _reject]
+      (let [ref (ref bucket-name path)]
+        (if ref
+          (-> (firebase-storage/getDownloadURL ref)
+              (.then resolve #(resolve nil)))
+          (resolve nil)))))))
 
-(defn list-files-paths> [path]
-  (-> (list-files> path)
-      (.then (fn [^js result]
-               (->> result
-                    .-items
-                    (map (fn [^js item]
-                           (.-fullPath item))))))))
+(defn list-files>
+  ([path]
+   (list-files> nil path))
+  ([bucket-name path]
+   (firebase-storage/listAll (ref bucket-name path))))
+
+(defn list-files-paths>
+  ([path]
+   (list-files-paths> nil path))
+  ([bucket-name path]
+   (-> (list-files> bucket-name path)
+       (.then (fn [^js result]
+                (->> result
+                     .-items
+                     (map (fn [^js item]
+                            (.-fullPath item)))))))))
 
 (defn upload-file> [file path]
   (log ::upload-file>
