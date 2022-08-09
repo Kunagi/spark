@@ -2111,7 +2111,8 @@
                                           entity field
                                           value-suffix display
                                           description
-                                          on-changed]}]
+                                          on-changed
+                                          disabled]}]
   (let [field (cond
                 (map? field) field
                 (spark/field-schema? field) (get field 1))
@@ -2181,27 +2182,28 @@
                            (when (and value value-suffix)
                              (str " " value-suffix))))
         on-click        (or on-click
-                            #(show-entity-form-dialog>
-                              entity [field]
-                              (when on-changed
-                                (fn [values]
-                                  (on-changed (get values field-id))))))]
-    ($ mui/CardActionArea
-       {:onClick on-click}
-       ;; (data {:field-id field-id
-       ;;        :value    value})
-       ($ FieldCardContent
-          {:label label
-           :description description}
-          ;; (DEBUG (get entity field-id))
-          ;; (when goog.DEBUG
-          ;;   (data (-> field spark/schema-opts :display)))
-          (if (and value-component
-                   (seq children))
-            (<>
-             (div value-component)
-             (div children))
-            (<> value-component children))))))
+                            (when-not disabled
+                              #(show-entity-form-dialog>
+                                entity [field]
+                                (when on-changed
+                                  (fn [values]
+                                    (on-changed (get values field-id)))))))
+        Field ($ FieldCardContent
+                 {:label label
+                  :description description}
+                 (ui/div
+                  {:font-size "16px"}
+                  (if (and value-component
+                           (seq children))
+                    (<>
+                     (div value-component)
+                     (div children))
+                    (<> value-component children))))]
+    (if on-click
+      ($ mui/CardActionArea
+         {:onClick on-click}
+         Field)
+      Field)))
 
 (defnc EntityFieldsCardActionAreas [{:keys [entity fields]}]
   (<>
