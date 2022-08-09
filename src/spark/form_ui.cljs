@@ -65,11 +65,11 @@
 
 (defmethod create-input "text" [field]
   (let [step (-> field :step)
+        value (-> field :value)
+        min-value (-> field :min)
+        max-value (-> field :max)
         inc-dec (fn [amount]
-                  (let [value (-> field :value)
-                        new-value (+ value amount)
-                        min-value (-> field :min)
-                        max-value (-> field :max)]
+                  (let [new-value (+ value amount)]
                     (when (and (or (nil? min-value)
                                    (> new-value value)
                                    (>= new-value min-value))
@@ -99,6 +99,7 @@
                                   {:onClick #(inc-dec (if step
                                                         (- 0 step)
                                                         -1))
+                                   :disabled (when min-value (-> value (<= min-value)))
                                    :variant "contained"
                                    :color "default"
                                    :size "small"
@@ -106,6 +107,7 @@
                                   "-")
                                ($ mui/Button
                                   {:onClick #(inc-dec (or step 1))
+                                   :disabled (when max-value (-> value (>= max-value)))
                                    :variant "contained"
                                    :color "default"
                                    :size "small"
