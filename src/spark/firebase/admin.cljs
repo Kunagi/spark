@@ -1,11 +1,10 @@
 (ns spark.firebase.admin
   (:require
+   [promesa.core :as p]
    ["firebase-admin" :as admin]
 
    [spark.logging :refer [log]]
-   [spark.utils :as u]
-
-   ))
+   [spark.utils :as u]))
 
 ;; * Messaging
 
@@ -32,8 +31,13 @@
                           :apns {:payload {:aps {:sound "default"
                                                  :badge badge-count}}}
                           :data data})]
- (u/=> (-> ^js messaging-service (.send message))
-          (fn [response]
-            (log ::send-message-to-device>--response
-                 :response response)
-            response))))
+    (-> ^js messaging-service
+        (.send message)
+        (.then (fn [response]
+                 (log ::send-message-to-device>--response
+                      :response response)
+                 response))
+        (.catch (fn [error]
+                  (log ::send-message-do-device>--failed
+                       :error error)
+                  nil)))))
