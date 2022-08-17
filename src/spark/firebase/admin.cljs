@@ -36,8 +36,9 @@
         (.then (fn [response]
                  (log ::send-message-to-device>--response
                       :response response)
-                 response))
+                 {:ok true}))
         (.catch (fn [error]
                   (log ::send-message-do-device>--failed
                        :error error)
-                  nil)))))
+                  {:ok false
+                   :error error})))))
