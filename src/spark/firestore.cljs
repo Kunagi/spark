@@ -37,6 +37,18 @@
 
 ;;; * helpers
 
+(defn- ->firestore-json [o]
+  (when o
+    (js/JSON.stringify
+     o (fn [k v]
+         (cond
+           (str/starts-with? k "__") js/undefined
+           :else v)))))
+
+(defn coerce-value [v]
+  (when v
+    (-> v u/->json js/JSON.parse ->firestore-json js/JSON.parse)))
+
 (defn ^js FieldValue []
   (if (exists? js/firebase)
     (-> js/firebase.firestore.FieldValue)

@@ -11,7 +11,8 @@
    [nano-id.core :as nano-id]
    #?(:clj [clojure.pprint :refer [pprint]]
       :cljs [cljs.pprint :refer [pprint]])
-   [tick.core :as tick]))
+   [tick.core :as tick]
+   #?(:cljs ["json-prune" :as json-prune])))
 
 ;; http://weavejester.github.io/medley/medley.core.html
 
@@ -86,15 +87,33 @@
    (defn js->json [js-obj]
      (when js-obj
        (try
-         (js/JSON.stringify js-obj)
+         #_(js/JSON.stringify
+            js-obj
+            (fn [k v]
+              v)
+            2)
+         (json-prune js-obj
+                     (clj->js {
+                               ;; :replacer (fn [value default-value]
+                               ;;             (cond
+                               ;;               :else default-value))
+                               }))
          (catch :default _ex
-           (str js-obj))))))
+           (js/console.error _ex)
+           nil
+           #_(str js-obj))))))
 
 #?(:cljs (defn ->json [o]
            (when o
              (-> o
                  clj->js
                  js->json))))
+
+(comment
+  (js/console.log (->json {:hello "world"
+                           :x js/undefined
+                           :window js/window}))
+  (js/console.log "boo"))
 
 ;; * EDN
 
