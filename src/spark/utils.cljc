@@ -1,7 +1,7 @@
 ;; * ns
 (ns spark.utils
   (:refer-clojure :exclude [assert pos? zero? min max tap>])
-  #?(:cljs (:require-macros [spark.utils :refer [assert]]))
+  #?(:cljs (:require-macros [spark.utils :refer [assert try>]]))
   (:require
    [clojure.string :as str]
    [flatland.ordered.map :as ordered.map]
@@ -51,6 +51,11 @@
    (defmacro get-compiler-option-example []
      (let [s (with-out-str (pprint (get-in @cljs.env/*compiler* [:options])))]
        `~s)))
+
+#?(:clj
+   (defmacro try> [expr]
+     `(u/try> ~expr)
+     ))
 
 ;; * tap
 
@@ -122,6 +127,8 @@
 
 ;; Errors and Exceptions
 
+(def error->data u/error->data)
+(def error->text u/error->text)
 (def exception-as-text u/error->text)
 
 ;; * unique ids

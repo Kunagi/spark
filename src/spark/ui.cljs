@@ -1,6 +1,7 @@
 ;; * ns
 (ns spark.ui
-  (:require-macros [spark.ui :refer [$ <> use-effect
+  (:require-macros [spark.ui :refer [try>
+                                     $ <> use-effect
                                      def-ui def-ui-showcase
                                      use-state provider create-context
                                      use-context
@@ -33,10 +34,11 @@
 
    [kunagi.mui.api :as kui]
    [kunagi.mui.core :as kui.core]
+   [kunagi.utils :as ku]
    [kunagi.utils.debug :as debug]
    [kunagi.mui.pages :as pages]
 
-   [spark.logging :refer [log]]
+   [kunagi.utils.logging :refer [log]]
    [spark.utils :as u]
    [spark.core :as spark]
    [spark.firestore :as firestore]
@@ -66,6 +68,8 @@
     :height "100vh"}
    (div
     children)))
+
+
 
 ;; * Misc
 

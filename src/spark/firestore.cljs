@@ -47,7 +47,7 @@
 
 (defn coerce-value [v]
   (when v
-    (-> v u/->json js/JSON.parse ->firestore-json js/JSON.parse)))
+    (-> v clj->js u/->json js/JSON.parse ->firestore-json js/JSON.parse)))
 
 (defn ^js FieldValue []
   (if (exists? js/firebase)

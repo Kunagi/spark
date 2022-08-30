@@ -2,6 +2,7 @@
   (:require
    [clojure.string :as str]
 
+   [kunagi.utils.logging :as logging]
    [kunagi.mui.api :as kui]
    [kunagi.mui.core :as kui.core]
 
@@ -72,6 +73,16 @@
        ~params
        ~opts
        ~@body)))
+
+(defmacro try> [expr error-event calling-context]
+  (let [error-event (or error-event
+                        :spark.ui.unknown-ns/error)]
+    `(ku/try>
+      ~expr
+      #(logging/log-error ~error-event
+                          :calling-context ~calling-context
+                          :error (ku/error->data %1)
+                          :error-context %2))))
 
 (defmacro def-ui-showcase [id-keyword component]
   (when (= :dev (:shadow.build/mode &env))
@@ -161,5 +172,5 @@
 (defmacro map$ [component item-key items]
   `(for [item# ~items]
      (kui/$ ~component
-        {:key      item#
-         ~item-key item#})))
+            {:key      item#
+             ~item-key item#})))
