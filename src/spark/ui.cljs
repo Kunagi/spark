@@ -1814,7 +1814,6 @@
                   :current-millis current-millis
                   :last-upgrade-millis last-upgrade-millis)
              (js/localStorage.setItem "spark.upgrade-time-millis" current-millis)
-             (js/alert "upgrade!")
              (js/window.location.reload true))))))
 
    nil))
