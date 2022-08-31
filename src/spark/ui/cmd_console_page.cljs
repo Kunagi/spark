@@ -42,7 +42,10 @@
               :autoFocus       true
               :margin          "dense"
               ;; :variant         "outlined"
-              :fullWidth       true}))
+              :fullWidth       true
+              :sx (clj->js {"& textarea" {"font-family" "monospace"
+                                          "font-size" "14px"
+                                          "font-style" "normal"}})}))
        ($ mui/CardActions
           ($ ui/Button
              {:text "Execute"
