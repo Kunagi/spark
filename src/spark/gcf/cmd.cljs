@@ -143,3 +143,12 @@
 
 (defn registered-cmds []
   @CMDS)
+
+;; * Build-in commands
+
+(def-cmd version-info
+  {:public true
+   :args {}
+   :f> (fn [{:keys []}]
+         {:version (gcf/current-version)
+          :version-time (gcf/current-version-time)})})

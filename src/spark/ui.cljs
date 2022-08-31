@@ -69,8 +69,6 @@
    (div
     children)))
 
-
-
 ;; * Misc
 
 (def debug? debug/active?)
@@ -1783,25 +1781,59 @@
     (reset! SPA spa)
     (kui/mount ($ (-> spa :root-component)) "app")))
 
+(defn current-version []
+  (str/trim (str (resource/inline "spa/version.txt"))))
+
+(defn current-version-time []
+  (str/trim (str (resource/inline "spa/version-time.txt"))))
+
+(defn use-reload-if-new-version-available []
+  (use-effect
+   :once
+   (p/let [current-version (current-version)
+           version-info (server-cmd> :version-info {})
+           available-version (-> version-info :version)
+           upgrade-available? (when available-version
+                                (not= available-version current-version))]
+     ;; (js/alert (str current-version " -> " available-version))
+     (when upgrade-available?
+       (let [current-millis (-> (js/Date.) .getTime)
+             last-upgrade-millis-s (js/localStorage.getItem "spark.upgrade-time-millis")
+             last-upgrade-millis (when last-upgrade-millis-s (js/parseInt last-upgrade-millis-s))
+             blocked? (and last-upgrade-millis
+                           (-> current-millis (- last-upgrade-millis) (< u/millis-in-minute)))]
+         (if blocked?
+           (log ::upgrade-blocked
+                :current-millis current-millis
+                :last-upgrade-millis last-upgrade-millis)
+           (do
+             (log ::upgrade!
+                  :current-millis current-millis
+                  :last-upgrade-millis last-upgrade-millis)
+             (js/localStorage.setItem "spark.upgrade-time-millis" current-millis)
+             (js/alert "upgrade!")
+             (js/window.location.reload true))))))
+
+   nil))
+
 (def-ui UpgradeRequest [available-version info-text reload-text color]
-  (let [current-version    (str/trim (str (resource/inline "../spa/version.txt")))
+  (let [current-version    (current-version)
         upgrade-available? (when available-version
                              (not= available-version current-version))]
-    (when-not goog.DEBUG
-      (when upgrade-available?
-        (stack-3
-         {:padding 64}
-         (div
-          {:text-align :center}
-          (or info-text "A new version is available")
-          (ui/div
-           {:font-size 10}
-           current-version " -> " available-version))
-         (center
-          ($ Button
-             {:on-click #(js/window.location.reload)
-              :text     (or reload-text "Reload now")
-              :color    (or color "secondary")})))))))
+    (when upgrade-available?
+      (stack-3
+       {:padding 64}
+       (div
+        {:text-align :center}
+        (or info-text "A new version is available")
+        (ui/div
+         {:font-size 10}
+         current-version " -> " available-version))
+       (center
+        ($ Button
+           {:on-click #(js/window.location.reload)
+            :text     (or reload-text "Reload now")
+            :color    (or color "secondary")}))))))
 
 ;; * misc dialogs
 

@@ -3,6 +3,7 @@
   (:require
    [clojure.string :as str]
    [cljs.pprint :refer [pprint]]
+   [shadow.resource :as resource]
 
    ["firebase-functions" :as functions]
 
@@ -240,3 +241,12 @@
 
 (defn throw-error--permission-denied [message]
   (throw-error "permission-denied" message))
+
+
+;; * Version
+
+(defn current-version []
+  (str/trim (str (resource/inline "spa/version.txt"))))
+
+(defn current-version-time []
+  (str/trim (str (resource/inline "spa/version-time.txt"))))
