@@ -1787,6 +1787,10 @@
 (defn current-version-time []
   (str/trim (str (resource/inline "spa/version-time.txt"))))
 
+(defn last-upgrade-millis []
+  (when-let [last-upgrade-millis-s (js/localStorage.getItem "spark.upgrade-time-millis")]
+    (js/parseInt last-upgrade-millis-s)))
+
 (defn use-reload-if-new-version-available []
   (use-effect
    :once
@@ -1798,8 +1802,7 @@
      ;; (js/alert (str current-version " -> " available-version))
      (when upgrade-available?
        (let [current-millis (-> (js/Date.) .getTime)
-             last-upgrade-millis-s (js/localStorage.getItem "spark.upgrade-time-millis")
-             last-upgrade-millis (when last-upgrade-millis-s (js/parseInt last-upgrade-millis-s))
+             last-upgrade-millis (last-upgrade-millis)
              blocked? (and last-upgrade-millis
                            (-> current-millis (- last-upgrade-millis) (< u/millis-in-minute)))]
          (if blocked?
