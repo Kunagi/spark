@@ -661,9 +661,7 @@
       :value   close}
      (if (-> form :submitted?)
        (-> form :submitted-content)
-       ($ :div
-          {:style {:display "grid"
-                   :grid-gap "16px"}}
+       (<>
 
           ;; (when goog.DEBUG
           ;;   (when-let [data (-> form :debug-data)]
@@ -674,53 +672,61 @@
           ;;                 :font-family      "monospace"}}
           ;;        (u/->edn data))))
 
-          ($ :div
-             {:style {:display "grid"
-                      :grid-gap "8px"}}
-             (for [field (get form :fields)]
-               (when-not (-> field :hidden)
-                 ($ FormField
-                    {:key         (-> field :id)
-                     :field       field
-                     :form        form
-                     :on-submit   on-submit
-                     :update-form update-form}))))
-
-          (get form :content)
-          ;; (ui/data form)
-
-          (when-let [error (-> form form/error)]
-            ($ :div
-               {:style {:padding "16px"
-                        :background-color "red"
-                        :color "white"
-                        :font-weight 900
-                        :border-radius "8px"}}
-               (str error)))
-
-          ($ :div
-             {:style {:display               "grid"
-                      :grid-template-columns "max-content auto max-content"
-                      :grid-gap              "8px"}}
+          ;; Content
+          ($ mui/DialogContent
              ($ :div
-                (when-not (-> form form/waiting?)
-                  (-> form :extra-buttons)))
-             ($ :div)
+                {:className "FormContent"
+                 :stlye {}}
+                ($ :div
+                   {:style {:display "grid"
+                            :grid-gap "8px"}}
+                   (for [field (get form :fields)]
+                     (when-not (-> field :hidden)
+                       ($ FormField
+                          {:key         (-> field :id)
+                           :field       field
+                           :form        form
+                           :on-submit   on-submit
+                           :update-form update-form}))))
+                (get form :content))
+
+             ;; (ui/data form)
+
+             ;; Error
+             (when-let [error (-> form form/error)]
+               ($ :div
+                  {:style {:padding "16px"
+                           :background-color "red"
+                           :color "white"
+                           :font-weight 900
+                           :border-radius "8px"}}
+                  (str error))))
+
+          ($ mui/DialogActions
+             ;; Buttons
              ($ :div
                 {:style {:display               "grid"
-                         :grid-template-columns "max-content max-content"
+                         :grid-template-columns "max-content auto max-content"
                          :grid-gap              "8px"}}
-                (when-not (-> form :cancel-disabled)
-                  ($ mui/Button
-                     {:onClick #(cancel)}
-                     "Abbrechen"))
-                ($ mui/Button
-                   {:onClick on-submit
-                    :variant "contained"
-                    :color   "primary"
-                    :disabled (-> form form/waiting?)}
-                   (or (-> form :submit-button-text)
-                       "Ok"))))
+                ($ :div
+                   (when-not (-> form form/waiting?)
+                     (-> form :extra-buttons)))
+                ($ :div)
+                ($ :div
+                   {:style {:display               "grid"
+                            :grid-template-columns "max-content max-content"
+                            :grid-gap              "8px"}}
+                   (when-not (-> form :cancel-disabled)
+                     ($ mui/Button
+                        {:onClick #(cancel)}
+                        "Abbrechen"))
+                   ($ mui/Button
+                      {:onClick on-submit
+                       :variant "contained"
+                       :color   "primary"
+                       :disabled (-> form form/waiting?)}
+                      (or (-> form :submit-button-text)
+                          "Ok")))))
 
           (when (-> form :waiting?)
             ($ :div
@@ -743,19 +749,19 @@
              :className @DIALOG-CLASS
              :fullWidth true
              :maxWidth max-width
-            ;; :onClose close
+             :scroll "paper"
+             ;; :onClose close
              }
 
-          ;; ($ :pre (-> open? u/->edn))
+            ;; ($ :pre (-> open? u/->edn))
 
             (when-let [title (-> form :title)]
               ($ mui/DialogTitle
                  title))
 
-            ($ mui/DialogContent
-               ($ Form {:form form
-                        :set-form set-form
-                        :on-close on-close})))))))
+            ($ Form {:form form
+                     :set-form set-form
+                     :on-close on-close}))))))
 
 (defnc FormDialogsContainer []
   (let [forms (use-dialog-forms)]
