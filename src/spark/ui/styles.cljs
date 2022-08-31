@@ -89,7 +89,7 @@
     (str/starts-with? s "& ") s
     :else                     (str "& " s)))
 
-(defn- conform-styles [styles]
+(defn conform-styles [styles]
   (reduce (fn [styles [k v]]
             (assoc styles
                    (conform-styles-selector k)

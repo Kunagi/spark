@@ -69,6 +69,12 @@
    (div
     children)))
 
+(defn sx [css-map]
+  (when css-map
+    (-> css-map
+        styles/conform-styles
+        clj->js)))
+
 ;; * Misc
 
 (def debug? debug/active?)
