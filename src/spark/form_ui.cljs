@@ -673,65 +673,66 @@
           ;;        (u/->edn data))))
 
           ;; Content
-          ($ mui/DialogContent
-             ($ :div
-                {:className "FormContent"
-                 :stlye {}}
-                ($ :div
-                   {:style {:display "grid"
-                            :grid-gap "8px"}}
-                   (for [field (get form :fields)]
-                     (when-not (-> field :hidden)
-                       ($ FormField
-                          {:key         (-> field :id)
-                           :field       field
-                           :form        form
-                           :on-submit   on-submit
-                           :update-form update-form}))))
-                (get form :content))
+        ($ mui/DialogContent
+           ($ :div
+              {:className "FormContent"
+               :stlye {}}
+              ($ :div
+                 {:style {:display "grid"
+                          :grid-gap "8px"}}
+                 (for [field (get form :fields)]
+                   (when-not (-> field :hidden)
+                     ($ FormField
+                        {:key         (-> field :id)
+                         :field       field
+                         :form        form
+                         :on-submit   on-submit
+                         :update-form update-form}))))
+              (get form :content))
 
              ;; (ui/data form)
 
              ;; Error
-             (when-let [error (-> form form/error)]
-               ($ :div
-                  {:style {:padding "16px"
-                           :background-color "red"
-                           :color "white"
-                           :font-weight 900
-                           :border-radius "8px"}}
-                  (str error))))
-
-          ($ mui/DialogActions
-             ;; Buttons
+           (when-let [error (-> form form/error)]
              ($ :div
-                {:style {:display               "grid"
-                         :grid-template-columns "max-content auto max-content"
-                         :grid-gap              "8px"}}
-                ($ :div
-                   (when-not (-> form form/waiting?)
-                     (-> form :extra-buttons)))
-                ($ :div)
-                ($ :div
-                   {:style {:display               "grid"
-                            :grid-template-columns "max-content max-content"
-                            :grid-gap              "8px"}}
-                   (when-not (-> form :cancel-disabled)
-                     ($ mui/Button
-                        {:onClick #(cancel)}
-                        "Abbrechen"))
-                   ($ mui/Button
-                      {:onClick on-submit
-                       :variant "contained"
-                       :color   "primary"
-                       :disabled (-> form form/waiting?)}
-                      (or (-> form :submit-button-text)
-                          "Ok")))))
+                {:style {:padding "16px"
+                         :background-color "red"
+                         :color "white"
+                         :font-weight 900
+                         :border-radius "8px"}}
+                (str error))))
 
-          (when (-> form :waiting?)
-            ($ :div
-               {:style {:min-height "4px"}}
-               ($ mui/LinearProgress))))))))
+        ($ mui/DialogActions
+             ;; Buttons
+           ($ :div
+              {:style {:display               "grid"
+                       :grid-template-columns "max-content auto max-content"
+                       :grid-gap              "8px"}}
+              ($ :div
+                 (when-not (-> form form/waiting?)
+                   (-> form :extra-buttons)))
+              ($ :div)
+              ($ :div
+                 {:style {:display               "grid"
+                          :grid-template-columns "max-content max-content"
+                          :grid-gap              "8px"}}
+                 (when-not (-> form :cancel-disabled)
+                   ($ mui/Button
+                      {:onClick #(cancel)}
+                      (or (-> form :cancel-button-text)
+                          "Abbrechen")))
+                 ($ mui/Button
+                    {:onClick on-submit
+                     :variant "contained"
+                     :color   "primary"
+                     :disabled (-> form form/waiting?)}
+                    (or (-> form :submit-button-text)
+                        "Ok")))))
+
+        (when (-> form :waiting?)
+          ($ :div
+             {:style {:min-height "4px"}}
+             ($ mui/LinearProgress))))))))
 
 (defnc FormDialog [{:keys [form]}]
   (let [open? (-> form :open? boolean)
