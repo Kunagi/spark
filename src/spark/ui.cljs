@@ -707,6 +707,7 @@
      (data v)))
 
 (def DEBUG kui/DEBUG)
+(def DEBUG_ kui/DEBUG_)
 
 (defnc ExpandableData [{:keys [label value]}]
   (let [[expanded set-expanded] (use-state false)]
