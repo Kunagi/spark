@@ -5,7 +5,7 @@
          io.github.kunagi/kunagi-utils
          {:git/sha "72855814e7a662ea9e900d36f23a44fbd6a7bd83", :git/tag "v0.1.11"}
          io.github.kunagi/kunagi-mui
-         {:git/sha "608521489b8adc96c301d2e9fde5b65e07c40c85", :git/tag "v0.0.20"}
+         {:git/sha "9e5d9c96fa9614a5f5c4fa76abfe4b294661348e", :git/tag "v0.0.21"}
 
          nano-id/nano-id                     {:mvn/version "1.0.0"}
          cljs-bean/cljs-bean                 {:mvn/version "1.6.0"}
