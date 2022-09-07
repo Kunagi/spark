@@ -13,7 +13,8 @@
    ;; [spark.mui :as ui]
    [spark.form :as form]
    [spark.db :as db]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [kunagi.mui.api :as ui]))
 
 (defn DEBUG [v]
   (when goog.DEBUG
@@ -766,10 +767,11 @@
 
 (defnc FormDialogsContainer []
   (let [forms (use-dialog-forms)]
-    (for [form (-> forms vals)]
-      ($ FormDialog
-         {:key (-> form :id)
-          :form form}))))
+    (ui/<>
+     (for [form (-> forms vals)]
+       ($ FormDialog
+          {:key (-> form :id)
+           :form form})))))
 
 ;; TODO deprecated
 (defnc FormCardArea [{:keys [form children]}]
