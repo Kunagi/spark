@@ -209,6 +209,7 @@
     (.addScope ^js provider "email")
     (.addScope ^js provider "https://www.googleapis.com/auth/userinfo.email")
     (.addScope ^js provider "https://www.googleapis.com/auth/userinfo.profile")
+    (-> ^js provider (.setCustomParameters #js {:prompt "select_account"}))
     (provider-sign-in> provider)))
 
 (defn sign-in-with-microsoft []
