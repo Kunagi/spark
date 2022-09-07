@@ -195,7 +195,10 @@
   nil)
 
 (defn provider-sign-in> [^js provider]
-  (firebase-auth/signInWithRedirect (auth) provider))
+  (if true
+    (-> (firebase-auth/signInWithPopup (auth) provider)
+        (.then #(js/window.location.reload)))
+    (firebase-auth/signInWithRedirect (auth) provider)))
 
 (comment
   (js/console.log (-> (firebase-auth)))
