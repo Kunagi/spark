@@ -194,6 +194,7 @@
 
   nil)
 
+;; signInWithRedirect does not work on firefox with Enanced Tracking Protection enabled
 (defn provider-sign-in> [^js provider]
   (if true
     (-> (firebase-auth/signInWithPopup (auth) provider)
