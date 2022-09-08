@@ -70,7 +70,7 @@
   #{"iPad Simulator" "iPhone Simulator" "iPod Simulator" "iPad" "iPhone" "iPod"})
 
 ;; TODO replace with navigator.userAgentData
-(defn apple? []
+(defn ios? []
   (or (ios-platforms (-> js/navigator.platform))
       (js/navigator.userAgent.includes "Mac")))
 

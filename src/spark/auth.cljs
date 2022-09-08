@@ -196,10 +196,10 @@
 
 ;; signInWithRedirect does not work on firefox with Enanced Tracking Protection enabled
 (defn provider-sign-in> [^js provider]
-  (if true
+  (if (browser/ios?)
+    (firebase-auth/signInWithRedirect (auth) provider)
     (-> (firebase-auth/signInWithPopup (auth) provider)
-        (.then #(js/window.location.reload)))
-    (firebase-auth/signInWithRedirect (auth) provider)))
+        (.then #(js/window.location.reload)))))
 
 (comment
   (js/console.log (-> (firebase-auth)))
@@ -318,7 +318,6 @@
                                :auto-send-sms (boolean (and telephone
                                                             (not goog.DEBUG)))
                                :url (-> js/window.location.href)})))
-
 
 (defn sign-in-with-telephone-code [code]
   (let [confirmation-result (:confirmation-result @TELEPHONE_SIGN_IN)]
