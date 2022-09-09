@@ -846,13 +846,8 @@
       (fn [resolve _]
         (js/setTimeout #(resolve millis)
                        millis)))))
-
 #?(:cljs
-   (defn later> [wait-millis f]
-     (js/Promise.
-      (fn [resolve _]
-        (js/setTimeout #(resolve (f))
-                       wait-millis)))))
+   (def later> u/later>))
 
 #?(:cljs
    (defn => [promise & thens]
