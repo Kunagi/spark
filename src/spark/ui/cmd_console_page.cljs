@@ -45,6 +45,7 @@
               :fullWidth       true
               :sx (clj->js {"& textarea" {"font-family" "monospace"
                                           "font-size" "14px"
+                                          "line-height" "20px"
                                           "font-style" "normal"}})}))
        ($ mui/CardActions
           ($ ui/Button
