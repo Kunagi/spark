@@ -118,7 +118,9 @@
                                  :disabled false
                                  :type :web
                                  :user-agent js/navigator.userAgent
-                                 :ts :db/timestamp})
+                                 :ts :db/timestamp
+                                 :error :db/delete
+                                 :error-ts :db/delete})
                        user (if device
                               (assoc-in user [:devices (-> device :id)] device)
                               user)
