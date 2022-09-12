@@ -115,10 +115,10 @@
                                     :auth-ts-last-sign-in (-> auth-user :ts-last-sign-in)})
                        device (when messaging-token
                                 {:id messaging-token
-                                 :disabled false
                                  :type :web
                                  :user-agent js/navigator.userAgent
                                  :ts :db/timestamp
+                                 :disabled :db/delete
                                  :error :db/delete
                                  :error-ts :db/delete})
                        user (if device
