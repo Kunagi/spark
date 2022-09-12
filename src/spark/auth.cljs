@@ -1,6 +1,7 @@
 (ns spark.auth
   (:require
 
+   [promesa.core :as p]
    ["firebase/auth" :as firebase-auth]
 
    [spark.logging :refer [log]]
@@ -17,6 +18,7 @@
 (defonce AUTH_COMPLETED (atom false))
 (defonce AUTH_STATUS_MESSAGE (atom "Initialisierung"))
 (defonce AUTH_USER (atom nil))
+(defonce MESSAGING_TOKEN (atom nil))
 
 (defn auth-completed? []
   @AUTH_COMPLETED)
@@ -89,38 +91,39 @@
         email (-> auth-user :email)
         col-path (spark/doc-schema-col-path doc-schema)
         doc-path (str col-path "/" uid)]
-    (u/=> (if messaging-vapid-key
-            (messaging/get-token> messaging-vapid-key)
-            (u/resolve> nil))
-          (fn [messaging-token]
-            (log ::update-user-doc--2
-                 :messaging-token messaging-token)
-            (db/transact>
-             (fn [{:keys [get> set>]}]
-               (u/=> (get> doc-path)
-                     (fn [db-user]
-                       (let [user (merge db-user
-                                         {:db/ref doc-path
-                                          :firestore/create  (nil? db-user)
-                                          :id uid
-                                          :uid uid
-                                          :auth-email email
-                                          :auth-domain (email-domain email)
-                                          :auth-display-name (-> auth-user :display-name)
-                                          :auth-timestamp [:db/timestamp]
-                                          :auth-ts-creation (-> auth-user :ts-creation)
-                                          :auth-ts-last-sign-in (-> auth-user :ts-last-sign-in)})
-                             device (when messaging-token
-                                      {:id messaging-token
-                                       :disabled false
-                                       :type :web
-                                       :user-agent js/navigator.userAgent
-                                       :ts :db/timestamp})
-                             user (if device
-                                    (assoc-in user [:devices (-> device :id)] device)
-                                    user)
-                             user (u/update-if user update-user auth-user)]
-                         (set> user))))))))))
+    (p/let [messaging-token (when messaging-vapid-key
+                              (messaging/get-token> messaging-vapid-key))
+            _ (when messaging-token
+                (reset! MESSAGING_TOKEN messaging-token))
+            ]
+      (log ::update-user-doc--messaging-token
+           :messaging-token messaging-token)
+      (db/transact>
+       (fn [{:keys [get> set>]}]
+         (u/=> (get> doc-path)
+               (fn [db-user]
+                 (let [user (merge db-user
+                                   {:db/ref doc-path
+                                    :firestore/create  (nil? db-user)
+                                    :id uid
+                                    :uid uid
+                                    :auth-email email
+                                    :auth-domain (email-domain email)
+                                    :auth-display-name (-> auth-user :display-name)
+                                    :auth-timestamp [:db/timestamp]
+                                    :auth-ts-creation (-> auth-user :ts-creation)
+                                    :auth-ts-last-sign-in (-> auth-user :ts-last-sign-in)})
+                       device (when messaging-token
+                                {:id messaging-token
+                                 :disabled false
+                                 :type :web
+                                 :user-agent js/navigator.userAgent
+                                 :ts :db/timestamp})
+                       user (if device
+                              (assoc-in user [:devices (-> device :id)] device)
+                              user)
+                       user (u/update-if user update-user auth-user)]
+                   (set> user)))))))))
 
 (defn- import-user [^js u]
   (log ::import-user
@@ -258,11 +261,10 @@
      (sign-in-f opts))))
 
 (defn sign-out> []
+  (when-let [messaging-token @MESSAGING_TOKEN])
   (js/localStorage.removeItem "spark.uid")
   (u/=> (firebase-auth/signOut (auth))
         (fn [result]
-          (browser/webkit-post-message "iosapp" "logout")
-          (browser/webkit-post-message "iosapp" (u/->json {:message "logout"}))
           (redirect-to-home)
           result)))
 
