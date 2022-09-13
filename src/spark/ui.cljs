@@ -1042,6 +1042,7 @@
       message)
      (if (seq options)
        (center
+        (ui/DEBUG opts)
         (stack
          (for [option options]
            ($ mui/Button
@@ -1059,10 +1060,17 @@
               (local/text :cancel)))))
 
        (center
-        ($ mui/Button
-           {:onClick hide}
-           (or (-> opts :ok-text)
-               (local/text :ok))))))))
+        (ui/flex
+         (when (-> opts :cancel-button)
+           ($ mui/Button
+              {:onClick hide
+               :color "default"}
+              (local/text :cancel)))
+         (when (get opts :ok-button true)
+           ($ mui/Button
+              {:onClick hide}
+              (or (-> opts :ok-text)
+                  (local/text :ok))))))))))
 
 (defn show-message-dialog
   ([message]
