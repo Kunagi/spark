@@ -118,6 +118,7 @@
                                  :type :web
                                  :user-agent js/navigator.userAgent
                                  :ts :db/timestamp
+                                 :zeit-anmeldung :db/timestamp
                                  :disabled :db/delete
                                  :error :db/delete
                                  :error-ts :db/delete})
