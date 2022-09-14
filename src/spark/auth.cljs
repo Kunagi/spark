@@ -271,7 +271,8 @@
   (js/localStorage.removeItem "spark.uid")
   (u/=> (firebase-auth/signOut (auth))
         (fn [result]
-          (redirect-to-home)
+          (u/later> 500
+                    #(redirect-to-home))
           result)))
 
 ;; * Email
