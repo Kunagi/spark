@@ -267,6 +267,7 @@
      (sign-in-f opts))))
 
 (defn sign-out> []
+  (log ::sign-out>)
   (when-let [messaging-token @MESSAGING_TOKEN])
   (js/localStorage.removeItem "spark.uid")
   (u/=> (firebase-auth/signOut (auth))
