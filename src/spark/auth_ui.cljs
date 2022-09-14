@@ -140,7 +140,9 @@ Bitte E-Mail Adresse eingeben.")
 (def-ui TelephoneProcess []
   (let [status (use-telephone-sign-in)
         [telephone set-telephone] (ui/use-state (-> status :telephone))
-        [code set-code] (ui/use-state (-> status :code))
+        [code set-code] (ui/use-state (or (-> status :code)
+                                          (when goog.DEBUG
+                                            "123456")))
         [input-error set-input-error] (ui/use-state nil)
         continue-with-telephone (fn []
                                   (when-not (str/blank? telephone)
