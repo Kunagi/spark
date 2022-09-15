@@ -230,6 +230,9 @@
                                               (-> footer :type (= :sum))
                                               (let [aggregator (cond
 
+                                                                 (= type :number)
+                                                                 +
+
                                                                  (= type :eur)
                                                                  money/+
 
