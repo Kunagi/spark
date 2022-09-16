@@ -7,7 +7,7 @@
    [spark.gcf.cmd :refer [def-cmd]]))
 
 ;; https://firebase.google.com/docs/auth/admin/manage-users
-;; https://firebase.google.com/docs/reference/js/v8/firebase.auth
+;; https://firebase.google.com/docs/reference/admin/node/firebase-admin.auth
 
 (defn firebase-auth []
   (-> firebase-admin

@@ -100,15 +100,16 @@
             user (db/get> doc-path)
 
             user-changes {:db/ref doc-path
-                  :id uid
-                  :uid uid
-                  :auth-phone phone
-                  :auth-email email
-                  :auth-domain (email-domain email)
-                  :auth-display-name (-> auth-user :display-name)
-                  :auth-timestamp [:db/timestamp]
-                  :auth-ts-creation (-> auth-user :ts-creation)
-                  :auth-ts-last-sign-in (-> auth-user :ts-last-sign-in)}
+                          :id uid
+                          :uid uid
+                          :auth-phone phone
+                          :auth-email email
+                          :auth-domain (email-domain email)
+                          :auth-display-name (-> auth-user :display-name)
+                          :auth-timestamp [:db/timestamp]
+                          :auth-ts-creation (-> auth-user :ts-creation)
+                          :auth-ts-last-sign-in (-> auth-user :ts-last-sign-in)
+                          :auth-providers-data (-> auth-user :providers-data)}
             device (when messaging-token
                      {:id messaging-token
                       :type :web
@@ -119,16 +120,15 @@
                       :error nil
                       :error-ts nil})
             user-changes (if device
-                   (assoc-in user-changes [:devices (-> device :id)] device)
-                   user-changes)
+                           (assoc-in user-changes [:devices (-> device :id)] device)
+                           user-changes)
 
             _ (if (db/doc-exists? user)
                 (db/update> user user-changes)
                 (db/add> col-path user-changes))]
       (when update-user
         (p/let [user (db/get> doc-path)
-                 user (u/update-if user update-user auth-user)
-                ]
+                user (u/update-if user update-user auth-user)]
           (db/update> user user))))))
 
 (defn- import-user [^js u]
@@ -143,6 +143,7 @@
      :photo-url (-> u .-photoURL)
      :tenant-id (-> u .-tenantId)
      :uid (-> u .-uid)
+     :providers-data (-> u .-providerData (js->clj :keywordize-keys))
      :ts-last-sign-in (-> u .-metadata .-lastSignInTime js/Date.)
      :ts-creation (-> u .-metadata .-creationTime js/Date.)}))
 
