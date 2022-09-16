@@ -17,6 +17,7 @@
 (defonce SIGN_IN-F (atom nil))
 (defonce AUTH_COMPLETED (atom false))
 (defonce AUTH_STATUS_MESSAGE (atom "Initialisierung"))
+(defonce JS_AUTH_USER (atom nil))
 (defonce AUTH_USER (atom nil))
 (defonce MESSAGING_TOKEN (atom nil))
 
@@ -25,6 +26,9 @@
 
 (defn auth-user []
   @AUTH_USER)
+
+(defn js-auth-user []
+  @JS_AUTH_USER)
 
 (defn uid []
   (when-let [auth-user (auth-user)]
@@ -166,6 +170,7 @@
   (-> (firebase-auth/onAuthStateChanged
        (auth)
        (fn [^js google-js-user]
+         (reset! JS_AUTH_USER google-js-user)
          (js/localStorage.setItem "spark.uid" (when google-js-user
                                                 (-> google-js-user .-uid)))
          (js/console.log "AUTH" google-js-user)
