@@ -18,3 +18,6 @@
     service))
 
 (def auth (memoize initialize))
+
+(defn delete-user> [user]
+  (firebase-auth/deleteUser user))

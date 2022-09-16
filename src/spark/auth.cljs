@@ -21,6 +21,8 @@
 (defonce AUTH_USER (atom nil))
 (defonce MESSAGING_TOKEN (atom nil))
 
+(defonce SIGNED_IN_AUTH_DATA (atom nil))
+
 (defn auth-completed? []
   @AUTH_COMPLETED)
 
@@ -185,7 +187,7 @@
              (when-not (= user @AUTH_USER)
                (when auth-completed?
                  (log ::user-changed :user user)
-                 (when-not user
+                 #_(when-not user
                    (reset! AUTH_STATUS_MESSAGE "Umleitung zur Startseite")
                    (redirect-to-home)))
                (reset! AUTH_USER user)
@@ -272,15 +274,17 @@
      (u/assert sign-in-f "Missing sign-in-f")
      (sign-in-f opts))))
 
+(defn prepare-sign-out> []
+  (p/let [_ (when-let [messaging-token @MESSAGING_TOKEN])]
+    (js/localStorage.removeItem "spark.uid")
+    nil
+    ))
+
 (defn sign-out> []
   (log ::sign-out>)
-  (when-let [messaging-token @MESSAGING_TOKEN])
-  (js/localStorage.removeItem "spark.uid")
-  (u/=> (firebase-auth/signOut (auth))
-        (fn [result]
-          (u/later> 500
-                    #(redirect-to-home))
-          result)))
+  (p/let [_ (prepare-sign-out>)
+          result (firebase-auth/signOut (auth))]
+    result))
 
 ;; * Email
 
@@ -345,3 +349,14 @@
                  (js/window.location.reload)))
         (.catch (fn [^js error]
                   (swap! TELEPHONE_SIGN_IN assoc :error error))))))
+
+;; (defn reauthenticate> []
+;;   )
+
+(defn delete-user> []
+  (log ::delete-user>)
+  (p/let [user (js-auth-user)
+          _ (u/assert user)
+          _ (prepare-sign-out>)
+          ]
+    (spark.firebase.auth/delete-user> user)))

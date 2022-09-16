@@ -31,3 +31,7 @@
   {:public false
    :args {}
    :f> auth-me>})
+
+(defn delete-user> [uid]
+  (-> (firebase-auth)
+      (.deleteUser uid)))
