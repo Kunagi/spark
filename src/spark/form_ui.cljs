@@ -588,7 +588,29 @@
        (when-let [input-hint (-> field :input-hint)]
          ($ :div
             {:style {:color "#999"}}
-            input-hint)))))
+            input-hint))
+       (when-let [input-example (-> field :input-example)]
+         (let [multiline? (-> input-example (.indexOf "\n") (>= 0))]
+           ($ :div
+              {:style {:color "#999"}}
+              "Beispiel: "
+              (if multiline?
+                ($ :div
+                   {:style {:color "#666"
+                            :word-break "break-word"
+                            :white-space "pre-wrap"
+                            :padding-left "8px"}}
+                   input-example
+                   )
+                ($ :span
+                   {:style {:color "#666"
+                            :word-break "break-word"}}
+                   input-example
+                   )
+                )
+              )
+           )
+         ))))
 
 (def DIALOG-CLASS (atom nil))
 
