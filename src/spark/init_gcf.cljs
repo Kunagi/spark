@@ -28,7 +28,8 @@
                 "[]"
                 (fn []))
   (reset! TAPS '())
-  (add-tap on-tap))
+  ;; (add-tap on-tap)
+  )
 
 (comment
   (tap> "hello"))
