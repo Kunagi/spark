@@ -46,7 +46,8 @@
 
    "a.Link--no-styles" {:text-decoration :none
                         :color           :unset
-                        :display         :block}
+                        ;; :display         :block
+                        }
 
    ".CursorPointer" {:cursor :pointer}})
 
