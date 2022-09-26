@@ -1340,7 +1340,7 @@
 (defnc Button [{:keys [text icon
                        onClick on-click to href target
                        pre-on-click
-                       variant color size
+                       variant color size disabled
                        command
                        context
                        then
@@ -1403,6 +1403,7 @@
              {:to        to
               :component router/Link
               :id        id
+              :disabled  disabled
               :variant   (or variant "contained")
               :color     (or color "primary")
               :size      size
@@ -1412,6 +1413,7 @@
              {:to        to
               :component router/Link
               :id        id
+              :disabled  disabled
               :variant   (or variant "contained")
               :color     (or color "primary")
               :startIcon icon
@@ -1422,6 +1424,7 @@
         ($ mui/IconButton
            {:onClick   on-click
             :id        id
+            :disabled  disabled
             :href      href
             :target    target
             :variant   (or variant "contained")
@@ -1432,6 +1435,7 @@
         ($ mui/Button
            {:onClick   on-click
             :id        id
+            :disabled  disabled
             :href      href
             :target    target
             :variant   (or variant "contained")
