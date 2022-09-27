@@ -64,6 +64,12 @@
             (reset! URL_PARAMS (url-params)))))
   (js/window.addEventListener "popstate" #(reset! URL_PARAMS (url-params))))
 
+;; * Features
+
+(defn touch-device? []
+  (-> (js/matchMedia "(hover: none)")
+      .-matches))
+
 ;; * Platforms
 
 (def ios-platforms
