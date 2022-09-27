@@ -75,6 +75,8 @@
         styles/conform-styles
         clj->js)))
 
+(def ->sx sx)
+
 ;; * Misc
 
 (def debug? debug/active?)
@@ -1344,8 +1346,7 @@
                        command
                        context
                        then
-                       class
-                       styles
+                       class styles sx
                        id
                        auto-hide-dialog]}]
   (when command
@@ -1407,7 +1408,8 @@
               :variant   (or variant "contained")
               :color     (or color "primary")
               :size      size
-              :className classes}
+              :className classes
+              :sx (->sx sx)}
              icon)
           ($ mui/Button
              {:to        to
@@ -1418,7 +1420,8 @@
               :color     (or color "primary")
               :startIcon icon
               :size      size
-              :className classes}
+              :className classes
+              :sx (->sx sx)}
              text)))
       (if (and icon (not text))
         ($ mui/IconButton
@@ -1430,7 +1433,8 @@
             :variant   (or variant "contained")
             :color     (or color "primary")
             :size      size
-            :className classes}
+            :className classes
+            :sx (->sx sx)}
            icon)
         ($ mui/Button
            {:onClick   on-click
@@ -1442,7 +1446,8 @@
             :color     (or color "primary")
             :startIcon icon
             :size      size
-            :className classes}
+            :className classes
+            :sx (->sx sx)}
            text)))))
 
 (defnc IconButton [{:keys [onClick on-click

@@ -92,9 +92,13 @@
 
 (defn conform-styles [styles]
   (reduce (fn [styles [k v]]
-            (assoc styles
-                   (conform-styles-selector k)
-                   (conform-style v)))
+            (if (map? v)
+              (assoc styles
+                     (conform-styles-selector k)
+                     (conform-style v))
+              (assoc styles
+                     k
+                     (conform-style-value v k))))
           {} styles))
 
 (defn adapt-theme [theme]
