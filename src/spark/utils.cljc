@@ -595,10 +595,12 @@
 
 (defn millis->hours-minutes [millis]
   (when millis
-    (let [hours (quot millis millis-in-hour)
-          millis (rem millis millis-in-hour)
-          minutes (quot millis millis-in-minute)]
-      (str hours ":" (string-pad-left minutes 2 "0")))))
+    (if (neg? millis)
+      (str "-" (millis->hours-minutes (- 0 millis)))
+      (let [hours (quot millis millis-in-hour)
+            millis (rem millis millis-in-hour)
+            minutes (quot millis millis-in-minute)]
+        (str hours ":" (string-pad-left minutes 2 "0"))))))
 
 (comment
   (millis->hours-minutes 1910000)
