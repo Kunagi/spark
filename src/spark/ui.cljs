@@ -101,13 +101,17 @@
 
 (def use-atom kui/use-atom)
 
-(defn use-promise [p]
-  (let [[result set-result] (use-state nil)]
-    (use-effect
-     :once
-     (u/=> p set-result)
-     nil)
-    result))
+(defn use-promise
+  ([p]
+   (use-promise :once p))
+  ([effect-trigger-vector p]
+   (let [[result set-result] (use-state nil)]
+     (use-effect
+      effect-trigger-vector
+      (set-result nil)
+      (u/=> p set-result)
+      nil)
+     result)))
 
 (def use-url-params (atom-hook browser/URL_PARAMS))
 
