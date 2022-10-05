@@ -73,6 +73,7 @@
                                                    (case type
                                                      :eur :right
                                                      :number :right
+                                                     :millis :right
                                                      :boolean :center
                                                      :x-on-true :center
                                                      :left))
@@ -83,7 +84,7 @@
                                                     (env/formatter-from-env type))
                                          record-key (or (-> col :record-key)
                                                         (-> col :id))
-                                         no-wrap (contains? #{:eur :date :time :date+time}
+                                         no-wrap (contains? #{:eur :date :time :date+time :millis}
                                                             (-> col :type))
                                          col-id (or (-> col :id)
                                                     (str "_col_" idx))
@@ -229,6 +230,9 @@
 
                                               (-> footer :type (= :sum))
                                               (let [aggregator (cond
+
+                                                                 (= type :millis)
+                                                                 +
 
                                                                  (= type :number)
                                                                  +

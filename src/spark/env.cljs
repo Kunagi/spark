@@ -2,7 +2,8 @@
   (:require
    [spark.rct :refer [test> def>]]
    [spark.local :as local]
-   ))
+
+   [spark.utils :as u]))
 
 (defn- format-default [v]
   (when v (str v)))
@@ -24,6 +25,7 @@
                              :date+time local/format-date+time
                              :yes-no local/format-yes-no
                              :x-on-true format-x-on-true
+                             :millis u/millis->hours-minutes
                              }}))
 
 (defn formatter-from-env [k]
