@@ -15,7 +15,8 @@
    [projekt.story :as story]
    [projekt.sprint :as sprint]
    [projekt.projekt :as projekt]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [kunagi.mui.api :as kui]))
 
 (defn show-add-story-form> [projekt values]
   (ui/show-form-dialog>
@@ -225,13 +226,16 @@
 (def-ui StoryCards [storys projekt sprint lowest-prio arbeitstage]
   (ui/stack
    (for [story (->> storys (sort-by story/sort-value))]
-     ($ StoryCard
-        {:key (-> story :id)
-         :story story
-         :projekt projekt
-         :sprint sprint
-         :lowest-prio lowest-prio
-         :arbeitstage arbeitstage}))))
+     (ui/div
+      {:key (-> story :id)}
+      ($ kui/ErrorBoundary
+         ($ StoryCard
+            {:key (-> story :id)
+             :story story
+             :projekt projekt
+             :sprint sprint
+             :lowest-prio lowest-prio
+             :arbeitstage arbeitstage}))))))
 
 (defn sprint-card [sprint projekt uid]
   (let [sprint-id (-> sprint :id)
