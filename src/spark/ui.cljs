@@ -999,7 +999,8 @@
      ($ mui/Dialog
         {:open      (-> dialog :open?)
          :onClose   #(hide-dialog (-> dialog :id))
-         :className class}
+         :className class
+         :maxWidth (get dialog :max-width "sm")}
         ;; (data dialog-id)
         ;; (DEBUG dialog)
         (when-let [title (-> dialog :title)]
