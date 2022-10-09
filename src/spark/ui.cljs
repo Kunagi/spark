@@ -2156,7 +2156,7 @@
 
 ;; * db dialogs
 
-(defn show-entity-form-dialog> [entity fields on-changed]
+(defn show-entity-form-dialog> [entity fields event on-changed]
   (log ::show-entity-form-dialog>
        :entity entity
        :fields fields)
@@ -2170,7 +2170,17 @@
                               fields))
     :submit (fn [values]
               (when values
-                (p/let [_ (db-update> entity values)]
+                (p/let [changes (if-not event
+                                  values
+                                  (let [event-id (or (-> event :id)
+                                                     (db/new-id))
+                                        event (assoc event
+                                                     :id event-id
+                                                     :ts :db/timestamp
+                                                     :values values
+                                                     :values-before (select-keys entity (keys values)))]
+                                    (assoc values :events {event-id event})))
+                        _ (db-update> entity changes)]
                   (when on-changed (on-changed values)))))}))
 
 ;; * db components
@@ -2178,6 +2188,7 @@
 (defnc EntityFieldCardActionArea [{:keys [on-click
                                           label children
                                           entity field
+                                          event
                                           value-suffix display
                                           description
                                           on-changed
@@ -2254,6 +2265,7 @@
                             (when-not disabled
                               #(show-entity-form-dialog>
                                 entity [field]
+                                event
                                 (when on-changed
                                   (fn [values]
                                     (on-changed (get values field-id)))))))
