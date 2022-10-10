@@ -614,7 +614,8 @@
 
 (def DIALOG-CLASS (atom nil))
 
-(defnc Form [{:keys [form set-form on-close on-cancel]}]
+(defnc Form [{:keys [form set-form on-close on-cancel
+                     grid-template-columns]}]
   (let [form         (assoc form :update (fn [f]
                                            (set-form (f form))))
         update-form_ (fn [f & args]
@@ -702,7 +703,8 @@
                :stlye {}}
               ($ :div
                  {:style {:display "grid"
-                          :grid-gap "8px"}}
+                          :grid-gap "8px"
+                          :grid-template-columns grid-template-columns}}
                  (for [field (get form :fields)]
                    (when-not (-> field :hidden)
                      ($ FormField
