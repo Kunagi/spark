@@ -1,7 +1,9 @@
 (ns spark.ui.styles
   (:require
    [clojure.string :as str]
-   ["@mui/material/styles" :as mui-styles]))
+   ["@mui/material/styles" :as mui-styles]
+   [camel-snake-kebab.core :as csk]
+   ))
 
 (defn app-styles [theme]
   {:.center {:display :grid :place-items "center"}
@@ -77,27 +79,46 @@
          (attr-with-px? attr)) (str v "px")
     :else                      v))
 
-(defn- conform-style [styles]
+(defn- ->camelCase-last [s]
+  (let [strings (str/split s #"\s")
+        ]
+    (if (-> strings count (= 1))
+      (csk/->camelCase (first strings))
+      (str/join " "
+                (conj (butlast strings)
+                      (csk/->camelCase (last strings)))))))
+(defn- conform-style-key [k camel?]
+  (if camel?
+    (if (keyword? k)
+      (-> k name ->camelCase-last)
+      (->camelCase-last k))
+    (if (keyword? k)
+      (-> k name)
+      (str k))))
+
+(defn- conform-style [styles camel?]
   (reduce (fn [styles [k v]]
             (if (and (string? k) (str/starts-with? "&" k))
-              (assoc styles k (conform-style v))
-              (assoc styles k (conform-style-value v k))))
+              (assoc styles (conform-style-key k camel?) (conform-style v camel?))
+              (assoc styles (conform-style-key k camel?) (conform-style-value v k))))
           {} styles))
 
-(defn- conform-styles-selector [s]
-  (cond
-    (keyword? s)              (str "& " (name s))
-    (str/starts-with? s "& ") s
-    :else                     (str "& " s)))
+(defn- conform-styles-selector [s camel?]
+  (conform-style-key
+   (cond
+     (keyword? s)              (str "& " (name s))
+     (str/starts-with? s "& ") s
+     :else                     (str "& " s))
+   camel?))
 
-(defn conform-styles [styles]
+(defn conform-styles [styles camel?]
   (reduce (fn [styles [k v]]
             (if (map? v)
               (assoc styles
-                     (conform-styles-selector k)
-                     (conform-style v))
+                     (conform-styles-selector k camel?)
+                     (conform-style v camel?))
               (assoc styles
-                     k
+                     (conform-style-key k camel?)
                      (conform-style-value v k))))
           {} styles))
 
@@ -114,4 +135,5 @@
     (conform-styles
      (if styles
        (merge (app-styles theme) (styles theme))
-       (app-styles theme)))))
+       (app-styles theme))
+     false)))

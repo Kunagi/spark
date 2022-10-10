@@ -72,7 +72,7 @@
 (defn sx [css-map]
   (when css-map
     (-> css-map
-        styles/conform-styles
+        (styles/conform-styles true)
         clj->js)))
 
 (def ->sx sx)
@@ -516,7 +516,8 @@
                              {:root (styles/conform-style
                                      (if (fn? styles-f)
                                        (styles-f theme)
-                                       styles-f))})
+                                       styles-f)
+                                     false)})
           use-styles       (make-styles styles-f-wrapper)
           ^js styles       (use-styles theme)]
       (-> styles .-root))))
@@ -2300,36 +2301,45 @@
 
 ;; * Cards
 
-(def-ui LinedCard [children class]
+(def-ui LinedCard [children class sx]
   ($ mui/Card
-     {:className (str  "LinedCard" " " class)}
+     {:className (str  "LinedCard" " " class)
+      :sx (->sx sx)}
      children))
 
-(defnc CardContent [{:keys [to on-click href target children]}]
+(defnc CardContent [{:keys [to on-click href target sx class children]}]
   (cond
 
     on-click
     ($ mui/CardActionArea
-       {:onClick on-click}
+       {:onClick on-click
+        :className class
+        :sx (->sx sx)}
        ($ mui/CardContent
           children))
 
     to
     ($ mui/CardActionArea
        {:to (coerce-link-to to)
-        :component router/Link}
+        :component router/Link
+        :className class
+        :sx (->sx sx)}
        ($ mui/CardContent
           children))
 
     href
     ($ mui/CardActionArea
        {:href href
-        :target target}
+        :target target
+        :className class
+        :sx (->sx sx) }
        ($ mui/CardContent
           children))
 
     :else
     ($ mui/CardContent
+       {:className class
+        :sx (->sx sx)}
        children)))
 
 (defnc Card [{:keys [to on-click
