@@ -1344,6 +1344,13 @@
                   (hide-dialog)
                   result)))))))
 
+(defn event-prevent-default [^js event]
+  (when event
+    (-> event .preventDefault)
+    (when (-> event .-stopImmediatePropagation)
+      (-> event .stopImmediatePropagation))
+    (-> event .stopPropagation)))
+
 (defnc Button [{:keys [text icon
                        onClick on-click to href target
                        pre-on-click
@@ -1387,10 +1394,7 @@
 
         on-click (when on-click
                    (fn [^js event]
-                     (-> event .preventDefault)
-                     (when (-> event .-stopImmediatePropagation)
-                       (-> event .stopImmediatePropagation))
-                     (-> event .stopPropagation)
+                     (event-prevent-default event)
                      (on-click)))
 
         variant      (if (keyword? variant) (name variant) variant)
