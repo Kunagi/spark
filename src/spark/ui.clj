@@ -15,6 +15,7 @@
 (defmacro use-state [& body] `(kunagi.mui.api/use-state ~@body))
 (defmacro use-context [& body] `(kunagi.mui.api/use-context ~@body))
 (defmacro use-effect [& body] `(kunagi.mui.api/use-effect ~@body))
+(defmacro use-ref [& body] `(kunagi.mui.api/use-ref ~@body))
 (defmacro provider [& body] `(kunagi.mui.api/provider ~@body))
 
 (defmacro div [& body] `(kunagi.mui.api/div ~@body))
