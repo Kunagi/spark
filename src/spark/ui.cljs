@@ -100,18 +100,9 @@
 (def memo kui/memo)
 
 (def use-atom kui/use-atom)
+(def use-promise kui/use-promise)
 
-(defn use-promise
-  ([p]
-   (use-promise :once p))
-  ([effect-trigger-vector p]
-   (let [[result set-result] (use-state nil)]
-     (use-effect
-      effect-trigger-vector
-      (set-result nil)
-      (u/=> p set-result)
-      nil)
-     result)))
+
 
 (def use-url-params (atom-hook browser/URL_PARAMS))
 
