@@ -914,7 +914,7 @@
                   (when (not= height new-height)
                     (set-height height))))]
        (js/window.addEventListener "resize" el)
-       (u/later> 1000
+       #_(u/later> 1000
                  #(let [new-height js/window.innerHeight]
                     (when (not= height new-height)
                       (set-height height))))
