@@ -517,8 +517,9 @@
                 {:style {:font-size "16px"}}
                 (-> field :label)))
           (ui/div
-           {:display :grid
-            :grid-gap "2px"
+           {:display (if (-> field :grid-gap-columns) :grid :flex)
+            :flex-direction :column
+            :gap "2px"
             :grid-template-columns (-> field :grid-template-columns)}
            (for [[idx option] (map-indexed vector visible-options)]
              (ui/div
