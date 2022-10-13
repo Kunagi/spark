@@ -520,22 +520,23 @@
            {:display :grid
             :grid-gap "2px"
             :grid-template-columns (-> field :grid-template-columns)}
-           (for [option visible-options]
-             ($ mui/FormControlLabel
-                {:key     (-> option :value)
-                 :label   (or (-> option :label)
-                              (-> option :value str))
-                 :sx (clj->js {"& .MuiFormControlLabel-label"
-                               {:lineHeight 1.1}})
-                 :control ($ mui/Checkbox
-                             {:name     (-> option :value str)
-                              :checked  (boolean (value (-> option :value)))
-                              :onChange #(let [checked? (-> % .-target .-checked)
-                                               value    (into #{} (-> field :value))
-                                               value    (if checked?
-                                                          (conj value (-> option :value))
-                                                          (disj value (-> option :value)))]
-                                           ((-> field :on-change) value))})})))
+           (for [[idx option] (map-indexed vector visible-options)]
+             (ui/div
+              {:key idx}
+              ($ mui/FormControlLabel
+                  {:label   (or (-> option :label)
+                                (-> option :value str))
+                   :sx (clj->js {"& .MuiFormControlLabel-label"
+                                 {:lineHeight 1.1}})
+                   :control ($ mui/Checkbox
+                               {:name     (-> option :value str)
+                                :checked  (boolean (value (-> option :value)))
+                                :onChange #(let [checked? (-> % .-target .-checked)
+                                                 value    (into #{} (-> field :value))
+                                                 value    (if checked?
+                                                            (conj value (-> option :value))
+                                                            (disj value (-> option :value)))]
+                                             ((-> field :on-change) value))})}))))
           (when (and expandable?
                      (not expanded?))
             ($ mui/Button
