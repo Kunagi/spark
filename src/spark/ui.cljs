@@ -319,6 +319,7 @@
 
      (use-effect
       [effect-signal]
+      (set-doc nil)
       (when (and path
                  (not (u/seq-contains-nil? path)))
         ;; (log ::use-doc--subscribe
@@ -419,6 +420,7 @@
      (when path
        (log ::use-col--subscribe
             :path path)
+       (set-docs nil)
        (let [col-ref     (firestore/ref path)
              on-snap     (fn [^js query-col-snapshot]
                            ;; (log ::query-snapshot-received
