@@ -217,6 +217,16 @@
      (-> ^js @HISTORY (.push to))
      nil)))
 
+(defn redirect-with-replace
+  ([to]
+   (redirect to nil))
+  ([to suffix]
+   (let [to (if (vector? to)
+              (str "/ui/" (str/join "/" to) suffix)
+              (str to suffix))]
+     (-> ^js @HISTORY (.replace to))
+     nil)))
+
 ;; * firebase
 
 (defn log-error [error]
