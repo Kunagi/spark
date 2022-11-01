@@ -2320,27 +2320,27 @@
     on-click
     ($ mui/CardActionArea
        {:onClick on-click
-        :className class
-        :sx (->sx sx)}
+        :className class}
        ($ mui/CardContent
+          {:sx (->sx sx)}
           children))
 
     to
     ($ mui/CardActionArea
        {:to (coerce-link-to to)
         :component router/Link
-        :className class
-        :sx (->sx sx)}
+        :className class}
        ($ mui/CardContent
+          {:sx (->sx sx)}
           children))
 
     href
     ($ mui/CardActionArea
        {:href href
         :target target
-        :className class
-        :sx (->sx sx) }
+        :className class}
        ($ mui/CardContent
+          {:sx (->sx sx)}
           children))
 
     :else
