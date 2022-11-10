@@ -263,6 +263,9 @@
   (seq-contains-nil? nil)
   (seq-contains-nil? []))
 
+(defn seq-contains? [s v]
+  (contains? (into #{} s) v))
+
 (defn seq-indexed
   "Returns a lazy sequence of [index, item] pairs, where items come
   from 's' and indexes count up from zero.
