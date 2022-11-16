@@ -2112,7 +2112,10 @@
            label
            on-change
            read-only
-           max-files]}]
+           max-files
+           on-uploaded
+           on-deleted
+           ]}]
   (let [id (or id (u/nano-id))
         max-files (or max-files 99)
         [storage-files reload-storage-files] (use-storage-files bucket-name storage-path)
@@ -2123,12 +2126,14 @@
                             (log ::StorageFilesUploader--on-upload-started
                                  :file file)
                             (set-uploading true))
-        on-uploaded (fn [file-url]
-                      (log ::StorageFilesUploader--on-uploaded
-                           :file-url file-url)
-                      (reload-storage-files)
-                      (when on-change (on-change))
-                      (set-uploading false))]
+        on-file-uploaded (fn [file-url]
+                           (log ::StorageFilesUploader--on-uploaded
+                                :file-url file-url)
+                           (reload-storage-files)
+                           (when on-change (on-change))
+                           (set-uploading false)
+                           (when on-uploaded (on-uploaded file-url))
+                           )]
 
     (stack
      (when label
@@ -2141,7 +2146,7 @@
           :bucket-name bucket-name
           :append-filename true
           :on-upload-started on-upload-started
-          :then         on-uploaded})
+          :then         on-file-uploaded})
       (if (or uploading?
               (not storage-files))
         ($ mui/CircularProgress)
@@ -2152,6 +2157,8 @@
                              :on-click (fn [path]
                                          (u/=> (storage/delete> path)
                                                (fn []
+                                                 (when on-change (on-change))
+                                                 (when on-deleted (on-deleted path))
                                                  (js/setTimeout
                                                   #(reload-storage-files)
                                                   500))))}]})
