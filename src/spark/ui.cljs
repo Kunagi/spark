@@ -2358,11 +2358,13 @@
 
 (defnc Card [{:keys [to on-click
                      children padding highlight
-                     class]}]
+                     class
+                     sx]}]
   (let [Card     ($ mui/Paper
                     {:className (str (when highlight "HighlightOutline")
                                      (when class
-                                       (str " " class)))}
+                                       (str " " class)))
+                     :sx (->sx sx)}
                     (div
                      {:padding (or padding 16)
                       :display :grid}

@@ -78,9 +78,10 @@
                      :values values)
                 (db/update> sprint values))})))
 
-(def-ui Task [task]
+(defn >task [task]
   ($ :div
-     {:style {:display :flex}}
+     {:key task
+      :style {:display :flex}}
      ($ :div
         {:class "material-icons"
          :style {:margin-right "4px"}}
@@ -118,10 +119,15 @@
    (ui/div
     s)))
 
+(defonce EXPANDED_STORYS (atom #{}))
+
 (def-ui StoryCard [story projekt sprint lowest-prio uid arbeitstage]
   {:from-context [uid]
    :wrap-memo-props [story lowest-prio arbeitstage]}
-  (let [hindernis? (-> story story/hindernis boolean)
+  (let [expanded-storys (ui/use-atom EXPANDED_STORYS)
+        expanded? (contains? expanded-storys (-> story :id))
+
+        hindernis? (-> story story/hindernis boolean)
         ungeschaetzt? (-> story story/restaufwand nil?)
         completed? (-> story story/completed?)
         prio (-> story story/prio)
@@ -131,15 +137,22 @@
                    (not completed?))
         aufwand (max (-> story story/restaufwand)
                      (-> story story/aufwand)
-                     1)]
+                     1)
+        dev? (projekt/developer-uid? projekt uid)
+        collapsed? (and completed? dev? (not expanded?))]
     (log ::StoryCard--render
          :story (-> story story/num)
          :projekt (-> projekt :id))
     ($ ui/Card
-       {:class (str (when completed? " Card--StoryMap--completed"))}
+       {:sx {:background-color (cond
+                                 completed? (-> colors .-green (aget 50))
+                                 (nil? prio) (-> colors .-grey (aget 200)))}}
        ;; (ui/DEBUG arbeitstage)
        ($ mui/CardActionArea
-          {:onClick #(show-update-story-form> projekt story uid)}
+          {:onClick (fn []
+                      (if collapsed?
+                        (swap! EXPANDED_STORYS conj (-> story :id))
+                        (show-update-story-form> projekt story uid)))}
           ($ mui/CardContent
              (ui/stack
 
@@ -201,26 +214,28 @@
                    {:style {:text-align "center"
                             :white-space "pre-wrap"}}
                    beschreibung))
-              (when-let [tasks (story/parse-tasks story)]
-                ($ :div
-                   (for [task tasks]
-                     ($ Task
-                        {:key task
-                         :task task}))))
-              (when-let [voraussetzungen (-> story :voraussetzungen)]
-                ($ :div
-                   ($ :span {:className "b"
-                             :style {:white-space "pre-wrap"}}
-                      "Voraussetzungen: ")
-                   (-> voraussetzungen)))
-              (when-let [s (-> story story/hindernis)]
-                (format-hindernis s))
+
+              (when-not collapsed?
+                (ui/stack
+                 (when-let [tasks (story/parse-tasks story)]
+                   ($ :div
+                      (for [task tasks]
+                        (>task task))))
+                 (when-let [voraussetzungen (-> story :voraussetzungen)]
+                   ($ :div
+                      ($ :span {:className "b"
+                                :style {:white-space "pre-wrap"}}
+                         "Voraussetzungen: ")
+                      (-> voraussetzungen)))
+                 (when-let [s (-> story story/hindernis)]
+                   (format-hindernis s))))
+
               (when-let [s (-> story :klaerungsbedarf)]
                 (format-klaerungsbedarf s)))
 
-;; (ui/DEBUG {:restaufwand (-> story story/restaufwand)
+             ;; (ui/DEBUG {:restaufwand (-> story story/restaufwand)
              ;;            :tag (-> story :fertig-in-tagen)})
-           ;;
+             ;;
              #_(ui/data story))))))
 
 (def-ui StoryCards [storys projekt sprint lowest-prio arbeitstage]
