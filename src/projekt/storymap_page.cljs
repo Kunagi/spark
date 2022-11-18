@@ -146,7 +146,8 @@
     ($ ui/Card
        {:sx {:background-color (cond
                                  completed? (-> colors .-green (aget 50))
-                                 (and prio) (-> colors .-blue (aget 50)))}}
+                                 next? (-> colors .-yellow (aget 100))
+                                 prio (-> colors .-yellow (aget 50)))}}
        ;; (ui/DEBUG arbeitstage)
        ($ mui/CardActionArea
           {:onClick (fn []
@@ -303,12 +304,12 @@
                :color "#eee"}
               "Abgeschlossen am " datum))))))))
 
-(defn features-row [projekt uid feature-ids sprint-id]
+(defn >features-row [projekt uid feature-ids sprint-id]
   ($ :tr
      (for [feature-id feature-ids]
        ($ :th {:key feature-id}
-          ($ mui/Card
-             {:className "StoryMap-FeatureCard"}
+          ($ mui/Paper
+             {:sx (ui/sx {:background-color (-> colors .-grey (aget 400))})}
              ($ :div
                 {:style {:display "flex"
                          :justify-content "space-between"
@@ -488,7 +489,7 @@
            ;; (ui/DEBUG arbeitstage)
            ;; (ui/DEBUG story-projections)
            ))
-     (features-row projekt uid feature-ids sprint-id)
+     (>features-row projekt uid feature-ids sprint-id)
      ($ :tr
         (for [feature-id feature-ids]
           ($ :td {:key feature-id
