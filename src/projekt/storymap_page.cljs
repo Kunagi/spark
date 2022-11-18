@@ -146,6 +146,7 @@
     ($ ui/Card
        {:sx {:background-color (cond
                                  completed? (-> colors .-green (aget 50))
+                                 (and prio hindernis?) (-> colors .-red (aget 50))
                                  next? (-> colors .-yellow (aget 100))
                                  prio (-> colors .-yellow (aget 50)))}}
        ;; (ui/DEBUG arbeitstage)
@@ -253,7 +254,7 @@
              :lowest-prio lowest-prio
              :arbeitstage arbeitstage}))))))
 
-(defn sprint-card [sprint projekt uid]
+(defn >sprint-card [sprint projekt uid]
   (let [sprint-id (-> sprint :id)
         storys (-> projekt projekt/storys)
         stunden-geschaetzt (reduce (fn [aufwand story]
@@ -485,7 +486,7 @@
      ($ :tr
         ($ :td
            {:colSpan (count feature-ids)}
-           (sprint-card sprint projekt uid)
+           (>sprint-card sprint projekt uid)
            ;; (ui/DEBUG arbeitstage)
            ;; (ui/DEBUG story-projections)
            ))
