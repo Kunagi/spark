@@ -146,7 +146,7 @@
     ($ ui/Card
        {:sx {:background-color (cond
                                  completed? (-> colors .-green (aget 50))
-                                 (nil? prio) (-> colors .-grey (aget 200)))}}
+                                 (and prio) (-> colors .-blue (aget 50)))}}
        ;; (ui/DEBUG arbeitstage)
        ($ mui/CardActionArea
           {:onClick (fn []
