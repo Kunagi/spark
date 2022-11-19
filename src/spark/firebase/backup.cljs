@@ -112,17 +112,17 @@
 
 ;; * Single File
 
-(defn stream-string> [^js res s]
+(defn stream-string> [^js output-stream s]
   (if (str/blank? s)
-    (u/resolve> res)
+    (u/resolve> output-stream)
     (u/promise>
      (fn [resolve reject]
        #_(-> res (.write s "utf-8" resolve))
        (let [Readable (-> stream .-Readable)
              readable (-> Readable (.from s))]
-         (-> readable (.pipe res (clj->js {:end false})))
+         (-> readable (.pipe output-stream (clj->js {:end false})))
          (-> readable (.on "end" (fn []
-                                   (resolve res))))
+                                   (resolve output-stream))))
          (-> readable (.on "error" (fn [err]
                                      (reject err)))))))))
 
@@ -152,10 +152,10 @@
           ]
     res))
 
-(defn stream-next-col> [^js res cols-names]
+(defn stream-next-col> [^js output-stream cols-names]
   (when (seq cols-names)
-    (p/let [_ (stream-col> res (first cols-names))]
-      (stream-next-col> res (rest cols-names)))))
+    (p/let [_ (stream-col> output-stream (first cols-names))]
+      (stream-next-col> output-stream (rest cols-names)))))
 
 (defn create-backup-file> [bucket filename cols-names]
   (p/let [;; new-auth-token  (if goog.DEBUG "geheim"
