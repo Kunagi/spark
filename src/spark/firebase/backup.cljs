@@ -129,15 +129,26 @@
 (defn stream-col> [^js res col-name]
   (log ::stream-col-to-http-response>
        :col col-name)
-  (p/let [docs (db/get> [{:id col-name}])
+  (p/let [start-millis (-> (js/Date.) .getTime)
+          docs (db/get> [{:id col-name}])
           _ (log ::stream-col-to-http-response>--col-loaded
-                 :col col-name)
+                 :col col-name
+                 :runtime (-> (js/Date.) .getTime (- start-millis)))
+
+          start-millis (-> (js/Date.) .getTime)
           docs (->> docs
                     (map db/doc-remove-metadata))
           data {:col col-name
                 :docs (->> docs #_(take 2)) #_(count docs)} ;; FIXME
           s (u/->edn data)
-          _ (stream-string> res s)]
+          _ (log ::stream-col-to-http-response>--ednized
+                 :runtime (-> (js/Date.) .getTime (- start-millis)))
+
+          start-millis (-> (js/Date.) .getTime)
+          _ (stream-string> res s)
+          _ (log ::stream-col-to-http-response>--streamed-to-file
+                 :runtime (-> (js/Date.) .getTime (- start-millis)))
+          ]
     res))
 
 (defn stream-next-col> [^js res cols-names]
@@ -187,4 +198,4 @@
 (defn exports [bucket-name exceptions]
   {:backup (gcf/on-request> (partial handle-on-backup> bucket-name exceptions)
                             {:timeoutSeconds 540
-                             :memory "1GB"})})
+                             :memory "8GB"})})
