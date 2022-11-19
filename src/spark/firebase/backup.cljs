@@ -140,7 +140,8 @@
                     (map db/doc-remove-metadata))
           data {:col col-name
                 :docs (->> docs #_(take 2)) #_(count docs)} ;; FIXME
-          s (u/->edn data)
+          ;; s (u/->edn data)
+          s (pr-str data)
           _ (log ::stream-col-to-http-response>--ednized
                  :runtime (-> (js/Date.) .getTime (- start-millis)))
 
