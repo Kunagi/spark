@@ -211,11 +211,13 @@
                           :min-width "200px"
                           :font-weight "bold"}}
                  (-> story :bez))
-              (when-let [beschreibung (-> story :beschreibung)]
-                ($ :div
-                   {:style {:text-align "center"
-                            :white-space "pre-wrap"}}
-                   beschreibung))
+
+              (when-not collapsed?
+                (when-let [beschreibung (-> story :beschreibung)]
+                  ($ :div
+                     {:style {:text-align "center"
+                              :white-space "pre-wrap"}}
+                     beschreibung)))
 
               (when-not collapsed?
                 (ui/stack
