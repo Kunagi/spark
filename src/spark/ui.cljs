@@ -903,9 +903,10 @@
                             style)}
             child)))))
 
-(defnc Link--no-styles [{:keys [to on-click children]}]
+(defnc Link--no-styles [{:keys [to href on-click children]}]
   ($ Link
      {:to        to
+      :href      href
       :on-click  on-click
       :className "Link--no-styles"}
      children))
