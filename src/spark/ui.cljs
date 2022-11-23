@@ -102,7 +102,7 @@
 (def use-atom kui/use-atom)
 (def use-promise kui/use-promise)
 
-
+(def ErrorBoundary kui/ErrorBoundary)
 
 (def use-url-params (atom-hook browser/URL_PARAMS))
 
