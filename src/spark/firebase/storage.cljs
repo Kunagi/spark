@@ -90,8 +90,7 @@
          :file file
          :path path)
     (p/let [ref (ref path)
-            result (firebase-storage/uploadBytes ref file (clj->js metadata))
-            meta-result (firebase-storage/updateMetadata ref (clj->js metadata))]
+            result (firebase-storage/uploadBytes ref file (clj->js metadata))]
       result)))
 
 (defn delete> [path]
