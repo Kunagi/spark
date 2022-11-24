@@ -1,6 +1,6 @@
 (ns spark.firebase.storage
   (:require
-
+   [promesa.core :as p]
    ["firebase/storage" :as firebase-storage]
 
    [spark.logging :refer [log]]
@@ -85,10 +85,14 @@
                             (.-fullPath item)))))))))
 
 (defn upload-file> [file path]
-  (log ::upload-file>
-       :file file
-       :path path)
-  (firebase-storage/uploadBytes (ref path) file))
+  (let [metadata {:contentType (-> file .-type)}]
+    (log ::upload-file>
+         :file file
+         :path path)
+    (p/let [ref (ref path)
+            result (firebase-storage/uploadBytes ref file (clj->js metadata))
+            meta-result (firebase-storage/updateMetadata ref (clj->js metadata))]
+      result)))
 
 (defn delete> [path]
   (firebase-storage/deleteObject (ref path)))
