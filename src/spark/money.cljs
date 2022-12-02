@@ -140,10 +140,14 @@
 
 (defn ->number [m]
   (when-let [cents (->cents m)]
-    (-> cents (/ 100) (.toFixed 2))))
+    (-> cents (/ 100) )))
 
 (comment
   (->number "23.42"))
+
+(defn ->number-string [m]
+  (when-let [cents (->cents m)]
+    (-> cents (/ 100) (.toFixed 2))))
 
 (defn multiply [m factor]
   (when m

@@ -132,7 +132,7 @@
   (case (-> field :type)
 
     ;; :eur (format-eur value)
-    :eur (when value (-> value money/money money/->number))
+    :eur (when value (-> value money/money money/->number-string))
 
     :checkboxes
     (->> field :options (map :value) (into #{}) (set/intersection value))
