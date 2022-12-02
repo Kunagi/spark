@@ -28,9 +28,13 @@
       (money {:amount (* v 100)})
 
       (string? v)
-      (money {:amount (-> (u/parse-float v)
-                          (* 100)
-                          (js/Math.round 2))})
+      (let [f (u/parse-float v)]
+        (when (js/isNaN f)
+          (throw (ex-info (str "Value is not a number: " v)
+                          {:v v})))
+        (money {:amount (-> f
+                            (* 100)
+                            (js/Math.round 2))}))
 
       (map? v)
       (let [amount   (or (-> v :amount) 0)
@@ -136,7 +140,7 @@
 
 (defn ->number [m]
   (when-let [cents (->cents m)]
-    (/ cents 100)))
+    (-> cents (/ 100) (.toFixed 2))))
 
 (comment
   (->number "23.42"))

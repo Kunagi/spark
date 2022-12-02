@@ -14,7 +14,8 @@
    [spark.form :as form]
    [spark.db :as db]
    [clojure.string :as str]
-   [kunagi.mui.api :as ui]))
+   [kunagi.mui.api :as ui]
+   [spark.money :as money]))
 
 (defn DEBUG [v]
   (when goog.DEBUG
@@ -126,6 +127,7 @@
         InputProps  {:startAdornment start-adornment
                      :endAdornment end-adornment}]
     ($ :div
+       ;; (DEBUG field)
        ;; ($ :pre (-> field :on-change str))
        ;; (when goog.DEBUG
        ;;   ($ :div
@@ -291,7 +293,8 @@
                            :min min-value
                            :max max-value
                            :step "0.01"
-                           :inputMode "decimal")]
+                           :inputMode "decimal"
+                           )]
     (create-input (assoc field
                          :type "text"
                          :input-type "number"

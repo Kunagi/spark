@@ -131,7 +131,8 @@
   ;; (tap> [:prepare-field-value value field])
   (case (-> field :type)
 
-    :eur (format-eur value)
+    ;; :eur (format-eur value)
+    :eur (when value (-> value money/money money/->number))
 
     :checkboxes
     (->> field :options (map :value) (into #{}) (set/intersection value))
@@ -222,6 +223,7 @@
 
 (defn default-eur-validator [form field]
   (fn [value form]
+    ;; (tap> [:validating value])
     (let [min-value (-> field :min)
           max-value (-> field :max)]
       (when value
@@ -254,29 +256,37 @@
       (default-field-validator form field-id)))
 
 (defn field-coercer [form field-id]
-  (when-let [coercer (-> form (field-by-id field-id) :coercer)]
-    (if (fn? coercer)
-      coercer
-      (case coercer
-        :lines
-        (fn [value _form]
-          (when value
-            (->> (str/split-lines value)
-                 (map str/trim)
-                 (remove str/blank?))))
+  (let [field (field-by-id form field-id)
+        coercer (or (-> field :coercer)
+                    (when (-> field :type (= :eur))
+                      (fn [value _form]
+                        (when value
+                          (-> value
+                              money/money
+                              money/->str)))))]
+    (when coercer
+      (if (fn? coercer)
+        coercer
+        (case coercer
+          :lines
+          (fn [value _form]
+            (when value
+              (->> (str/split-lines value)
+                   (map str/trim)
+                   (remove str/blank?))))
 
-        :ints
-        (fn [value _form]
-          (when value
-            (->> (str/split value #"[\s,]")
-                 (map js/parseInt))))
+          :ints
+          (fn [value _form]
+            (when value
+              (->> (str/split value #"[\s,]")
+                   (map js/parseInt))))
 
-        :sorted-ints
-        (fn [value _form]
-          (when value
-            (->> (str/split value #"[\s,]")
-                 (map js/parseInt)
-                 sort)))))))
+          :sorted-ints
+          (fn [value _form]
+            (when value
+              (->> (str/split value #"[\s,]")
+                   (map js/parseInt)
+                   sort))))))))
 
 (defn values [form]
   (-> form :values))
