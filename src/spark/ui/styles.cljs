@@ -103,19 +103,17 @@
               (assoc styles (conform-style-key k camel?) (conform-style-value v k))))
           {} styles))
 
-(defn- conform-styles-selector [s camel?]
-  (conform-style-key
-   (cond
-     (keyword? s)              (str "& " (name s))
-     (str/starts-with? s "& ") s
-     :else                     (str "& " s))
-   camel?))
+(defn- conform-styles-selector [s]
+  (cond
+    (keyword? s) (str "& " (name s))
+    (str/starts-with? s "& ") s
+    :else (str "& " s)))
 
 (defn conform-styles [styles camel?]
   (reduce (fn [styles [k v]]
             (if (map? v)
               (assoc styles
-                     (conform-styles-selector k camel?)
+                     (conform-styles-selector k)
                      (conform-style v camel?))
               (assoc styles
                      (conform-style-key k camel?)
