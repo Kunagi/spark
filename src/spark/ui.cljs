@@ -135,7 +135,7 @@
 
 (def RouterLink router/Link)
 
-(defnc Link [{:keys [to href on-click class className children style]}]
+(defnc Link [{:keys [to href on-click class className sx children style]}]
   (let [to        (or to href)
         className (or class className)
         remote?   (to-is-remote? to)
@@ -157,6 +157,7 @@
           :onClick   on-click
           :target    (when remote? "_blank")
           :className className
+          :sx (->sx sx)
           :style     (merge {:cursor "pointer"
                              :color  "unset"}
                             style)}
@@ -164,7 +165,8 @@
       ($ router/Link
          {:to        (coerce-link-to to)
           :onClick   on-click
-          :className (str "Link " className)}
+          :className (str "Link " className)
+          :sx (->sx sx)}
          children))))
 
 ;; * routing
@@ -1536,7 +1538,8 @@
      "Example content."))
 
 (defnc CardRow [{:keys [gap children
-                        grid-template-columns]}]
+                        grid-template-columns
+                        style sx]}]
   (when children
     (if-not (array? children)
       children
@@ -1544,10 +1547,13 @@
                           (remove nil?))]
         ($ :div
            {:class "CardRow"
-            :style {:display :grid
-                    :grid-template-columns (or grid-template-columns
-                                               (str "repeat(" (count children) ", auto)"))
-                    :grid-gap gap}}
+            :sx (->sx sx)
+            :style (merge
+                    {:display :grid
+                     :grid-template-columns (or grid-template-columns
+                                                (str "repeat(" (count children) ", auto)"))
+                     :grid-gap gap}
+                    style)}
            children)))))
 
 (def FieldLabel form-ui/FieldLabel)
