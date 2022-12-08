@@ -308,15 +308,22 @@
 
 (defn- fs-collection [source path-elem]
   (if (map? path-elem)
-    (let [{:keys [id wheres where]} path-elem
+    (let [{:keys [id wheres where order-by limit]} path-elem
           wheres                    (if where
                                       (conj wheres where)
                                       wheres)
           wheres                    (remove nil? wheres)
-          collection                (-> ^js source (.collection id))]
-      (reduce (fn [collection [attr op val]]
-                (-> ^js collection (.where attr op (clj->js val))))
-              collection wheres))
+          collection                (-> ^js source (.collection id))
+          collection (reduce (fn [collection [attr op val]]
+                               (-> ^js collection (.where attr op (clj->js val))))
+                             collection wheres)
+          collection (if-not order-by
+                       collection
+                       (-> ^js collection (.orderBy (first order-by) (second order-by))))
+          collection (if-not limit
+                       collection
+                       (-> ^js collection (.limit limit)))]
+      collection)
     (-> ^js source (.collection path-elem))))
 
 (defn ^js ref [path]
