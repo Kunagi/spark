@@ -2013,7 +2013,7 @@
            label
            alt-url
            children]}]
-  (let [[url set-url_] (use-state (or alt-url :loading))
+  (let [[url set-url_] (use-state :loading)
         set-url        (fn [new-url]
                          (when (not= url new-url)
                            (log ::file-uploaded
@@ -2054,7 +2054,7 @@
 
             (if (= :loading url)
               (center ($ mui/CircularProgress))
-              (if url
+              (if-let [url (or url alt-url)]
                 (cond
                   div-style ($ :div
                                {:style (merge
