@@ -814,10 +814,11 @@
      {:onClick #(show-form-dialog form)}
      children))
 
-(defnc FieldLabel [{:keys [text]}]
+(defnc FieldLabel [{:keys [text emphasized]}]
   ($ :div
      {:class "FieldLabel"
-      :style {:color "grey"}}
+      :style {:color "grey"
+              :font-weight (when emphasized 900)}}
    ;; TODO (->component text)
      (str text)))
 
