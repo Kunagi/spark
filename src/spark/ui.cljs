@@ -2011,8 +2011,9 @@
            img-style div-style
            on-url-changed
            label
+           alt-url
            children]}]
-  (let [[url set-url_] (use-state :loading)
+  (let [[url set-url_] (use-state (or alt-url :loading))
         set-url        (fn [new-url]
                          (when (not= url new-url)
                            (log ::file-uploaded
