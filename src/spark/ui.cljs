@@ -231,21 +231,23 @@
 
 ;; * firebase
 
-(defn log-error [error]
+(defn log-error> [error]
   (let [message (if (and error
                          (.hasOwnProperty error "message"))
                   (-> error .-message)
                   "Unknown Error")]
-    (p/let [_ (db/add> "errors" {:message message
-                                 :error (str error)
-                                 :stack (when (and error
-                                                   (.hasOwnProperty error "stack"))
-                                          (-> error .-stack))
-                                 :url js/window.location.href
-                                 :userAgent js/navigator.userAgent
-                                 :timestamp :db/timestamp
-                                 :uid (js/localStorage.getItem "spark.uid")})]
-      nil))
+    (db/add> "errors" {:message message
+                       :error (str error)
+                       :stack (when (and error
+                                         (.hasOwnProperty error "stack"))
+                                (-> error .-stack))
+                       :url js/window.location.href
+                       :userAgent js/navigator.userAgent
+                       :timestamp :db/timestamp
+                       :uid (js/localStorage.getItem "spark.uid")})))
+
+(defn log-error [error]
+  (log-error> error)
   nil)
 
 (def call-server> firebase-functions/call>)
@@ -444,6 +446,9 @@
                                 (map firestore/wrap-doc)
                                 set-docs))
              on-error    (fn [^js firestore-error]
+                           ;; FIXME debug
+                           (when (debug?)
+                             (js/alert firestore-error))
                            (let [msg (str "Loading collection " (u/->edn path) " failed: "
                                           (str firestore-error))
                                  error (js/Error. msg (clj->js {:cause firestore-error}))]
