@@ -546,7 +546,7 @@
                                                                  (.-fullPath item)))))))))]
 
      (use-effect
-      (str path)
+      [(str path)]
       (reload-f)
       nil)
 
