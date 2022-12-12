@@ -684,7 +684,8 @@
                                 (when optimistic? (close p))
                                 (-> p
                                     (.then (fn [result]
-                                             (close result)))
+                                             (when-not optimistic?
+                                               (close result))))
                                     (.catch (fn [error]
                                               (update-form (fn [_]
                                                              (form/set-error form error)))))))
