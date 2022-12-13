@@ -584,10 +584,21 @@
    ;; (log ::set>
    ;;      :tx-data tx-data)
    (if (sequential? tx-data)
-     (if transaction
-       (u/all-in-sequence> (map #(set> transaction %) tx-data))
-       (transact> (fn [{:keys [set>]}]
-                    (u/all-in-sequence> (map #(set> %) tx-data)))))
+
+     ;; sequential tx-data
+     (if (empty? tx-data)
+       (u/no-op>)
+       (if (-> tx-data count (> 500))
+         (p/let [[batch rest-batch] (split-at 500 tx-data)
+                 batch-results (set> transaction batch)
+                 rest-results (set> transaction rest-batch)]
+           [batch-results rest-results])
+         (if transaction
+           (u/all-in-sequence> (map #(set> transaction %) tx-data))
+           (transact> (fn [{:keys [set>]}]
+                        (u/all-in-sequence> (map #(set> %) tx-data)))))))
+
+     ;; not sequential tx-data (just entity)
      (if-not tx-data
        (u/no-op>)
        (let [db-ref  (-> tx-data :db/ref)
@@ -648,6 +659,8 @@
   (log ::transact>)
   (let [starttime (js/Date.)]
     (if (fn? transaction>)
+
+      ;; transaction function
       (-> (firestore)
           (.runTransaction
            (fn [^js transaction]
@@ -658,6 +671,8 @@
                (log ::transact>--fn-completed
                     :result result)
                result))))
+
+      ;; transaction data
       (set> transaction>))))
 
 (comment

@@ -206,6 +206,8 @@
 (defn transact> [tx-data]
   (firestore/transact>
    (if (fn? tx-data)
+
+     ;; transaction function
      (fn [{:keys [get> set>] :as ops}]
        (tx-data (assoc ops
                        :get> (fn _get>
@@ -217,6 +219,8 @@
                                (set> (add-tx entity-type values)))
                        :update> (fn _update> [thing values]
                                   (set> (update-tx thing values))))))
+
+     ;; transaction data
      (conform-tx-data tx-data))))
 
 (comment
