@@ -310,7 +310,7 @@
 
 (defn- fs-collection [source path-elem]
   (if (map? path-elem)
-    (let [{:keys [id wheres where order-by limit start-after]} path-elem
+    (let [{:keys [id wheres where order-by limit start-after start-at end-at]} path-elem
           wheres                    (if where
                                       (conj wheres where)
                                       wheres)
@@ -325,6 +325,12 @@
           collection (if-not start-after
                        collection
                        (-> ^js collection (.startAfter (ref start-after))))
+          collection (if-not start-at
+                       collection
+                       (-> ^js collection (.startAt start-at)))
+          collection (if-not end-at
+                       collection
+                       (-> ^js collection (.endAt end-at)))
           collection (if-not limit
                        collection
                        (-> ^js collection (.limit limit)))]
