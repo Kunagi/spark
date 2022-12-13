@@ -306,9 +306,11 @@
     (keyword? thing) [(name thing)]
     :else            (do (s/assert ::path thing) thing)))
 
+(declare ref)
+
 (defn- fs-collection [source path-elem]
   (if (map? path-elem)
-    (let [{:keys [id wheres where order-by limit]} path-elem
+    (let [{:keys [id wheres where order-by limit start-after]} path-elem
           wheres                    (if where
                                       (conj wheres where)
                                       wheres)
@@ -320,6 +322,9 @@
           collection (if-not order-by
                        collection
                        (-> ^js collection (.orderBy (first order-by) (second order-by))))
+          collection (if-not start-after
+                       collection
+                       (-> ^js collection (.startAfter (ref start-after))))
           collection (if-not limit
                        collection
                        (-> ^js collection (.limit limit)))]
