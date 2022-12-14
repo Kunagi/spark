@@ -52,12 +52,66 @@
   (->> records
        (filter #(record-visible-for-cols? % cols))))
 
+(defn- header-or-footer-row [k idx cols records]
+  ($ mui/TableRow
+     {:key idx
+      :sx (ui/sx {:background-color "#eee"})
+      }
+     (for [col cols]
+       (let [footer (-> col (get k) (get idx))
+             record-key (-> col :record-key)
+             type (-> col :type)
+             value (-> footer :value)
+             value (cond
+                     (fn? value)
+                     (value records)
+
+                     (-> footer :type (= :count))
+                     (->> records
+                          (remove (fn [record]
+                                    (nil? (get record record-key))))
+                          count)
+
+                     (-> footer :type (= :sum))
+                     (let [aggregator (cond
+
+                                        (= type :millis)
+                                        +
+
+                                        (= type :number)
+                                        +
+
+                                        (= type :eur)
+                                        money/+
+
+                                        :else str)
+                           format (-> col :format)]
+                       (format (reduce (fn [result record]
+                                         (let [value (get record record-key)]
+                                           (aggregator result value)))
+                                       nil records))))]
+
+         ($ mui/TableCell
+            {:key (or (-> col :id) (-> col :label))}
+            (ui/div
+             {:font-weight 900
+              :text-align (cond
+                            (-> footer :type (= :count)) "right"
+                            :else (-> col :align))}
+             value)))))
+  )
+
 (def-ui DataTable [table records
                    csv-filename
                    table-max-height]
   (let [record-id-getter (or (-> table :record-id-getter)
                              :id)
         record-on-click (-> table :record-on-click)
+
+
+        headers-count (reduce (fn [c col]
+                                (max c (-> col :headers count)))
+                              0 (-> table :cols))
         footers-count (reduce (fn [c col]
                                 (max c (-> col :footers count)))
                               0 (-> table :cols))
@@ -152,10 +206,15 @@
             ;; {:component mui/Paper}
             ;; (ui/div {:background-color "yellow" :height "100%"})
             ($ mui/Table
-               {:stickyHeader true
+               {
+                ;; :stickyHeader true
                 :size "small"}
 
                ($ mui/TableHead
+                  {:sx (ui/sx {:position :sticky
+                               :top 0
+                               :z-index 1
+                               :background-color "#ddd"})}
                   ;; (ui/data footers-count)
                   ($ mui/TableRow
                      (for [col cols]
@@ -164,7 +223,11 @@
                           (ui/div
                            {:font-weight 900
                             :text-align (-> col :align)}
-                           (-> col :label))))))
+                           (-> col :label)))))
+                  (for [idx (range headers-count)]
+                    (header-or-footer-row :headers idx cols records)
+                    )
+                  )
 
                ($ mui/TableBody
 
@@ -218,50 +281,8 @@
 
                ($ mui/TableHead
                   (for [footer-idx (range footers-count)]
-                    ($ mui/TableRow
-                       {:key footer-idx}
-                       (for [col cols]
-                         (let [footer (-> col :footers (get footer-idx))
-                               record-key (-> col :record-key)
-                               type (-> col :type)
-                               value (-> footer :value)
-                               value (cond
-                                       (fn? value)
-                                       (value records)
-
-                                       (-> footer :type (= :count))
-                                       (->> records
-                                            (remove (fn [record]
-                                                      (nil? (get record record-key))))
-                                            count)
-
-                                       (-> footer :type (= :sum))
-                                       (let [aggregator (cond
-
-                                                          (= type :millis)
-                                                          +
-
-                                                          (= type :number)
-                                                          +
-
-                                                          (= type :eur)
-                                                          money/+
-
-                                                          :else str)
-                                             format (-> col :format)]
-                                         (format (reduce (fn [result record]
-                                                           (let [value (get record record-key)]
-                                                             (aggregator result value)))
-                                                         nil records))))]
-
-                           ($ mui/TableCell
-                              {:key (or (-> col :id) (-> col :label))}
-                              (ui/div
-                               {:font-weight 900
-                                :text-align (cond
-                                              (-> footer :type (= :count)) "right"
-                                              :else (-> col :align))}
-                               value)))))))))
+                    (header-or-footer-row :footers footer-idx cols records)
+                    ))))
 
          (when CsvDownloadButton
            (ui/div
