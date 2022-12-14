@@ -53,7 +53,8 @@
        (filter #(record-visible-for-cols? % cols))))
 
 (def-ui DataTable [table records
-                   csv-filename]
+                   csv-filename
+                   table-max-height]
   (let [record-id-getter (or (-> table :record-id-getter)
                              :id)
         record-on-click (-> table :record-on-click)
@@ -141,122 +142,128 @@
     (ui/div
      {:class "DataTable"}
      ($ mui/Paper
-        (ui/div {:display :grid}
-                ($ mui/TableContainer
-                ;; {:component mui/Paper}
-                   ($ mui/Table
-                      {:stickyHeader true
-                       :size "small"}
+        (ui/div
+         {:display :grid
+          :grid-template-rows "auto max-content"}
+         ($ mui/TableContainer
+            {:sx (ui/sx {:max-height (or table-max-height
+                                         "80vh")})}
 
-                      ($ mui/TableHead
-                      ;; (ui/data footers-count)
-                         ($ mui/TableRow
-                            (for [col cols]
-                              ($ mui/TableCell
-                                 {:key (or (-> col :id) (-> col :label))}
-                                 (ui/div
-                                  {:font-weight 900
-                                   :text-align (-> col :align)}
-                                  (-> col :label))))))
+            ;; {:component mui/Paper}
+            ;; (ui/div {:background-color "yellow" :height "100%"})
+            ($ mui/Table
+               {:stickyHeader true
+                :size "small"}
 
-                      ($ mui/TableBody
+               ($ mui/TableHead
+                  ;; (ui/data footers-count)
+                  ($ mui/TableRow
+                     (for [col cols]
+                       ($ mui/TableCell
+                          {:key (or (-> col :id) (-> col :label))}
+                          (ui/div
+                           {:font-weight 900
+                            :text-align (-> col :align)}
+                           (-> col :label))))))
 
-                         (when-let [rows (-> table :prefix-rows)]
-                           (for [[row-idx row] (map-indexed vector rows)]
-                             ($ mui/TableRow
-                                {:key row-idx}
-                                (for [[col-idx cell] (map-indexed vector row)]
-                                  ($ mui/TableCell
-                                     {:key col-idx}
-                                     (when cell
-                                       (if-let [component (-> cell :component)]
-                                         component
-                                         (ui/data cell))))))))
+               ($ mui/TableBody
 
-                         (when filter-row?
-                           ($ mui/TableRow
-                              (for [[col-idx col] (map-indexed vector cols)]
-                                ($ mui/TableCell
-                                   {:key col-idx}
-                                   (when (-> col :filter)
-                                     ($ FilterRowCell {:col col
-                                                       :on-change #(set-col-filters-values
-                                                                    (assoc col-filters-values
-                                                                           (-> col :id) %))}))))))
+                  (when-let [rows (-> table :prefix-rows)]
+                    (for [[row-idx row] (map-indexed vector rows)]
+                      ($ mui/TableRow
+                         {:key row-idx}
+                         (for [[col-idx cell] (map-indexed vector row)]
+                           ($ mui/TableCell
+                              {:key col-idx}
+                              (when cell
+                                (if-let [component (-> cell :component)]
+                                  component
+                                  (ui/data cell))))))))
 
-                         (for [[row-idx record] (map-indexed vector records)]
-                           ($ mui/TableRow
-                              {:key (or (record-id-getter record)
-                                        (keyword "record-index" (str row-idx)))
-                               :hover true
-                               :onClick (when record-on-click
-                                          #(record-on-click record))
-                               :className (when record-on-click "CursorPointer")}
-                              (for [[col-idx col] (map-indexed vector cols)]
-                                (let [record-key (-> col :record-key)
-                                      value (cond
-                                              (map? record) (get record record-key)
-                                              (vector? record) (get record col-idx)
-                                              :else record)
-                                      on-click (-> col :on-click)]
-                                  ($ mui/TableCell
-                                     {:key (or (-> col :id) (-> col :label))
-                                      :onClick (when on-click
-                                                 #(on-click record))
-                                      :className (when on-click "CursorPointer")}
-                                     (ui/div
-                                      {:text-align (-> col :align)
-                                       :white-space "nowrap"}
-                                      ((-> col :format) value))))))))
+                  (when filter-row?
+                    ($ mui/TableRow
+                       (for [[col-idx col] (map-indexed vector cols)]
+                         ($ mui/TableCell
+                            {:key col-idx}
+                            (when (-> col :filter)
+                              ($ FilterRowCell {:col col
+                                                :on-change #(set-col-filters-values
+                                                             (assoc col-filters-values
+                                                                    (-> col :id) %))}))))))
 
-                      ($ mui/TableHead
-                         (for [footer-idx (range footers-count)]
-                           ($ mui/TableRow
-                              {:key footer-idx}
-                              (for [col cols]
-                                (let [footer (-> col :footers (get footer-idx))
-                                      record-key (-> col :record-key)
-                                      type (-> col :type)
-                                      value (-> footer :value)
-                                      value (cond
-                                              (fn? value)
-                                              (value records)
+                  (for [[row-idx record] (map-indexed vector records)]
+                    ($ mui/TableRow
+                       {:key (or (record-id-getter record)
+                                 (keyword "record-index" (str row-idx)))
+                        :hover true
+                        :onClick (when record-on-click
+                                   #(record-on-click record))
+                        :className (when record-on-click "CursorPointer")}
+                       (for [[col-idx col] (map-indexed vector cols)]
+                         (let [record-key (-> col :record-key)
+                               value (cond
+                                       (map? record) (get record record-key)
+                                       (vector? record) (get record col-idx)
+                                       :else record)
+                               on-click (-> col :on-click)]
+                           ($ mui/TableCell
+                              {:key (or (-> col :id) (-> col :label))
+                               :onClick (when on-click
+                                          #(on-click record))
+                               :className (when on-click "CursorPointer")}
+                              (ui/div
+                               {:text-align (-> col :align)
+                                :white-space "nowrap"}
+                               ((-> col :format) value))))))))
 
-                                              (-> footer :type (= :count))
-                                              (->> records
-                                                   (remove (fn [record]
-                                                             (nil? (get record record-key))))
-                                                   count)
+               ($ mui/TableHead
+                  (for [footer-idx (range footers-count)]
+                    ($ mui/TableRow
+                       {:key footer-idx}
+                       (for [col cols]
+                         (let [footer (-> col :footers (get footer-idx))
+                               record-key (-> col :record-key)
+                               type (-> col :type)
+                               value (-> footer :value)
+                               value (cond
+                                       (fn? value)
+                                       (value records)
 
-                                              (-> footer :type (= :sum))
-                                              (let [aggregator (cond
+                                       (-> footer :type (= :count))
+                                       (->> records
+                                            (remove (fn [record]
+                                                      (nil? (get record record-key))))
+                                            count)
 
-                                                                 (= type :millis)
-                                                                 +
+                                       (-> footer :type (= :sum))
+                                       (let [aggregator (cond
 
-                                                                 (= type :number)
-                                                                 +
+                                                          (= type :millis)
+                                                          +
 
-                                                                 (= type :eur)
-                                                                 money/+
+                                                          (= type :number)
+                                                          +
 
-                                                                 :else str)
-                                                    format (-> col :format)]
-                                                (format (reduce (fn [result record]
-                                                                  (let [value (get record record-key)]
-                                                                    (aggregator result value)))
-                                                                nil records))))]
+                                                          (= type :eur)
+                                                          money/+
 
-                                  ($ mui/TableCell
-                                     {:key (or (-> col :id) (-> col :label))}
-                                     (ui/div
-                                      {:font-weight 900
-                                       :text-align (cond
-                                                     (-> footer :type (= :count)) "right"
-                                                     :else (-> col :align))}
-                                      value)))))))))
+                                                          :else str)
+                                             format (-> col :format)]
+                                         (format (reduce (fn [result record]
+                                                           (let [value (get record record-key)]
+                                                             (aggregator result value)))
+                                                         nil records))))]
 
-                (when CsvDownloadButton
-                  (ui/div
-                   {:padding "8px 16px"}
-                   CsvDownloadButton)))))))
+                           ($ mui/TableCell
+                              {:key (or (-> col :id) (-> col :label))}
+                              (ui/div
+                               {:font-weight 900
+                                :text-align (cond
+                                              (-> footer :type (= :count)) "right"
+                                              :else (-> col :align))}
+                               value)))))))))
+
+         (when CsvDownloadButton
+           (ui/div
+            {:padding "8px 16px"}
+            CsvDownloadButton)))))))
