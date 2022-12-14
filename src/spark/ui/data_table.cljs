@@ -1,5 +1,6 @@
 (ns spark.ui.data-table
   (:require
+   [promesa.core :as p]
    ["@mui/material" :as mui]
    [spark.utils :as u]
    [spark.env :as env]
@@ -277,7 +278,11 @@
                               (ui/div
                                {:text-align (-> col :align)
                                 :white-space "nowrap"}
-                               ((-> col :format) value))))))))
+                               (if (p/promise? value)
+                                 ($ ui/Promise
+                                    {:value value
+                                     :formatter (-> col :format)})
+                                 ((-> col :format) value)))))))))
 
                ($ mui/TableHead
                   (for [footer-idx (range footers-count)]

@@ -229,6 +229,15 @@
      (-> ^js @HISTORY (.replace to))
      nil)))
 
+;; * promises
+
+(def-ui Promise [value formatter]
+  (let [resolved-value (use-promise [value] value)]
+    (when resolved-value
+      (if formatter
+        (formatter resolved-value)
+        resolved-value))))
+
 ;; * firebase
 
 (defn log-error> [error]
