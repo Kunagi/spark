@@ -427,7 +427,7 @@
   ;;      :path path)
   (let [path (db/coerce-path path)
         [docs set-docs] (use-state nil)
-        effect-signal   (str path)]
+        effect-signal   (or (str path) "_nil")]
 
     (use-effect
      [effect-signal]
@@ -435,32 +435,33 @@
        (log ::use-col--subscribe
             :path path)
        (set-docs nil)
-       (let [col-ref     (firestore/ref path)
-             on-snap     (fn [^js query-col-snapshot]
-                           ;; (log ::query-snapshot-received
-                           ;;      :collection path
-                           ;;      :count (-> query-col-snapshot .-docs count)
-                           ;;      :snapshot query-col-snapshot)
-                           (->> ^js query-col-snapshot
-                                .-docs
-                                (map firestore/wrap-doc)
-                                set-docs))
-             on-error    (fn [^js firestore-error]
-                           ;; FIXME debug
-                           (when (debug?)
-                             (js/alert firestore-error))
-                           (let [msg (str "Loading collection " (u/->edn path) " failed: "
-                                          (str firestore-error))
-                                 error (js/Error. msg (clj->js {:cause firestore-error}))]
-                             (js/console.error error firestore-error)
-                             (log-error error)))
-             debug-id [path (u/nano-id)]
-             _ (debug/reg-item :col debug-id)
-             firestore-unsubscribe (.onSnapshot col-ref on-snap on-error)
-             unsubscribe (fn []
-                           (debug/unreg-item :col debug-id)
-                           (firestore-unsubscribe))]
-         unsubscribe)))
+       (when path
+         (let [col-ref     (firestore/ref path)
+               on-snap     (fn [^js query-col-snapshot]
+                             ;; (log ::query-snapshot-received
+                             ;;      :collection path
+                             ;;      :count (-> query-col-snapshot .-docs count)
+                             ;;      :snapshot query-col-snapshot)
+                             (->> ^js query-col-snapshot
+                                  .-docs
+                                  (map firestore/wrap-doc)
+                                  set-docs))
+               on-error    (fn [^js firestore-error]
+                             ;; FIXME debug
+                             (when (debug?)
+                               (js/alert firestore-error))
+                             (let [msg (str "Loading collection " (u/->edn path) " failed: "
+                                            (str firestore-error))
+                                   error (js/Error. msg (clj->js {:cause firestore-error}))]
+                               (js/console.error error firestore-error)
+                               (log-error error)))
+               debug-id [path (u/nano-id)]
+               _ (debug/reg-item :col debug-id)
+               firestore-unsubscribe (.onSnapshot col-ref on-snap on-error)
+               unsubscribe (fn []
+                             (debug/unreg-item :col debug-id)
+                             (firestore-unsubscribe))]
+           unsubscribe))))
 
     docs))
 
