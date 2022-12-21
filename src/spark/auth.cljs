@@ -154,7 +154,7 @@
      :ts-creation (-> u .-metadata .-creationTime js/Date.)}))
 
 (defn initialize [{:keys [user-doc-schema update-user set-user sign-in error-handler
-                          messaging-vapid-key]}]
+                          messaging-vapid-key on-auth]}]
   (log ::initialize
        :doc-schema user-doc-schema)
   (reset! SIGN_IN-F sign-in)
@@ -172,6 +172,7 @@
   (-> (firebase-auth/onAuthStateChanged
        (auth)
        (fn [^js google-js-user]
+         (when on-auth (on-auth (when google-js-user (-> google-js-user .-uid))))
          (reset! JS_AUTH_USER google-js-user)
          (js/localStorage.setItem "spark.uid" (when google-js-user
                                                 (-> google-js-user .-uid)))
