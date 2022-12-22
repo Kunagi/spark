@@ -411,8 +411,9 @@
 ;; * strings
 
 (defn non-blank-string [s]
-  (when-not (str/blank? s)
-    s))
+  (when (string? s)
+    (when-not (str/blank? s)
+      s)))
 
 (defn split-lines [s]
   (when s
