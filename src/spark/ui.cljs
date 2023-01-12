@@ -1553,7 +1553,7 @@
      "Example content."))
 
 (defnc CardRow [{:keys [gap children
-                        grid-template-columns
+                        grid-template-columns align-items
                         style sx]}]
   (when children
     (if-not (array? children)
@@ -1567,6 +1567,9 @@
                     {:display :grid
                      :grid-template-columns (or grid-template-columns
                                                 (str "repeat(" (count children) ", auto)"))
+                     :align-items (if (keyword? align-items)
+                                    (name align-items)
+                                    align-items)
                      :grid-gap gap}
                     style)}
            children)))))
