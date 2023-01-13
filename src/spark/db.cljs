@@ -29,6 +29,9 @@
          entity-type)
        "/" id))
 
+(defn doc? [thing]
+  (firestore/doc? thing))
+
 (defn doc-exists? [doc]
   (firestore/doc-exists? doc))
 

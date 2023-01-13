@@ -16,6 +16,7 @@
 
 (defn doc? [doc]
   (and
+   (map? doc)
    (-> doc :firestore/path string?)
    (-> doc :firestore/id string?)))
 

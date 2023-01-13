@@ -331,42 +331,46 @@
   "React hook for a document."
   ([Doc doc-id]
    (spark/assert-doc-schema Doc)
-   (use-doc (when doc-id
+   (use-doc (cond
+              (db/doc? doc-id) doc-id
+              doc-id
               [(spark/doc-schema-col-path Doc)
                doc-id])))
   ([path]
    ;; (log ::use-doc
    ;;      :path path)
-   (let [[doc set-doc] (use-state nil)
+   (let [doc (when (db/doc? path) path)
+         [doc set-doc] (use-state doc)
          effect-signal (str path)]
 
      (use-effect
       [effect-signal]
-      (set-doc nil)
-      (when (and path
-                 (not (u/seq-contains-nil? path)))
-        ;; (log ::use-doc--subscribe
-        ;;      :path path)
-        (let [ref         (firestore/ref path)
-              on-snapshot (fn [doc-snapshot]
-                            (let [doc (firestore/wrap-doc doc-snapshot)]
-                              ;; (log ::doc-snapshot-received
-                              ;;      :path path
-                              ;;      :doc doc)
-                              (set-doc doc)))
-              on-error    (fn [^js error]
-                            (log-error error)
-                            (log ::use-doc--error
-                                 :path path
-                                 :exception error))
-              debug-id [path (u/nano-id)]
-              _ (debug/reg-item :doc debug-id)
-              firestore-unsubscribe (.onSnapshot ref on-snapshot on-error)
-              unsubscribe (fn []
-                            (debug/unreg-item :doc debug-id)
-                            (firestore-unsubscribe))]
+      (when-not (db/doc? path)
+        (set-doc nil)
+        (when (and path
+                   (not (u/seq-contains-nil? path)))
+          ;; (log ::use-doc--subscribe
+          ;;      :path path)
+          (let [ref         (firestore/ref path)
+                on-snapshot (fn [doc-snapshot]
+                              (let [doc (firestore/wrap-doc doc-snapshot)]
+                                ;; (log ::doc-snapshot-received
+                                ;;      :path path
+                                ;;      :doc doc)
+                                (set-doc doc)))
+                on-error    (fn [^js error]
+                              (log-error error)
+                              (log ::use-doc--error
+                                   :path path
+                                   :exception error))
+                debug-id [path (u/nano-id)]
+                _ (debug/reg-item :doc debug-id)
+                firestore-unsubscribe (.onSnapshot ref on-snapshot on-error)
+                unsubscribe (fn []
+                              (debug/unreg-item :doc debug-id)
+                              (firestore-unsubscribe))]
 
-          unsubscribe)))
+            unsubscribe))))
 
      (when (and path
                 (not (u/seq-contains-nil? path)))
