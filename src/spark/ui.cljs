@@ -1822,7 +1822,6 @@
           :class  class
           :height "100%"}
          ($ AuthCompletedGuard
-            ($ ScrollToTop)
             ($ PageSwitch {:spa spa}
                children)))))
 
