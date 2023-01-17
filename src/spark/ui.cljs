@@ -2350,13 +2350,15 @@
       :sx (->sx sx)}
      children))
 
-(defnc CardContent [{:keys [to on-click href target sx class children]}]
+(defnc CardContent [{:keys [to on-click href target
+                            sx sx-ActionArea class children]}]
   (cond
 
     on-click
     ($ mui/CardActionArea
        {:onClick on-click
-        :className class}
+        :className class
+        :sx (->sx sx-ActionArea)}
        ($ mui/CardContent
           {:sx (->sx sx)}
           children))
@@ -2365,7 +2367,9 @@
     ($ mui/CardActionArea
        {:to (coerce-link-to to)
         :component router/Link
-        :className class}
+        :className class
+        :sx (->sx sx-ActionArea)
+        }
        ($ mui/CardContent
           {:sx (->sx sx)}
           children))
@@ -2374,7 +2378,8 @@
     ($ mui/CardActionArea
        {:href href
         :target target
-        :className class}
+        :className class
+        :sx (->sx sx-ActionArea)}
        ($ mui/CardContent
           {:sx (->sx sx)}
           children))
