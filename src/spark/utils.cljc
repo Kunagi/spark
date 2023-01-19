@@ -410,10 +410,7 @@
 
 ;; * strings
 
-(defn non-blank-string [s]
-  (when (string? s)
-    (when-not (str/blank? s)
-      s)))
+(def non-blank-string u/non-blank-string)
 
 (defn split-lines [s]
   (when s
