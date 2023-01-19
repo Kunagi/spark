@@ -2240,7 +2240,8 @@
                                           value-suffix display
                                           description
                                           on-changed
-                                          disabled]}]
+                                          disabled
+                                          default-value]}]
   (let [field (cond
                 (map? field) field
                 (spark/field-schema? field) (get field 1))
@@ -2249,7 +2250,8 @@
         description (or description
                         (-> field :description))
         field-id        (-> field :id)
-        value           (when field-id (get entity field-id))
+        value           (or (when field-id (get entity field-id))
+                            default-value)
         value-component (if-let [display (or display
                                              (-> field :display))]
                           (display value)
