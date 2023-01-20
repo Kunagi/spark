@@ -174,7 +174,8 @@
                (ui/div
                 {:color "grey"}
                 (when-let [tage (-> story :fertig-in-tagen)]
-                  (if-let [date (nth arbeitstage tage)]
+                  (if-let [date (when (-> arbeitstage count (>= tage))
+                                  (nth arbeitstage tage))]
                     (let [ende (-> sprint sprint/datum-ende u/->date)
                           nach-ende? (when (and ende (-> date (tick/> ende)))
                                        (-> date (tick/> ende)))]
