@@ -796,7 +796,9 @@
 #?(:cljs
    (defn all> [& promises-or-lists-of-promises]
      (let [promises (as-promises-vector promises-or-lists-of-promises)]
-       (-> (js/Promise.allSettled promises)
+       (-> (if (fn? js/Promise.allSettled)
+             (js/Promise.allSettled promises)
+             (js/Promise.all promises))
            (.then (fn [results]
                     (->> results
                          (map (fn [^js result]
