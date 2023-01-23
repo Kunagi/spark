@@ -699,17 +699,18 @@
        (-> form :submitted-content)
        (<>
 
-          ;; (when goog.DEBUG
-          ;;   (when-let [data (-> form :debug-data)]
-          ;;     ($ :div
-          ;;        {:style {:padding          "8px"
-          ;;                 :background-color "black"
-          ;;                 :color            "#6F6"
-          ;;                 :font-family      "monospace"}}
-          ;;        (u/->edn data))))
+        ;; (when goog.DEBUG
+        ;;   (when-let [data (-> form :debug-data)]
+        ;;     ($ :div
+        ;;        {:style {:padding          "8px"
+        ;;                 :background-color "black"
+        ;;                 :color            "#6F6"
+        ;;                 :font-family      "monospace"}}
+        ;;        (u/->edn data))))
 
-          ;; Content
+        ;; Content
         ($ mui/DialogContent
+           {:className "FormDialogContent"}
            ($ :div
               {:className "FormContent"
                :stlye {}}
@@ -717,19 +718,27 @@
                  {:style {:display "grid"
                           :grid-gap "8px"
                           :grid-template-columns grid-template-columns}}
-                 (for [field (get form :fields)]
-                   (when-not (-> field :hidden)
-                     ($ FormField
-                        {:key         (-> field :id)
-                         :field       field
-                         :form        form
-                         :on-submit   on-submit
-                         :update-form update-form}))))
+                 (for [[idx field] (->> (get form :fields)
+                                        (remove :hidden)
+                                        (map-indexed vector))]
+                   (ui/div
+                    {:key (-> field :id)
+                     :class "FormField"
+                     :border-top (when (pos? idx)
+                                   "1px solid #eee")
+                     :padding-top (when (pos? idx)
+                                   "8px")}
+                    ($ FormField
+                       {:key         (-> field :id)
+                        :field       field
+                        :form        form
+                        :on-submit   on-submit
+                        :update-form update-form}))))
               (get form :content))
 
-             ;; (ui/data form)
+           ;; (ui/data form)
 
-             ;; Error
+           ;; Error
            (when-let [error (-> form form/error)]
              ($ :div
                 {:style {:padding "16px"
@@ -740,7 +749,7 @@
                 (str error))))
 
         ($ mui/DialogActions
-             ;; Buttons
+           ;; Buttons
            ($ :div
               {:style {:display               "grid"
                        :grid-template-columns "max-content auto max-content"
@@ -794,8 +803,11 @@
             ;; ($ :pre (-> open? u/->edn))
 
             (when-let [title (-> form :title)]
-              ($ mui/DialogTitle
-                 title))
+              (kui/provider
+               {:context HIDE_DIALOG
+                :value on-close}
+               ($ mui/DialogTitle
+                  title)))
 
             ($ Form {:form form
                      :set-form set-form
