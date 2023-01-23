@@ -727,7 +727,7 @@
                      :border-top (when (pos? idx)
                                    "1px solid #eee")
                      :padding-top (when (pos? idx)
-                                   "8px")}
+                                    "8px")}
                     ($ FormField
                        {:key         (-> field :id)
                         :field       field
@@ -762,7 +762,8 @@
                  {:style {:display               "grid"
                           :grid-template-columns "max-content max-content"
                           :grid-gap              "8px"}}
-                 (when-not (-> form :cancel-disabled)
+                 (when (and (not (-> form :cancel-disabled))
+                            (not (-> form :no-cancel-button)))
                    ($ mui/Button
                       {:onClick #(cancel)}
                       (or (-> form :cancel-button-text)
@@ -771,6 +772,8 @@
                     {:onClick on-submit
                      :variant "contained"
                      :color   "primary"
+                     :startIcon (when-let [i (-> form :submit-button-icon)]
+                                  (ui/div {:class "material-icons"} (name i)))
                      :disabled (-> form form/waiting?)}
                     (or (-> form :submit-button-text)
                         "Ok")))))
