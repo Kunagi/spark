@@ -101,11 +101,16 @@
      :prefix prefix
      :done? done?}))
 
-(defn parse-tasks [story]
-  (when-let [tasks (-> story :tasks)]
-    (->> tasks
+(defn parse-tasks-from-text [s]
+  (when s
+    (->> s
          str/split-lines
          (map parse-task))))
+
+(def parse-tasks-from-text-memoized (memoize parse-tasks-from-text))
+
+(defn parse-tasks [story]
+  (-> story :tasks parse-tasks-from-text-memoized))
 
 (defn completed? [this]
   (let [tasks (->> this
