@@ -48,7 +48,7 @@
 (defn arbeitstage-ab [this instant]
   (when-let [datum (-> this datum-beginn)]
     (let [start-date (tick/max (tick/date datum) (tick/date instant))]
-      (->> (range 90)
+      (->> (range 360)
            (map (fn [i]
                   (tick/>> start-date i)))
            (remove #(let [weekday (-> % tick/day-of-week)]
