@@ -214,10 +214,12 @@
 
 ;; signInWithRedirect does not work on firefox with Enanced Tracking Protection enabled
 (defn provider-sign-in> [^js provider]
-  (if (browser/ios?)
-    (firebase-auth/signInWithRedirect (auth) provider)
-    (-> (firebase-auth/signInWithPopup (auth) provider)
-        (.then #(js/window.location.reload)))))
+  (-> (firebase-auth/signInWithPopup (auth) provider)
+      (.then #(js/window.location.reload)))
+  #_(if (browser/ios?)
+      (firebase-auth/signInWithRedirect (auth) provider)
+      (-> (firebase-auth/signInWithPopup (auth) provider)
+          (.then #(js/window.location.reload)))))
 
 (comment
   (js/console.log (-> (firebase-auth)))
