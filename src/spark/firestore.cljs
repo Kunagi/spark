@@ -266,7 +266,8 @@
                :firestore/exists? (boolean data)
                :db/id (-> query-doc-snapshot .-id)
                :db/exists (boolean data)
-               :db/ref path))))
+               :db/ref path
+               :db/type col-id))))
 
 (defn wrap-docs [^js query-snapshot]
   (mapv wrap-doc (-> query-snapshot .-docs)))
