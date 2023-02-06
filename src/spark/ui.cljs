@@ -887,8 +887,8 @@
       (center
        (div {:max-width "300px"} message))))))
 
-(defnc ValueLoadGuard [{:keys [children value message height]}]
-  (if value
+(defnc ValueLoadGuard [{:keys [children value message height pass-through]}]
+  (if (or pass-through value)
     children
     ($ Loader {:message message
                :height height})))
