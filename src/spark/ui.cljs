@@ -946,12 +946,8 @@
      (let [el (fn []
                 (let [new-height js/window.innerHeight]
                   (when (not= height new-height)
-                    (set-height height))))]
+                    (set-height new-height))))]
        (js/window.addEventListener "resize" el)
-       #_(u/later> 1000
-                 #(let [new-height js/window.innerHeight]
-                    (when (not= height new-height)
-                      (set-height height))))
        #(js/window.removeEventListener "resize" el)))
 
     height))
@@ -964,11 +960,25 @@
      (let [el (fn []
                 (let [new-width js/window.innerWidth]
                   (when (not= width new-width)
-                    (set-width width))))]
+                    (set-width new-width))))]
        (js/window.addEventListener "resize" el)
        #(js/window.removeEventListener "resize" el)))
 
     width))
+
+(defn use-page-y-offset []
+  (let [[offset set-offset] (ui/use-state js/window.pageYOffset)]
+
+    (ui/use-effect
+     :once
+     (let [el (fn []
+                (let [new-offset js/window.pageYOffset]
+                  (when (not= offset new-offset)
+                    (set-offset new-offset))))]
+       (js/window.addEventListener "scroll" el)
+       #(js/window.removeEventListener "scroll" el)))
+
+    offset))
 
 (defonce SPA (atom nil))
 (def use-spa (atom-hook SPA))
@@ -976,6 +986,30 @@
 (defn use-app-styles-class []
   (let [spa (use-spa)]
     (use-styles-class (-> spa :styles))))
+
+(def-ui LazyChildren [children]
+  (let [chunk-size 10
+        [limit set-limit] (ui/use-state chunk-size)
+        limited? (-> children count (> limit))
+        items (if limited? (take limit children) children)
+
+        loader-id (str "LazyChildrenLoader_" (random-uuid))
+        scroll-offset (use-page-y-offset)
+        visible-top (+ scroll-offset js/window.innerHeight)
+        ]
+
+    (ui/use-effect
+     :always
+     (when limited?
+       (when-let [e (js/document.getElementById loader-id)]
+         (when-let [e-top (-> e .getBoundingClientRect .-top)]
+           (when (-> e-top (<= visible-top))
+             (set-limit (+ limit chunk-size))))))
+     nil)
+
+    (ui/<>
+     items
+     (ui/div {:id loader-id}))))
 
 ;; * dialogs
 
