@@ -594,6 +594,10 @@
   (when millis
     (quot millis millis-in-minute)))
 
+(defn millis->seconds [millis]
+  (when millis
+    (quot millis millis-in-second)))
+
 (defn millis->hours-minutes [millis]
   (when millis
     (if (neg? millis)
