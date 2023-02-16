@@ -53,9 +53,7 @@
        `~s)))
 
 #?(:clj
-   (defmacro try> [expr]
-     `(u/try> ~expr)
-     ))
+   (defmacro try> [& body] `(u/try> ~@body)))
 
 ;; * tap
 
