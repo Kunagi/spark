@@ -128,27 +128,26 @@
         expanded? (contains? expanded-storys (-> story :id))
 
         hindernis? (-> story story/hindernis boolean)
-        ungeschaetzt? (-> story story/restaufwand nil?)
         completed? (-> story story/completed?)
         prio (-> story story/prio)
-        next? (and (not (-> sprint sprint/datum-abgeschlossen))
+        next? (and prio
+                   (not (-> sprint sprint/datum-abgeschlossen))
                    (-> sprint sprint/datum-beginn)
                    (= prio lowest-prio)
                    (not completed?))
-        aufwand (max (-> story story/restaufwand)
-                     (-> story story/aufwand)
-                     1)
         dev? (projekt/developer-uid? projekt uid)
         collapsed? (and completed? dev? (not expanded?))]
     (log ::StoryCard--render
          :story (-> story story/num)
          :projekt (-> projekt :id))
     ($ ui/Card
-       {:sx {:background-color (cond
+       {:padding 0
+        :sx {:background-color (cond
                                  completed? (-> colors .-green (aget 50))
                                  (and prio hindernis?) (-> colors .-red (aget 50))
                                  next? (-> colors .-yellow (aget 100))
-                                 prio (-> colors .-yellow (aget 50)))}}
+                                 prio (-> colors .-yellow (aget 50)))
+             }}
        ;; (ui/DEBUG arbeitstage)
        ($ mui/CardActionArea
           {:onClick (fn []
