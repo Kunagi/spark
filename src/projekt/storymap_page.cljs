@@ -244,11 +244,12 @@
                    ($ :div
                       (for [task tasks]
                         (>task task))))
-                 (when-let [ts-completed (-> story story/ts-completed)]
-                   ($ :div
-                      "Abgeschlossen am "
-                      (local/format-date ts-completed)
-                      ))
+                 (when (-> story story/completed?)
+                   (when-let [ts-completed (-> story story/ts-completed)]
+                     ($ :div
+                        "Abgeschlossen am "
+                        (local/format-date ts-completed)
+                        )))
                  (when-let [voraussetzungen (-> story :voraussetzungen)]
                    ($ :div
                       ($ :span {:className "b"
