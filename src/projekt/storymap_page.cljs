@@ -59,7 +59,27 @@
     (ui/show-form-dialog>
      {:fields fields
       :values story
-      :submit #(db/update> story %)
+      :submit (fn [values]
+                (let [tasks-after (story/parse-tasks-from-text-memoized (-> values :tasks))
+                      completed-after? (if (empty? tasks-after)
+                                         false
+                                         (->> tasks-after
+                                              (remove :done?)
+                                              empty?))
+                      tasks-changed? (not= (-> story :tasks)
+                                           (-> values :tasks))
+                      values (cond
+
+                               (and completed-after?
+                                    tasks-changed?)
+                               (assoc values :ts-completed :db/timestamp)
+
+                               (not completed-after?)
+                               (assoc values :ts-completed :db/delete)
+
+                               :else
+                               values)]
+                  (db/update> story values)))
       :extra-buttons (when (projekt/developer-uid? projekt uid)
                        ($ StoryDeleteButton {:story story}))})))
 
@@ -146,8 +166,7 @@
                                  completed? (-> colors .-green (aget 50))
                                  (and prio hindernis?) (-> colors .-red (aget 50))
                                  next? (-> colors .-yellow (aget 100))
-                                 prio (-> colors .-yellow (aget 50)))
-             }}
+                                 prio (-> colors .-yellow (aget 50)))}}
        ;; (ui/DEBUG arbeitstage)
        ($ mui/CardActionArea
           {:onClick (fn []
@@ -221,10 +240,15 @@
 
               (when-not collapsed?
                 (ui/stack
-                 (when-let [tasks (story/parse-tasks story)]
+                 (when-let [tasks (seq (story/parse-tasks story))]
                    ($ :div
                       (for [task tasks]
                         (>task task))))
+                 (when-let [ts-completed (-> story story/ts-completed)]
+                   ($ :div
+                      "Abgeschlossen am "
+                      (local/format-date ts-completed)
+                      ))
                  (when-let [voraussetzungen (-> story :voraussetzungen)]
                    ($ :div
                       ($ :span {:className "b"

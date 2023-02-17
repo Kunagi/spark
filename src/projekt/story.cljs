@@ -75,6 +75,9 @@
 (defn tasks [story]
   (-> story :tasks))
 
+(defn ts-completed [this]
+  (-> this :ts-completed))
+
 (defn klaerungsbedarf [story]
   (-> story :klaerungsbedarf))
 
