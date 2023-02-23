@@ -46,22 +46,25 @@
   (redirect "/"))
 
 (defn process-sign-in-with-custom-token-from-url [error-handler]
-  (let [custom-token (browser/url-param "customAuthToken")]
-    (when custom-token
-      (log ::process-sign-in-with-custom-token-from-url
-           :custom-token custom-token)
-      (reset! AUTH_STATUS_MESSAGE (str "Custom Token empfangen: " custom-token))
-      (-> (firebase-auth/signInWithCustomToken (auth) custom-token)
-          (.then (fn [_]
-                   (reset! AUTH_STATUS_MESSAGE "Mit Custon Token angemeldet")))
-          (.catch (fn [^js error]
-                    (log ::sign-in-with-redirect-failed
-                         :error error)
-                    (reset! AUTH_STATUS_MESSAGE (str "Fehler mit Custom Token: "
-                                                     custom-token
-                                                     " "
-                                                     (str error)))
-                    (when error-handler (error-handler error))))))))
+  (when-let [custom-token (browser/url-param "customAuthToken")]
+    (log ::process-sign-in-with-custom-token-from-url
+         :custom-token custom-token)
+    (reset! AUTH_STATUS_MESSAGE (str "Custom Token empfangen: " custom-token))
+    (-> (firebase-auth/signInWithCustomToken (auth) custom-token)
+        (.then (fn [_]
+                 (reset! AUTH_STATUS_MESSAGE "Mit Custon Token angemeldet")))
+        (.catch (fn [^js error]
+                  (log ::sign-in-with-redirect-failed
+                       :error error)
+                  (reset! AUTH_STATUS_MESSAGE (str "Fehler mit Custom Token: "
+                                                   custom-token
+                                                   " "
+                                                   (str error)))
+                  (when error-handler (error-handler
+                                       (str
+                                        "Fehler bei Anmeldung mit Custom Token '"
+                                        custom-token "': "
+                                        error))))))))
 
 (defn process-sign-in-with-redirect [error-handler]
   (-> (firebase-auth/getRedirectResult (auth))
