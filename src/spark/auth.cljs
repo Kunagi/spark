@@ -171,7 +171,7 @@
 
   (reset! AUTH_STATUS_MESSAGE "Initialisierung 2 gestartet")
   (firebase-auth/useDeviceLanguage (auth))
-       ;; https://firebase.google.com/docs/reference/js/firebase.auth.Auth#onauthstatechanged
+  ;; https://firebase.google.com/docs/reference/js/firebase.auth.Auth#onauthstatechanged
   (-> (firebase-auth/onAuthStateChanged
        (auth)
        (fn [^js google-js-user]
@@ -192,8 +192,8 @@
                (when auth-completed?
                  (log ::user-changed :user user)
                  #_(when-not user
-                   (reset! AUTH_STATUS_MESSAGE "Umleitung zur Startseite")
-                   (redirect-to-home)))
+                     (reset! AUTH_STATUS_MESSAGE "Umleitung zur Startseite")
+                     (redirect-to-home)))
                (reset! AUTH_USER user)
                (when user
                  (when user-doc-schema
@@ -207,7 +207,8 @@
 
   (reset! AUTH_STATUS_MESSAGE "initialisierung abgeschlossen")
 
-  (process-sign-in-with-custom-token-from-url error-handler)
+  (when-not @AUTH_USER
+    (process-sign-in-with-custom-token-from-url error-handler))
 
   (process-sign-in-with-redirect error-handler)
 
