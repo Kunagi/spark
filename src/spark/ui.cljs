@@ -2284,6 +2284,8 @@
         description (or description
                         (-> field :description))
         field-id        (-> field :id)
+        value-suffix (or value-suffix
+                         (-> field :value-suffix))
         value           (or (when field-id (get entity field-id))
                             default-value)
         value-component (if-let [display (or display
