@@ -87,6 +87,9 @@
       (= k :db/array-remove) (array-remove (second v))
       (= k :db/timestamp)    (timestamp)
       (= k :db/delete)       (-> ^js (FieldValue) .delete)
+      (= k :db/increment)    (-> ^js (FieldValue) .-increment (apply [(if (vector? v)
+                                                                        (second v)
+                                                                        1)]))
       :else                  nil)))
 
 (comment
