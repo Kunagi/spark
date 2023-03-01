@@ -727,7 +727,11 @@
                            :grid-gap "8px"
                            :grid-template-columns grid-template-columns}}
                   (for [[idx field] (->> (get form :fields)
-                                         (remove :hidden)
+                                         (remove (fn [field]
+                                                   (let [hidden (-> field :hidden)]
+                                                     (if (fn? hidden)
+                                                       (hidden form)
+                                                       (boolean hidden)))))
                                          (map-indexed vector))]
                     (ui/div
                      {:key (-> field :id)

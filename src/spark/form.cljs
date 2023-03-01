@@ -322,7 +322,13 @@
         ;; value     (field-value-internal form field-id)
         ;; value     (coerce-value value form field-id)
         value (get-in form [:values field-id])
-        error     (when (and (-> field :required?)
+        hidden? (when-let [hidden (-> field :hidden)]
+                  (if (fn? hidden)
+                    (hidden form)
+                    (boolean hidden)))
+        required? (and (not hidden?)
+                       (-> field :required?))
+        error     (when (and required?
                              (if (-> field :type (= :checkbox))
                                (not value)
                                (nil? value)))
