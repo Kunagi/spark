@@ -2324,10 +2324,10 @@
                              (and (-> field :type (= :checkboxes))
                                   (-> field :keytable))
                              (->> value
+                                  sort
                                   (map (fn [option-value]
                                          (str (or (-> field :keytable (get option-value) :label)
                                                   option-value))))
-                                  sort
                                   (str/join ", "))
 
                              (-> field :keytable)
