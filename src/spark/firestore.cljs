@@ -213,12 +213,12 @@
                                       (nth schema 3)
                                       (nth schema 2))
                         k-conformed (conform-js-data k k-schema db-doc-ref)]
-                    (if v
+                    (if (nil? v)
+                      (assoc m k nil)
                       (assoc m
                              k-conformed
                              (conform-js-data v v-schema (conj db-doc-ref
-                                                               k-conformed)))
-                      m)))
+                                                               k-conformed))))))
                 {} (js/Object.keys data))
 
         ;; else -> :map
@@ -233,7 +233,7 @@
                           v-schema (u/malli-map-field-schema-by-id schema k)
                           v        (conform-js-data v v-schema (conj db-doc-ref k))]
                       (if (nil? v)
-                        m
+                        (assoc m k nil)
                         (assoc m k v))))
                   new-data (js/Object.keys data))))
 
