@@ -214,7 +214,7 @@
                                       (nth schema 2))
                         k-conformed (conform-js-data k k-schema db-doc-ref)]
                     (if (nil? v)
-                      (assoc m k nil)
+                      m
                       (assoc m
                              k-conformed
                              (conform-js-data v v-schema (conj db-doc-ref
