@@ -1593,24 +1593,24 @@
 (defnc CardRow [{:keys [gap children
                         grid-template-columns align-items
                         style sx]}]
-  (when children
-    (if-not (array? children)
-      children
-      (let [children (->> children
-                          (remove nil?))]
-        ($ :div
-           {:class "CardRow"
-            :sx (->sx sx)
-            :style (merge
-                    {:display :grid
-                     :grid-template-columns (or grid-template-columns
-                                                (str "repeat(" (count children) ", auto)"))
-                     :align-items (if (keyword? align-items)
-                                    (name align-items)
-                                    align-items)
-                     :grid-gap gap}
-                    style)}
-           children)))))
+  (let [children (when children
+                   (if (array? children)
+                     (->> children (remove nil?) seq)
+                     children))]
+    (when children
+      ($ :div
+         {:class "CardRow"
+          :sx (->sx sx)
+          :style (merge
+                  {:display :grid
+                   :grid-template-columns (or grid-template-columns
+                                              (str "repeat(" (count children) ", auto)"))
+                   :align-items (if (keyword? align-items)
+                                  (name align-items)
+                                  align-items)
+                   :grid-gap gap}
+                  style)}
+         children))))
 
 (def FieldLabel form-ui/FieldLabel)
 (def Field form-ui/Field)
