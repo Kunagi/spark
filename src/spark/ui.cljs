@@ -1604,13 +1604,16 @@
           :style (merge
                   {:display :grid
                    :grid-template-columns (or grid-template-columns
-                                              (str "repeat(" (count children) ", auto)"))
+                                              (str "repeat(" (if (array? children)
+                                                               (count children)
+                                                               1)
+                                                   ", auto)"))
                    :align-items (if (keyword? align-items)
                                   (name align-items)
                                   align-items)
                    :grid-gap gap}
                   style)}
-         children))))
+         (clj->js children)))))
 
 (def FieldLabel form-ui/FieldLabel)
 (def Field form-ui/Field)
