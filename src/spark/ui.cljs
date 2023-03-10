@@ -1604,7 +1604,8 @@
           :style (merge
                   {:display :grid
                    :grid-template-columns (or grid-template-columns
-                                              (str "repeat(" (if (array? children)
+                                              (str "repeat(" (if (or (array? children)
+                                                                     (sequential? children))
                                                                (count children)
                                                                1)
                                                    ", auto)"))
