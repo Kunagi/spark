@@ -2348,6 +2348,15 @@
                                  (list? value))
                              (str/join ", " value)
 
+                             (and (nil? value)
+                                  (-> field :input-example))
+                             (span
+                              {:color "#bbb"}
+                              (span
+                               {:font-weight :normal}
+                               "Beispiel: ")
+                              (-> field :input-example))
+
                              :else (str value))
                            (when (and value value-suffix)
                              (str " " value-suffix))))
