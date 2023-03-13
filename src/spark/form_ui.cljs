@@ -119,7 +119,10 @@
                                    :color "default"
                                    :size "small"
                                    :className "FormPlusMinusAdornmentButton"}
-                                  "+"))))
+                                  "+")))
+                          (when-let [suffix (-> field :value-suffix)]
+                            ($ :div
+                               suffix)))
         end-adornment (when end-adornment
                         ($ :div
                            {:style {:margin-left "8px"}}

@@ -2307,7 +2307,11 @@
                               (span
                                {:font-weight :normal}
                                "Beispiel: ")
-                              (-> field :input-example))
+                              (-> field :input-example)
+                              (when-let [suffix (or (-> field :value-suffix)
+                                                    (when (-> field :type (= :eur))
+                                                      "€"))]
+                                (str " " suffix)))
 
                              (and (-> field :type (= :select))
                                   (-> field :options seq))
