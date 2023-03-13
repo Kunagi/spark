@@ -150,7 +150,7 @@
            :error           (boolean (-> field :error))
            :helperText      (-> field :error)
            :onChange        #((:on-change field)
-                              (-> % .-target .-value))
+                             (-> % .-target .-value))
            :onKeyPress      (when-not (-> field :multiline?)
                               #(when (= "Enter" (-> ^js % .-nativeEvent .-code))
                                  ((:on-submit field))))
@@ -159,6 +159,30 @@
            :multiline       (get field :multiline?)
            :minRows            (get field :rows (when (get field :multiline?) 5))
            :autoFocus       (-> field :auto-focus?)
+           :placeholder (when-let [input-example (-> field :input-example)]
+                          (str "Beispiel: "
+                               input-example)
+                          #_(let [multiline? (-> input-example (.indexOf "\n") (>= 0))]
+                            ($ :div
+                               {:style {:color "#999"}}
+                               "Beispiel: "
+                               (if multiline?
+                                 ($ :div
+                                    {:style {:color "#666"
+                                             :word-break "break-word"
+                                             :white-space "pre-wrap"
+                                             :padding-left "8px"}}
+                                    input-example
+                                    )
+                                 ($ :span
+                                    {:style {:color "#666"
+                                             :word-break "break-word"}}
+                                    input-example
+                                    )
+                                 )
+                               )
+                            )
+                          )
            :inputProps      (clj->js input-props)
            :InputProps      (clj->js InputProps)
            :InputLabelProps #js {:shrink true}
@@ -605,28 +629,7 @@
          ($ :div
             {:style {:color "#999"}}
             input-hint))
-       (when-let [input-example (-> field :input-example)]
-         (let [multiline? (-> input-example (.indexOf "\n") (>= 0))]
-           ($ :div
-              {:style {:color "#999"}}
-              "Beispiel: "
-              (if multiline?
-                ($ :div
-                   {:style {:color "#666"
-                            :word-break "break-word"
-                            :white-space "pre-wrap"
-                            :padding-left "8px"}}
-                   input-example
-                   )
-                ($ :span
-                   {:style {:color "#666"
-                            :word-break "break-word"}}
-                   input-example
-                   )
-                )
-              )
-           )
-         ))))
+       )))
 
 (def DIALOG-CLASS (atom nil))
 
