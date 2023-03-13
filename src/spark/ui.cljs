@@ -2300,8 +2300,17 @@
                             :word-break :break-word}
                            (cond
 
+                             (and (nil? value)
+                                  (-> field :input-example))
+                             (span
+                              {:color "#bbb"}
+                              (span
+                               {:font-weight :normal}
+                               "Beispiel: ")
+                              (-> field :input-example))
+
                              (and (-> field :type (= :select))
-                                  (-> field :options))
+                                  (-> field :options seq))
                              (let [options (-> field :options)
                                    option (->> options
                                                (filter #(-> % :value (= value)))
@@ -2310,7 +2319,7 @@
                                    (str value)))
 
                              (and (-> field :type (= :checkboxes))
-                                  (-> field :options))
+                                  (-> field :options seq))
                              (let [options (-> field :options)
                                    options-by-value (->> options
                                                          (reduce (fn [m option]
@@ -2347,15 +2356,6 @@
                                  (vector? value)
                                  (list? value))
                              (str/join ", " value)
-
-                             (and (nil? value)
-                                  (-> field :input-example))
-                             (span
-                              {:color "#bbb"}
-                              (span
-                               {:font-weight :normal}
-                               "Beispiel: ")
-                              (-> field :input-example))
 
                              :else (str value))
                            (when (and value value-suffix)
