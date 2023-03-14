@@ -48,7 +48,8 @@
                              ["--project" project-id])
                            (when-not functions?
                              ["--except" "functions"])
-                           ["deploy"])
+                           ["deploy"
+                            "--non-interactive"])
             :dir "firebase"}))
 
 (defn update-references-to-build-artifacts []
