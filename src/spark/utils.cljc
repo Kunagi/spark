@@ -465,6 +465,8 @@
 
 ;; * date and time
 
+(def current-time-millis u/current-time-millis)
+
 ;; https://www.juxt.land/tick/docs/index.html
 
 #?(:cljs
