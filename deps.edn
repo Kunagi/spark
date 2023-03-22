@@ -26,5 +26,4 @@
    :ns-default build}
 
   :test {:extra-deps {lambdaisland/kaocha {:mvn/version "1.66.1034"}}
-         :jvm-opts ["-Dhyperfiddle.rcf.generate-tests=true"]
          :main-opts ["-m" "kaocha.runner"]}}}
