@@ -78,12 +78,12 @@
 
 (defn zero? [m]
   (if m
-    (-> (money m) .isZero)
+    (-> ^js (money m) .isZero)
     true))
 
 (defn pos? [m]
   (if m
-    (let [m (money m)]
+    (let [m ^js (money m)]
       (if (-> m .isZero)
         false
         (-> m .isPositive)))
@@ -133,7 +133,7 @@
     nil
 
     (money? m)
-    (-> (money m) .getAmount)
+    (-> ^js (money m) .getAmount)
 
     :else
     (->cents (money m))))
@@ -159,7 +159,7 @@
 
 (defn subtract [m1 m2]
   (cond
-    (and m1 m2) (-> (money m1) (.subtract (money m2)))
+    (and m1 m2) (-> ^js (money m1) ^js (.subtract ^js (money m2)))
     m1 m1
     m2 m2))
 
