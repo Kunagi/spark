@@ -2,7 +2,8 @@
   (:require
    [clojure.string :as str]
    ["@mui/material/styles" :as mui-styles]
-   [camel-snake-kebab.core :as csk]
+
+   [kunagi.mui.api :as ui]
    ))
 
 (defn app-styles [theme]
@@ -53,72 +54,6 @@
 
    ".CursorPointer" {:cursor :pointer}})
 
-(def attr-with-px?
-  #{:padding "padding"
-    :padding-top "padding-top"
-    :padding-bottom "padding-bottom"
-    :padding-left "padding-left"
-    :padding-right "padding-right"
-
-    :margin "margin"
-    :margin-top "margin-top"
-    :margin-bottom "margin-bottom"
-    :margin-left "margin-left"
-    :margin-right "margin-right"
-
-    :grid-gap "grid-gap"
-    :gap "gap"})
-
-(defn- conform-style-value [v attr]
-  (cond
-    (vector? v)                (->> v (map #(conform-style-value % attr)) (str/join " "))
-    (string? v)                v
-    (keyword? v)               (name v)
-    (= 0 v)                    v
-    (and (number? v)
-         (attr-with-px? attr)) (str v "px")
-    :else                      v))
-
-(defn- ->camelCase-last [s]
-  (let [strings (str/split s #"\s")
-        ]
-    (if (-> strings count (= 1))
-      (csk/->camelCase (first strings))
-      (str/join " "
-                (conj (butlast strings)
-                      (csk/->camelCase (last strings)))))))
-(defn- conform-style-key [k camel?]
-  (if camel?
-    (if (keyword? k)
-      (-> k name ->camelCase-last)
-      (->camelCase-last k))
-    (if (keyword? k)
-      (-> k name)
-      (str k))))
-
-(defn- conform-style [styles camel?]
-  (reduce (fn [styles [k v]]
-            (if (and (string? k) (str/starts-with? "&" k))
-              (assoc styles (conform-style-key k camel?) (conform-style v camel?))
-              (assoc styles (conform-style-key k camel?) (conform-style-value v k))))
-          {} styles))
-
-(defn- conform-styles-selector [s]
-  (cond
-    (keyword? s) (str "& " (name s))
-    (str/starts-with? s "& ") s
-    :else (str "& " s)))
-
-(defn conform-styles [styles camel?]
-  (reduce (fn [styles [k v]]
-            (if (map? v)
-              (assoc styles
-                     (conform-styles-selector k)
-                     (conform-style v camel?))
-              (assoc styles
-                     (conform-style-key k camel?)
-                     (conform-style-value v k))))
-          {} styles))
 
 (defn adapt-theme [theme]
   (-> theme
@@ -130,7 +65,7 @@
 
 (defn adapt-styles [styles]
   (fn [theme]
-    (conform-styles
+    (ui/conform-styles
      (if styles
        (merge (app-styles theme) (styles theme))
        (app-styles theme))

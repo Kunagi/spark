@@ -69,13 +69,8 @@
    (div
     children)))
 
-(defn sx [css-map]
-  (when css-map
-    (-> css-map
-        (styles/conform-styles true)
-        clj->js)))
-
-(def ->sx sx)
+(def sx ui/sx)
+(def ->sx ui/->sx)
 
 ;; * Misc
 
@@ -104,70 +99,16 @@
 
 (def ErrorBoundary kui/ErrorBoundary)
 
-(def use-url-params (atom-hook browser/URL_PARAMS))
+(def use-url-params ui/use-url-params )
+(def use-url-param ui/use-url-param)
 
-(defn use-url-param [k]
-  (get (use-url-params)
-       (cond
-         (nil? k) nil
-         (keyword k) k
-         (string? k) (keyword k)
-         :else (str k))))
+(def coerce-link-to ui/coerce-link-to)
+(def to-is-remote? ui/to-is-remote?)
+(def to-is-applink? ui/to-is-applink?)
+(def RouterLink ui/RouterLink)
+(def Link ui/Link)
 
-(defn coerce-link-to [to]
-  (when to
-    (cond
-      (string? to)     to
-      (sequential? to) (str "/ui/" (->> to (str/join "/")))
-      :else            (throw (ex-info "Unsupported `to` property value."
-                                       {:to   to
-                                        :type (type to)})))))
 
-(defn to-is-remote? [to]
-  (and (string? to)
-       (or (-> to (.startsWith "https:"))
-           (-> to (.startsWith "http:")))))
-
-(defn to-is-applink? [to]
-  (and (string? to)
-       (or (-> to (.startsWith "mailto:"))
-           (-> to (.startsWith "tel:")))))
-
-(def RouterLink router/Link)
-
-(defnc Link [{:keys [to href on-click class className sx children style]}]
-  (let [to        (or to href)
-        className (or class className)
-        remote?   (to-is-remote? to)
-        applink? (to-is-applink? to)
-
-        on-click (if (and on-click
-                          (not href)
-                          (not to))
-                   (fn [^js event]
-                     (-> event .preventDefault)
-                     ;; (when (-> event .-stopImmediatePropagation)
-                     ;;   (-> event .stopImmediatePropagation))
-                     ;; (-> event .stopPropagation)
-                     (on-click))
-                   on-click)]
-    (if (or remote? applink? (nil? to))
-      ($ :a
-         {:href      to
-          :onClick   on-click
-          :target    (when remote? "_blank")
-          :className className
-          :sx (->sx sx)
-          :style     (merge {:cursor "pointer"
-                             :color  "unset"}
-                            style)}
-         children)
-      ($ router/Link
-         {:to        (coerce-link-to to)
-          :onClick   on-click
-          :className (str "Link " className)
-          :sx (->sx sx)}
-         children))))
 
 ;; * routing
 
@@ -537,7 +478,7 @@
   (when styles-f
     (let [theme            (use-theme)
           styles-f-wrapper (fn [theme]
-                             {:root (styles/conform-style
+                             {:root (ui/conform-style
                                      (if (fn? styles-f)
                                        (styles-f theme)
                                        styles-f)
