@@ -1,7 +1,7 @@
 (ns spark.types.phone-number
   (:require
    [clojure.string :as str]
-   [spark.rct :refer [test>]]
+   [kunagi.utils.rct :refer [rct]]
    [spark.utils :as u]
    [clojure.spec.alpha :as s]))
 
@@ -37,17 +37,17 @@
               s)]
       s)))
 
-(test> T->e123-spaceless
-       (def _tel "+4957519934900")
-       (def _de "49")
+(rct ->e123-spaceless-test
+     (let [tel "+4957519934900"
+           de "49"
 
-       (assert (= _tel (->e123-spaceless "+49 5751 9934900" _de)))
-       (assert (= _tel (->e123-spaceless "+49 5751-9934900" _de)))
-       (assert (= _tel (->e123-spaceless "+49 5751/9934900" _de)))
+           _ (assert (= tel (->e123-spaceless "+49 5751 9934900" de)))
+           _ (assert (= tel (->e123-spaceless "+49 5751-9934900" de)))
+           _ (assert (= tel (->e123-spaceless "+49 5751/9934900" de)))
 
-       (assert (= _tel (->e123-spaceless "05751 9934900" _de)))
-       (assert (= _tel (->e123-spaceless "05751/9934900" _de)))
-       (assert (= _tel (->e123-spaceless "057519934900" _de)))
-       (assert (= _tel (->e123-spaceless "(05751) 9934900" _de)))
+           _ (assert (= tel (->e123-spaceless "05751 9934900" de)))
+           _ (assert (= tel (->e123-spaceless "05751/9934900" de)))
+           _ (assert (= tel (->e123-spaceless "057519934900" de)))
+           _ (assert (= tel (->e123-spaceless "(05751) 9934900" de)))
 
-       (assert (= _tel (->e123-spaceless "+49.5751+99 und 34900" _de))))
+           _ (assert (= tel (->e123-spaceless "+49.5751+99 und 34900" de)))]))

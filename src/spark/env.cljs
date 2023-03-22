@@ -1,6 +1,5 @@
 (ns spark.env
   (:require
-   [spark.rct :refer [test> def>]]
    [spark.local :as local]
 
    [spark.utils :as u]))

@@ -5,7 +5,6 @@
    [tick.timezone]
    [tick.core :as tick]
 
-   [spark.rct :refer [test> def>]]
    [spark.utils :as u]
    [spark.money :as money]))
 
