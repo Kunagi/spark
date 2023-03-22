@@ -8,10 +8,10 @@
          {:git/sha "aedd6e86e933d909c977601a40536c9b277f553f", :git/tag "v0.0.34"}
 
          nano-id/nano-id                     {:mvn/version "1.0.0"}
-         cljs-bean/cljs-bean                 {:mvn/version "1.6.0"}
+         cljs-bean/cljs-bean                 {:mvn/version "1.9.0"}
          tick/tick                           {:mvn/version "0.5.0-RC6"}
          metosin/malli                       {:mvn/version "0.4.0"}
-         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}
+         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
          }
 
  :aliases
