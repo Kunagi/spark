@@ -41,13 +41,34 @@
      (let [tel "+4957519934900"
            de "49"
 
-           _ (assert (= tel (->e123-spaceless "+49 5751 9934900" de)))
-           _ (assert (= tel (->e123-spaceless "+49 5751-9934900" de)))
-           _ (assert (= tel (->e123-spaceless "+49 5751/9934900" de)))
+           *1 (->e123-spaceless "+49 5751 9934900" de)
+           _ (assert (= tel *1))
 
-           _ (assert (= tel (->e123-spaceless "05751 9934900" de)))
-           _ (assert (= tel (->e123-spaceless "05751/9934900" de)))
-           _ (assert (= tel (->e123-spaceless "057519934900" de)))
-           _ (assert (= tel (->e123-spaceless "(05751) 9934900" de)))
+           *1 (->e123-spaceless "+49 5751-9934900" de)
+           _ (assert (= tel *1))
 
-           _ (assert (= tel (->e123-spaceless "+49.5751+99 und 34900" de)))]))
+           *1 (->e123-spaceless "+49 5751/9934900" de)
+           _ (assert (= tel *1))
+
+           *1 (->e123-spaceless "05751 9934900" de)
+           _ (assert (= tel *1))
+
+           *1 (->e123-spaceless "05751/9934900" de)
+           _ (assert (= tel *1))
+
+           *1 (->e123-spaceless "057519934900" de)
+           _ (assert (= tel *1))
+
+           *1 (->e123-spaceless "(05751) 9934900" de)
+           _ (assert (= tel *1))
+
+           *1 (->e123-spaceless "+49.5751+99 und 34900" de)
+           _ (assert (= tel *1))
+
+           *1 (->e123-spaceless "+49.5751+99 und 34900" de)
+           _ (assert (= "boo" *1))
+           ]
+
+       )
+
+     )
