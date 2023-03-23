@@ -11,7 +11,6 @@
          cljs-bean/cljs-bean                 {:mvn/version "1.9.0"}
          tick/tick                           {:mvn/version "0.6.0"}
          metosin/malli                       {:mvn/version "0.10.4"}
-         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
          }
 
  :aliases
