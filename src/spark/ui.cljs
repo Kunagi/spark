@@ -830,7 +830,8 @@
 
 (defnc ValueLoadGuard [{:keys [children value message height pass-through]}]
   (if (or pass-through value)
-    children
+    (ui/div
+     children)
     ($ Loader {:message message
                :height height})))
 
