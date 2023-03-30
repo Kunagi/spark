@@ -25,7 +25,7 @@
    [camel-snake-kebab.core :as csk]
    [promesa.core :as p]
    [helix.core :as helix]
-   [tick.core :as tick]
+   [spark.time :as time]
 
    ["react-router-dom" :as router]
 
@@ -218,26 +218,26 @@
 
 (defonce INSTANT
   (do
-    (js/setInterval #(reset! INSTANT (tick/instant)) 1000)
-    (atom (tick/instant))))
+    (js/setInterval #(reset! INSTANT (time/instant)) 1000)
+    (atom (time/instant))))
 (def use-instant (atom-hook INSTANT))
 
 ;; 10sec refresh
 (defonce INSTANT_10
   (do
-    (js/setInterval #(reset! INSTANT_10 (tick/instant)) (* 1000 10))
-    (atom (tick/instant))))
+    (js/setInterval #(reset! INSTANT_10 (time/instant)) (* 1000 10))
+    (atom (time/instant))))
 (def use-instant-10 (atom-hook INSTANT_10))
 
 ;; 1min refresh
 (defonce INSTANT_60
   (do
-    (js/setInterval #(reset! INSTANT_60 (tick/instant)) (* 1000 60))
-    (atom (tick/instant))))
+    (js/setInterval #(reset! INSTANT_60 (time/instant)) (* 1000 60))
+    (atom (time/instant))))
 (def use-instant-60 (atom-hook INSTANT_60))
 
 (defn use-today []
-  (tick/date (use-instant-60)))
+  (time/date (use-instant-60)))
 
 ;; * auth
 

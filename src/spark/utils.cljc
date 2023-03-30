@@ -11,7 +11,7 @@
    [nano-id.core :as nano-id]
    #?(:clj [clojure.pprint :refer [pprint]]
       :cljs [cljs.pprint :refer [pprint]])
-   [tick.core :as tick]
+   [spark.time :as time]
    #?(:cljs ["json-prune" :as json-prune])))
 
 ;; http://weavejester.github.io/medley/medley.core.html
@@ -475,15 +475,15 @@
      [v]
      (when v
        (cond
-         (tick/instant? v) v
-         (instance? js/Date v) (-> v tick/instant)
-         (string? v) (tick/instant v)
-         (number? v) (-> v tick/instant)
+         (time/instant? v) v
+         (instance? js/Date v) (-> v time/instant)
+         (string? v) (time/instant v)
+         (number? v) (-> v time/instant)
 
          (and (map? v)
               (-> v :_seconds)
               (-> v :_nanoseconds))
-         (tick/instant (+ (-> v :_seconds (* 1000))
+         (time/instant (+ (-> v :_seconds (* 1000))
                           (-> v :_nanoseconds (/ 1000))))
 
          :else (throw (ex-info (str "Unsupported time instant format: " v)
@@ -491,9 +491,9 @@
                                 :type (type v)}))))))
 
 (comment
-  "js.Date" (->instant (js/Date. "2020-01-01")) := (tick/instant (js/Date. "2020-01-01"))
-  "millis" (->instant 1577870520000) := (tick/instant 1577870520000)
-  "string" (->instant "2020-01-01T10:00:00") := (tick/instant "2020-01-01T10:00:00")
+  "js.Date" (->instant (js/Date. "2020-01-01")) := (time/instant (js/Date. "2020-01-01"))
+  "millis" (->instant 1577870520000) := (time/instant 1577870520000)
+  "string" (->instant "2020-01-01T10:00:00") := (time/instant "2020-01-01T10:00:00")
   "map" (->instant {:_seconds 1633078276, :_nanoseconds 210000000}))
 
 #?(:cljs
@@ -502,16 +502,16 @@
      [v]
      (when v
        (cond
-         (tick/date? v) v
-         (string? v) (tick/date v)
-         :else (-> v ->instant tick/date)))))
+         (time/date? v) v
+         (string? v) (time/date v)
+         :else (-> v ->instant time/date)))))
 
 (comment
   "nil" (->date nil) := nil
-  "tick/date" (->date (tick/date "2020-01-01")) := (tick/date "2020-01-01")
-  "js.Date" (->date (js/Date. "2020-01-01")) := (tick/date "2020-01-01")
-  "millis" (->date 1577870520000) := (tick/date "2020-01-01")
-  "string" (->date "2020-01-01") := (tick/date "2020-01-01"))
+  "tick/date" (->date (time/date "2020-01-01")) := (time/date "2020-01-01")
+  "js.Date" (->date (js/Date. "2020-01-01")) := (time/date "2020-01-01")
+  "millis" (->date 1577870520000) := (time/date "2020-01-01")
+  "string" (->date "2020-01-01") := (time/date "2020-01-01"))
 
 #?(:cljs
    (defn ->time
@@ -519,16 +519,16 @@
      [v]
      (when v
        (cond
-         (tick/time? v) v
-         (string? v) (tick/time v)
-         :else (-> v ->instant tick/time)))))
+         (time/time? v) v
+         (string? v) (time/time v)
+         :else (-> v ->instant time/time)))))
 
 (comment
   "nil" (->time nil) := nil
-  "tick/time " (->time (tick/time "12:23")) := (tick/time "12:23")
-  "js.Date" (->time (js/Date. "2020-01-01T12:23")) := (tick/time "12:23")
-  "millis" (->time 1577870520000) := (tick/time "10:22")
-  "string" (->time "12:23") := (tick/time "12:23"))
+  "tick/time " (->time (time/time "12:23")) := (time/time "12:23")
+  "js.Date" (->time (js/Date. "2020-01-01T12:23")) := (time/time "12:23")
+  "millis" (->time 1577870520000) := (time/time "10:22")
+  "string" (->time "12:23") := (time/time "12:23"))
 
 ;; (defn ->zoned-time [tz v]
 ;;   (when (and tz v)
@@ -540,9 +540,9 @@
 ;;       :else (-> v ->instant tick/time))))
 
 (comment
-  (tick/zone "Europe/Berlin")
-  (tick/zoned-date-time)
-  (-> (tick/instant) tick/date-time (tick/in "Europe/Berlin") tick/time)
+  (time/zone "Europe/Berlin")
+  (time/zoned-date-time)
+  (-> (time/instant) time/date-time (time/in "Europe/Berlin") time/time)
   ;; (->zoned-time "Europe/Berlin" (tick/instant))
   (js/Date.))
 
@@ -552,15 +552,15 @@
        (nil? thing)              nil
        (number? thing)           thing
        (instance? js/Date thing) (-> thing .getTime)
-       (tick/date-time? thing) (js/Date.parse (tick/inst thing))
-       (tick/zoned-date-time? thing) (js/Date.parse (tick/inst thing))
+       (time/date-time? thing) (js/Date.parse (time/inst thing))
+       (time/zoned-date-time? thing) (js/Date.parse (time/inst thing))
        :else                     (js/Date.parse thing))))
 
 (comment
   (js/Date.)
-  (js/Date. (millis (tick/instant)))
-  (js/Date. (millis (tick/date-time)))
-  (js/Date. (millis (tick/zoned-date-time (tick/date-time))))
+  (js/Date. (millis (time/instant)))
+  (js/Date. (millis (time/date-time)))
+  (js/Date. (millis (time/zoned-date-time (time/date-time))))
   (js/Date. (millis "2020-01-01"))
   (js/Date. (millis 1577870520000))
   (js/Date. (millis (js/Date.))))
@@ -631,7 +631,7 @@
          ;; :else (js/Date. (js/Date.parse date-string))
          ))))
 (comment
-  (->js-date (tick/instant))
+  (->js-date (time/instant))
   (->js-date "2020-01-01 10:22")
   (->js-date "2020-01-01"))
 

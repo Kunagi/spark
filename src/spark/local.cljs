@@ -2,8 +2,7 @@
   (:require
    [clojure.string :as str]
 
-   [tick.timezone]
-   [tick.core :as tick]
+   [spark.time :as time]
 
    [spark.utils :as u]
    [spark.money :as money]))
@@ -80,7 +79,7 @@
   ([pattern]
    (tick-formatter @LANG pattern))
   ([lang pattern]
-   (tick/formatter pattern (->joda-locale lang))))
+   (time/formatter pattern (->joda-locale lang))))
 
 (defn formatter--date
   ([]
@@ -100,17 +99,17 @@
               (str/blank? v))
        nil
        (->> (u/->date v)
-            (tick/format (formatter--date lang)))))))
+            (time/format (formatter--date lang)))))))
 
 (comment
  "string" (format-date :de "2020-01-01")
 
- (->> (u/->date "2020-01-01") (tick/format (tick/formatter "dd.MM." (->joda-locale :de))))
- (->> (u/->date "2020-01-01") (tick/format (tick/formatter "E dd.MM." (->joda-locale :de))))
- (->> (u/->date "2020-01-01") (tick/format (tick/formatter "E dd.MM." (->joda-locale :en))))
- (->> (u/->date "2020-01-01") (tick/format (tick-formatter "E dd.MM." )))
- (->> (u/->date (tick/instant)) (tick/format (tick-formatter "E dd.MM." )))
- (->> (tick/instant) (tick/format (tick-formatter "E dd.MM." )))
+ (->> (u/->date "2020-01-01") (time/format (time/formatter "dd.MM." (->joda-locale :de))))
+ (->> (u/->date "2020-01-01") (time/format (time/formatter "E dd.MM." (->joda-locale :de))))
+ (->> (u/->date "2020-01-01") (time/format (time/formatter "E dd.MM." (->joda-locale :en))))
+ (->> (u/->date "2020-01-01") (time/format (tick-formatter "E dd.MM." )))
+ (->> (u/->date (time/instant)) (time/format (tick-formatter "E dd.MM." )))
+ (->> (time/instant) (time/format (tick-formatter "E dd.MM." )))
 
  ;;
  )
@@ -123,7 +122,7 @@
   ([lang v truncate-to]
    (when v
      (-> (u/->time v)
-         (tick/truncate truncate-to)
+         (time/truncate truncate-to)
          str))))
 
 (comment
@@ -135,9 +134,9 @@
   ([lang v]
    (when v
      (let [instant (u/->instant v)]
-       (str (format-date lang (tick/date instant))
+       (str (format-date lang (time/date instant))
             " "
-            (format-time lang (tick/time instant) :minutes))))))
+            (format-time lang (time/time instant) :minutes))))))
 
 (comment
  "js/Date" (format-date+time :de (js/Date.))

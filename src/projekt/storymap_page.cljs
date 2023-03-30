@@ -3,7 +3,7 @@
 
    ["@mui/material/colors" :as colors]
    ["@mui/material" :as mui]
-   [tick.core :as tick]
+   [spark.time :as time]
 
    [spark.logging :refer [log]]
    [spark.utils :as u]
@@ -195,8 +195,8 @@
                   (if-let [date (when (-> arbeitstage count (>= tage))
                                   (nth arbeitstage tage))]
                     (let [ende (-> sprint sprint/datum-ende u/->date)
-                          nach-ende? (when (and ende (-> date (tick/> ende)))
-                                       (-> date (tick/> ende)))]
+                          nach-ende? (when (and ende (-> date (time/> ende)))
+                                       (-> date (time/> ende)))]
                       (if nach-ende?
                         (ui/span
                          {:color (-> colors .-red (aget 900))
@@ -443,8 +443,8 @@
              (-> sprint sprint/tagesleistung)
              (not (-> sprint sprint/datum-abgeschlossen)))
     (let [tagesleistung (-> sprint sprint/tagesleistung)
-          date-start (tick/max (-> sprint sprint/datum-beginn tick/date)
-                               (tick/date))
+          date-start (time/max (-> sprint sprint/datum-beginn time/date)
+                               (time/date))
           storys (->> storys
                       (sort-by story/sort-value)
                       (remove story/completed?)
@@ -482,7 +482,7 @@
 
 (def-ui SprintTableRows [sprint storymap projekt standalone uid]
   {:from-context [uid]}
-  (let [instant (tick/instant)
+  (let [instant (time/instant)
         sprint-id (-> sprint :id)
         feature-ids (-> storymap :feature-ids)
         feature-ids (if-not standalone

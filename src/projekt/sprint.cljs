@@ -1,9 +1,8 @@
 (ns projekt.sprint
   (:require
-   [tick.core :as tick]
+   [spark.time :as time]
    [spark.core :as spard :refer [def-field def-subdoc]]
    ))
-
 
 (def-field Entwickler
   [:string
@@ -47,20 +46,20 @@
 
 (defn arbeitstage-ab [this instant]
   (when-let [datum (-> this datum-beginn)]
-    (let [start-date (tick/max (tick/date datum) (tick/date instant))]
+    (let [start-date (time/max (time/date datum) (time/date instant))]
       (->> (range 360)
            (map (fn [i]
-                  (tick/>> start-date i)))
-           (remove #(let [weekday (-> % tick/day-of-week)]
-                      (or (= weekday tick/SATURDAY)
-                          (= weekday tick/SUNDAY)))))
+                  (time/>> start-date i)))
+           (remove #(let [weekday (-> % time/day-of-week)]
+                      (or (= weekday time/SATURDAY)
+                          (= weekday time/SUNDAY)))))
       )))
 
 (comment
-  (-> (tick/date) (tick/>> 1))
-  (-> (tick/date) tick/day-of-week)
-  (tick/>> (tick/instant)
-           (tick/new-duration 1 :days)))
+  (-> (time/date) (time/>> 1))
+  (-> (time/date) time/day-of-week)
+  (time/>> (time/instant)
+           (time/new-duration 1 :days)))
 
 (defn tagesleistung [this]
   (-> this :tagesleistung))

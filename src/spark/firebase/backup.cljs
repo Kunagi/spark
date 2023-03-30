@@ -1,7 +1,7 @@
 (ns spark.firebase.backup
   (:require
    [clojure.string :as str]
-   [tick.core :as tick]
+   [spark.time :as time]
    [promesa.core :as p]
    ["firebase-admin" :as admin]
    ["stream" :as stream]
@@ -99,14 +99,14 @@
      (map #(backup-col> bucket path %)
           cols-names)))
 
-(def date-path-format (tick/formatter "yyyy/MM/dd"))
+(def date-path-format (time/formatter "yyyy/MM/dd"))
 
 (defn date-path []
-  (let [now  (tick/now)
-        date (tick/date now)
-        time (tick/time now)]
+  (let [now  (time/now)
+        date (time/date now)
+        time (time/time now)]
     (str
-     (tick/format date-path-format date)
+     (time/format date-path-format date)
      "/"
      time)))
 
