@@ -1,9 +1,8 @@
 (ns spark.time-test
   (:require
-   [tick.core :as tick]
+   [clojure.test :refer [deftest is]]
    [spark.time :as sut]
-   [clojure.test :refer [deftest testing is]]
-   ))
+   [tick.core :as tick]))
 
 (deftest test-date
   (is (= (tick/date "2023-01-01") (sut/date "2023-01-01")))

@@ -1,11 +1,10 @@
 (ns projekt.projekt
   (:require
    [clojure.string :as str]
-   [spark.utils :as u]
-   [spark.core :as spark :refer [def-doc def-test def-field]]
-
+   [projekt.sprint :as sprint]
    [projekt.story :as story]
-   [projekt.sprint :as sprint]))
+   [spark.core :as spark :refer [def-doc def-field def-test]]
+   [spark.utils :as u]))
 
 (def-field Storys
   [:map-of

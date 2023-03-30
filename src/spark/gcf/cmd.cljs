@@ -2,11 +2,11 @@
   (:require-macros [spark.gcf.cmd :refer [def-cmd]])
   (:require
    [kunagi.utils :as ku]
-   [spark.logging :refer [log]]
-   [spark.utils :as u]
-   [spark.money :as money]
    [spark.db :as db]
-   [spark.gcf :as gcf]))
+   [spark.gcf :as gcf]
+   [spark.logging :refer [log]]
+   [spark.money :as money]
+   [spark.utils :as u]))
 
 (defn assert-arg [arg-key arg-def arg-value]
   (when-not (-> arg-def :optional)

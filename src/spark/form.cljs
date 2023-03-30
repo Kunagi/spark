@@ -1,15 +1,13 @@
 (ns spark.form
   (:require
+   [clojure.set :as set]
    [clojure.spec.alpha :as s]
-
-   [spark.logging :refer [log]]
-   [spark.utils :as u]
-   [spark.core :as spark]
-   [spark.money :as money]
-   [spark.local :as local]
-
    [clojure.string :as str]
-   [clojure.set :as set]))
+   [spark.core :as spark]
+   [spark.local :as local]
+   [spark.logging :refer [log]]
+   [spark.money :as money]
+   [spark.utils :as u]))
 
 (s/def ::id keyword?)
 (s/def ::submit fn?)

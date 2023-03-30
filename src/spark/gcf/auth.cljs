@@ -1,10 +1,9 @@
 (ns spark.gcf.auth
   (:require
    ["firebase-admin" :as firebase-admin]
-   [promesa.core :as p]
+   [spark.gcf.cmd :refer [def-cmd]]
    [spark.logging :refer [log]]
-   [spark.utils :as u]
-   [spark.gcf.cmd :refer [def-cmd]]))
+   [spark.utils :as u]))
 
 ;; https://firebase.google.com/docs/auth/admin/manage-users
 ;; https://firebase.google.com/docs/reference/admin/node/firebase-admin.auth

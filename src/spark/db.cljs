@@ -2,10 +2,9 @@
   (:require
    [clojure.string :as str]
    [promesa.core :as p]
-
-   [spark.utils :as u]
    [spark.core :as spark]
-   [spark.firestore :as firestore]))
+   [spark.firestore :as firestore]
+   [spark.utils :as u]))
 
 ;; * common
 

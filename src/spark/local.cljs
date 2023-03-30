@@ -1,11 +1,9 @@
 (ns spark.local
   (:require
    [clojure.string :as str]
-
+   [spark.money :as money]
    [spark.time :as time]
-
-   [spark.utils :as u]
-   [spark.money :as money]))
+   [spark.utils :as u]))
 
 (defonce LANG (atom :de))
 

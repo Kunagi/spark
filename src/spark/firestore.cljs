@@ -4,7 +4,6 @@
    [clojure.string :as str]
    [goog.object :as gobj]
    [promesa.core :as p]
-
    [spark.env-config :as env-config]
    [spark.logging :refer [log]]
    [spark.utils :as u]))

@@ -1,9 +1,9 @@
 (ns spark.firebase.messaging
   (:require
    ["firebase/messaging" :as firebase-messaging]
+   [spark.env-config :as env-config]
    [spark.logging :refer [log]]
-   [spark.utils :as u]
-   [spark.env-config :as env-config]))
+   [spark.utils :as u]))
 
 ;; https://firebase.google.com/docs/cloud-messaging/js/client
 

@@ -1,10 +1,9 @@
 (ns spark.firebase.storage
   (:require
-   [promesa.core :as p]
    ["firebase/storage" :as firebase-storage]
-
-   [spark.logging :refer [log]]
-   [spark.env-config :as env-config]))
+   [promesa.core :as p]
+   [spark.env-config :as env-config]
+   [spark.logging :refer [log]]))
 
 ;; https://firebase.google.com/docs/reference/js/firebase.storage.Reference
 

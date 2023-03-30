@@ -1,9 +1,7 @@
 (ns spark.types.phone-number
   (:require
    [clojure.string :as str]
-   [kunagi.utils.rct :refer [rct]]
-   [spark.utils :as u]
-   [clojure.spec.alpha :as s]))
+   [kunagi.utils.rct :refer [rct]]))
 
 (def country-prefix--de "49")
 

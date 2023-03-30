@@ -1,11 +1,10 @@
 (ns spark.repository
   (:require
    [clojure.string :as str]
-   [spark.logging :refer [log]]
-   [spark.utils :as u]
    [spark.core :as spark]
    [spark.firestore :as firestore]
-   [spark.db :as db]))
+   [spark.logging :refer [log]]
+   [spark.utils :as u]))
 
 
 (defn doc> [path]

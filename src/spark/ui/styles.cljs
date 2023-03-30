@@ -1,10 +1,7 @@
 (ns spark.ui.styles
   (:require
-   [clojure.string :as str]
    ["@mui/material/styles" :as mui-styles]
-
-   [kunagi.mui.api :as ui]
-   ))
+   [kunagi.mui.api :as ui]))
 
 (defn app-styles [theme]
   {:.center {:display :grid :place-items "center"}

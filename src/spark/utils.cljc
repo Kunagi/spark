@@ -3,16 +3,16 @@
   (:refer-clojure :exclude [assert pos? zero? min max tap>])
   #?(:cljs (:require-macros [spark.utils :refer [assert try>]]))
   (:require
+   #?(:clj [clojure.pprint :refer [pprint]]
+      :cljs [cljs.pprint :refer [pprint]])
+   #?(:cljs ["json-prune" :as json-prune])
    [clojure.string :as str]
    [flatland.ordered.map :as ordered.map]
    [kunagi.utils :as u]
    [malli.core :as malli]
    [malli.error :as malli-error]
    [nano-id.core :as nano-id]
-   #?(:clj [clojure.pprint :refer [pprint]]
-      :cljs [cljs.pprint :refer [pprint]])
-   [spark.time :as time]
-   #?(:cljs ["json-prune" :as json-prune])))
+   [spark.time :as time]))
 
 ;; http://weavejester.github.io/medley/medley.core.html
 

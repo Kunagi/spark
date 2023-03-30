@@ -1,12 +1,8 @@
 (ns spark.ui
   (:require
-   [clojure.string :as str]
-
-   [kunagi.utils.logging :as logging]
    [kunagi.mui.api :as kui]
    [kunagi.mui.core :as kui.core]
-
-   [spark.core :as spark]))
+   [kunagi.utils.logging :as logging]))
 
 (defmacro defnc [& body] `(kunagi.mui.core/defnc ~@body))
 (defmacro $ [& body] `(kunagi.mui.api/$ ~@body))

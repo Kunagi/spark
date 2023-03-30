@@ -1,9 +1,9 @@
 (ns spark.runtime
   (:require
-   [spark.logging :refer [log]]
-   [spark.utils :as u]
    [spark.core :as spark]
-   [spark.repository :as repository]))
+   [spark.logging :refer [log]]
+   [spark.repository :as repository]
+   [spark.utils :as u]))
 
 (def $Query
   [:map

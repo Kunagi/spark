@@ -2,12 +2,8 @@
   (:require
    ["@mui/material" :as mui]
    [clojure.edn :as edn]
-
-   [spark.logging :refer [log]]
-   [spark.utils :as u]
-   [spark.ui :as ui :refer [def-ui def-page $]]
-
-   ))
+   [spark.ui :as ui :refer [$ def-page def-ui]]
+   [spark.utils :as u]))
 
 (defonce INPUT (atom "{:cmd :dummy}"))
 (def use-input (ui/atom-hook INPUT))

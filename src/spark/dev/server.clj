@@ -1,6 +1,5 @@
 (ns spark.dev.server
   (:require
-   [clojure.pprint :refer [pprint]]
    [ring.util.codec :as codec]))
 
 

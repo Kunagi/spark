@@ -1,15 +1,13 @@
 ;; * ns
 (ns spark.gcf
   (:require
-   [clojure.string :as str]
-   [cljs.pprint :refer [pprint]]
-   [shadow.resource :as resource]
-
    ["firebase-functions" :as functions]
-
+   [cljs.pprint :refer [pprint]]
+   [clojure.string :as str]
+   [shadow.resource :as resource]
+   [spark.firestore :as firestore]
    [spark.logging :refer [log]]
-   [spark.utils :as u]
-   [spark.firestore :as firestore]))
+   [spark.utils :as u]))
 
 ;; * config
 ;; https://firebase.google.com/docs/functions/config-env

@@ -1,7 +1,7 @@
 (ns spark.logging
   #?(:cljs (:require-macros [spark.logging :refer [log]]))
   (:require
-  [kunagi.utils.logging :as kunagi-logging]))
+   [kunagi.utils.logging :as kunagi-logging]))
 
 
 #?(:clj

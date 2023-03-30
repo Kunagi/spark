@@ -1,9 +1,8 @@
 (ns spark.firestore-hooks
   (:require
    [clojure.spec.alpha :as s]
-
-   [spark.logging :refer [log]]
-   [spark.firestore :as fs]))
+   [spark.firestore :as fs]
+   [spark.logging :refer [log]]))
 
 
 ;; (defn doc-atom [path]

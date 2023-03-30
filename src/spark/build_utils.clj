@@ -1,10 +1,9 @@
 (ns spark.build-utils
   (:require
-   [clojure.string :as str]
    [clojure.java.io :as io]
+   [clojure.string :as str]
    [clojure.tools.build.api :as b]
-
-   [kunagi.build.api :as kb :refer [print-task print-done print-debug]]))
+   [kunagi.build.api :as kb :refer [print-task]]))
 
 (defn replace-in-file [f target replacement]
   (when (-> f io/as-file .exists)

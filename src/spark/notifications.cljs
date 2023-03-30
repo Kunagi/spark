@@ -1,8 +1,7 @@
 (ns spark.notifications
   (:require
    [spark.logging :refer [log]]
-   [spark.utils :as u]
-   ))
+   [spark.utils :as u]))
 
 
 (defn info []

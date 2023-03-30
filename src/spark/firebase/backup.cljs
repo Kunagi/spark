@@ -1,16 +1,15 @@
 (ns spark.firebase.backup
   (:require
-   [clojure.string :as str]
-   [spark.time :as time]
-   [promesa.core :as p]
    ["firebase-admin" :as admin]
    ["stream" :as stream]
-
-   [spark.logging :refer [log]]
-   [spark.firestore :as firestore]
+   [clojure.string :as str]
+   [promesa.core :as p]
    [spark.db :as db]
-   [spark.utils :as u]
-   [spark.gcf :as gcf]))
+   [spark.firestore :as firestore]
+   [spark.gcf :as gcf]
+   [spark.logging :refer [log]]
+   [spark.time :as time]
+   [spark.utils :as u]))
 
 ;; https://firebase.google.com/docs/storage/admin/start
 ;; https://firebase.google.com/docs/reference/admin/node/admin.storage

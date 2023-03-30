@@ -1,11 +1,9 @@
 (ns spark.init-spa
   (:require
-
    ["firebase/compat/app" :default firebase]
    ["firebase/compat/firestore"]
-
-   [spark.utils :as u]
-   [spark.env-config :as env-config]))
+   [spark.env-config :as env-config]
+   [spark.utils :as u]))
 
 (defn initialize [app-config]
   (let [firebase-app (-> firebase

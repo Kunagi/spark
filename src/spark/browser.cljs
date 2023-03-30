@@ -1,9 +1,9 @@
 (ns spark.browser
   (:require
+   [clojure.string :as str]
    [promesa.core :as p]
    [spark.logging :refer [log]]
-   [spark.utils :as u]
-   [clojure.string :as str]))
+   [spark.utils :as u]))
 
 ;; * Loading Scripts
 

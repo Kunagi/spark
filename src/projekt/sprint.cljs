@@ -1,8 +1,7 @@
 (ns projekt.sprint
   (:require
-   [spark.time :as time]
    [spark.core :as spard :refer [def-field def-subdoc]]
-   ))
+   [spark.time :as time]))
 
 (def-field Entwickler
   [:string

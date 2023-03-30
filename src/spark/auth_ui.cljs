@@ -1,12 +1,11 @@
 (ns spark.auth-ui
   (:require
-   [clojure.string :as str]
-   ["firebase/auth" :as firebase-auth]
    ["@mui/material" :as mui]
+   ["firebase/auth" :as firebase-auth]
+   [clojure.string :as str]
+   [spark.auth :as auth]
    [spark.logging :refer [log]]
-   [spark.utils :as u]
-   [spark.ui :as ui :refer [def-ui $]]
-   [spark.auth :as auth]))
+   [spark.ui :as ui :refer [$ def-ui]]))
 
 (def use-auth-user (ui/atom-hook auth/AUTH_USER))
 ;; * E-Mail

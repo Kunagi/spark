@@ -1,9 +1,9 @@
 (ns spark.time
   (:refer-clojure :exclude [time inc format min max > < >= <=])
   (:require
-   [tick.timezone]
    #?(:cljs ["@js-joda/locale_de-de" :as js-joda-locale])
-   [tick.core :as tick]))
+   [tick.core :as tick]
+   [tick.timezone]))
 
 (println "")
 (println "      Setting default locale to GERMANY (spark.time)")

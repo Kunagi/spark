@@ -1,11 +1,8 @@
 (ns spark.ui.ui-showcase-page
   (:require
    ["@mui/material" :as mui]
-
-   [spark.ui :as ui :refer [def-ui def-page $]]
-   [spark.ui.showcase :as showcase]
-
-   ))
+   [spark.ui :as ui :refer [$ def-page def-ui]]
+   [spark.ui.showcase :as showcase]))
 
 (def use-showcases (ui/atom-hook showcase/SHOWCASES))
 

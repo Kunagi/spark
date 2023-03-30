@@ -1,10 +1,8 @@
 (ns spark.firebase.auth
   (:require
-
    ["firebase/auth" :as firebase-auth]
-
-   [spark.logging :refer [log]]
-   [spark.env-config :as env-config]))
+   [spark.env-config :as env-config]
+   [spark.logging :refer [log]]))
 
 ;; https://firebase.google.com/docs/auth/
 ;; https://firebase.google.com/docs/reference/js/firebase.auth.Auth

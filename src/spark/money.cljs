@@ -1,7 +1,6 @@
 (ns spark.money
   (:refer-clojure :exclude [pos? zero? min max + < > <= >=])
   (:require
-
    ["dinero.js" :as dinero]
    [spark.utils :as u]))
 

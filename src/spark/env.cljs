@@ -1,7 +1,6 @@
 (ns spark.env
   (:require
    [spark.local :as local]
-
    [spark.utils :as u]))
 
 (defn- format-default [v]

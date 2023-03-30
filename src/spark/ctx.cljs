@@ -1,7 +1,6 @@
 (ns spark.ctx
   (:require
-   [spark.utils :as u]
-   ))
+   [spark.utils :as u]))
 
 
 (defn new-ctx

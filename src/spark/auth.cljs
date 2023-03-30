@@ -1,18 +1,14 @@
 (ns spark.auth
   (:require
-
-   [promesa.core :as p]
    ["firebase/auth" :as firebase-auth]
-
-   [spark.logging :refer [log]]
-   [spark.utils :as u]
-   [spark.env-config :as env-config]
-   [spark.firebase.auth :as spark.firebase.auth]
-
+   [promesa.core :as p]
+   [spark.browser :as browser]
    [spark.core :as spark]
    [spark.db :as db]
-   [spark.browser :as browser]
-   [spark.firebase.messaging :as messaging]))
+   [spark.firebase.auth :as spark.firebase.auth]
+   [spark.firebase.messaging :as messaging]
+   [spark.logging :refer [log]]
+   [spark.utils :as u]))
 
 (defonce SIGN_IN-F (atom nil))
 (defonce AUTH_COMPLETED (atom false))

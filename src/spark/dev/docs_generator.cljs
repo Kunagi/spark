@@ -1,10 +1,9 @@
 (ns spark.dev.docs-generator
   (:require
    [clojure.string :as str]
-
+   [spark.browser :as browser]
    [spark.core :as spark]
-   [spark.dev.adoc :as adoc]
-   [spark.browser :as browser]))
+   [spark.dev.adoc :as adoc]))
 
 
 ;;;
