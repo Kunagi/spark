@@ -5,6 +5,29 @@
    [spark.logging :refer [log]]
    [spark.utils :as u]))
 
+;; * Browser Detection
+
+(defn user-agent-matches? [sub-string]
+  (when-let [ua js/navigator.userAgent]
+    (-> ua (.indexOf sub-string) pos?)))
+
+(defn on-android? []
+  (user-agent-matches? "Android"))
+
+(defn on-iphone? []
+  (user-agent-matches? "iPhone"))
+
+(defn on-ipad? []
+  (user-agent-matches? "iPad"))
+
+(defn on-mobile? []
+  (or (on-android?)
+      (on-ipad?)
+      (on-iphone?)))
+
+(defn on-desktop? []
+  (not (on-mobile?)))
+
 ;; * Loading Scripts
 
 (defonce LOADED_SCRIPTS (atom #{}))
