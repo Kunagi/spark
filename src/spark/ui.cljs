@@ -2014,7 +2014,8 @@
            label
            alt-url
            children]}]
-  (let [[url set-url_] (use-state :loading)
+  (let [[id _set-id] (ui/use-state (or id (str "bild_" (u/nano-id))))
+        [url set-url_] (use-state :loading)
         set-url        (fn [new-url]
                          (when (not= url new-url)
                            (log ::file-uploaded
@@ -2035,10 +2036,10 @@
                     (open-file-selector))]
 
     (use-effect
-     :always
-     (-> (storage/url> storage-path)
-         (.then set-url_))
-     nil)
+      :always
+      (-> (storage/url> storage-path)
+          (.then set-url_))
+      nil)
 
     ($ mui/CardActionArea
        {:onClick on-click}
