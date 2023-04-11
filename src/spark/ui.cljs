@@ -967,7 +967,10 @@
            dialog (assoc dialog
                          :id id
                          :open? true
-                         :on-close resolve)]
+                         :on-close (fn []
+                                     (when-let [on-close (-> dialog :on-close)]
+                                       (on-close))
+                                     (resolve)))]
        (swap! DIALOGS assoc id dialog)
        id))))
 
