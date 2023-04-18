@@ -2188,7 +2188,8 @@
 
 ;; * db dialogs
 
-(defn show-entity-form-dialog> [entity fields event on-changed]
+(defn show-entity-form-dialog> [entity fields event on-changed
+                                extra-buttons]
   (log ::show-entity-form-dialog>
        :entity entity
        :fields fields)
@@ -2213,7 +2214,8 @@
                                                      :values-before (select-keys entity (keys values)))]
                                     (assoc values :events {event-id event})))
                         _ (db-update> entity changes)]
-                  (when on-changed (on-changed values)))))}))
+                  (when on-changed (on-changed values)))))
+    :extra-buttons extra-buttons}))
 
 ;; * db components
 
@@ -2317,7 +2319,8 @@
                                 event
                                 (when on-changed
                                   (fn [values]
-                                    (on-changed (get values field-id)))))))
+                                    (on-changed (get values field-id))))
+                                nil)))
         Field ($ FieldCardContent
                  {:label label
                   :description description}
