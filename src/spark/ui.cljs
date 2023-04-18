@@ -1008,8 +1008,13 @@
      ($ mui/Dialog
         {:open      (-> dialog :open?)
          :onClose   #(hide-dialog (-> dialog :id))
-         :className class
-         :maxWidth (get dialog :max-width "sm")}
+         :className (str class " " (-> dialog :class))
+         :maxWidth (get dialog :max-width "sm")
+         ;; :sx (clj->js {"background-color" "blue"
+                       ;; "outline" "2px soldi blue"}
+                      ;; )
+         :sx (->sx (-> dialog :sx))
+         }
         ;; (data dialog-id)
         ;; (DEBUG dialog)
         (when-let [title (-> dialog :title)]
