@@ -1897,14 +1897,16 @@
 ;; * misc dialogs
 
 (defnc SelectionList [{:keys [items on-select]}]
-  ($ mui/List
-     (for [[idx item] (map-indexed vector items)]
-       ($ mui/ListItem
-          {:key     (or (-> item :id) idx)
-           :button  true
-           :onClick #(on-select item)}
-          ($ mui/ListItemText
-             {:primary (-> item :label)})))))
+  (grid
+   [:auto]
+   (for [[idx item] (map-indexed vector items)]
+     ($ Button
+        {:key     (or (-> item :id)
+                      (-> item :value)
+                      idx)
+         :text (or (-> item :label)
+                   (-> item :id))
+         :on-click #(on-select item)}))))
 
 (defn show-selection-list-dialog [dialog]
   (let [dialog-id     (str "selection-list_" (u/nano-id))
