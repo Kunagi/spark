@@ -1122,7 +1122,7 @@
      ($ mui/CircularProgress))))
 
 (defn eval-with-progress-dialog [f>]
-  (let [promise (f>)]
+  (let [promise (if (fn? f>) (f>) f>)]
     (when (instance? js/Promise promise)
       (show-dialog
        {:content (div
