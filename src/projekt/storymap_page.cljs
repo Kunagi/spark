@@ -380,7 +380,7 @@
   (let [current-sprint-id (use-current-sprint-id storymap)
         {:keys [sprints-ids]} storymap]
     (ui/div
-     {:max-width "300px"}
+     {:max-width "280px"}
      (ui/stack
       ($ mui/FormControl
          {:size "small"}
