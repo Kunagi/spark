@@ -496,7 +496,7 @@
   ([path]
    (use-storage-files nil path))
   ([bucket-name path]
-   (let [[files set-files] (use-state [])
+   (let [[files set-files] (use-state nil)
          reload-f          (fn []
                              (-> (storage/list-files> bucket-name path)
                                  (.then (fn [^js result]
