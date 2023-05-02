@@ -166,17 +166,22 @@
            (map conform-tx-data-entity)
            (remove nil?)))))
 
-(defn ->ref [thing]
-  (when thing
-    (cond
-      (string? thing) thing
-      (vector? thing) thing
-      (map? thing)    (or (-> thing :db/ref)
-                          (-> thing :firestore/path))
-      :else           (throw (ex-info (str "Invalid ref object type")
-                                      {:type   (type thing)
-                                       :object thing})))))
-
+(defn ->ref
+  ([collection-name doc-id]
+   (str (if (string? collection-name)
+          collection-name
+          (-> collection-name second (get :firestore/collection)))
+        "/" doc-id))
+  ([thing]
+   (when thing
+     (cond
+       (string? thing) thing
+       (vector? thing) thing
+       (map? thing)    (or (-> thing :db/ref)
+                           (-> thing :firestore/path))
+       :else           (throw (ex-info (str "Invalid ref object type")
+                                       {:type   (type thing)
+                                        :object thing}))))))
 (comment
   (->ref nil)
   (->ref "devtest/dummy")
