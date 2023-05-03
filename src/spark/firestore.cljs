@@ -109,11 +109,14 @@
   ;; (log ::remove-metadata
   ;;      :data data)
   (let [data (dissoc data
+                     :firestore/id
                      :firestore/schema
                      :firestore/doc-path
                      :firestore/path
                      :firestore/create
                      :firestore/exists?
+                     :db/type
+                     :db/id
                      :db/ref
                      :db/exists)]
     (reduce (fn [data [k v]]
