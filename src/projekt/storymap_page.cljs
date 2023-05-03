@@ -177,13 +177,13 @@
              (ui/stack
 
               ;; Prio | # | Aufwände
-              (ui/grid-3
-               [:max-content :auto :max-content :max-content :max-content]
-               {:align-items :center}
+              (ui/flex
+               {:align-items :center
+                :justify-content :space-between
+                :font-size 14}
 
                (ui/div
                 "#" (-> story :id))
-               (ui/div)
                (ui/div
                 {:color (if next? (-> colors .-blue (aget 600)) "grey")
                  :font-weight (when next? 900)}
@@ -521,6 +521,7 @@
      ($ :tr
         (for [feature-id feature-ids]
           ($ :td {:key feature-id
+                  :width "280px"
                   :style {:vertical-align "top"
                            ;; :padding "0.5rem"
                           }}
@@ -534,7 +535,8 @@
                  :projekt projekt
                  :sprint sprint
                  :lowest-prio lowest-prio
-                 :arbeitstage arbeitstage})))))))
+                 :arbeitstage arbeitstage})))
+        ($ :td)))))
 
 (defn filter-storys [projekt storys search-opts]
   (let [search-text (-> search-opts
