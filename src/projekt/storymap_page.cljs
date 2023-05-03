@@ -380,7 +380,7 @@
   (let [current-sprint-id (use-current-sprint-id storymap)
         {:keys [sprints-ids]} storymap]
     (ui/div
-     {:max-width "280px"}
+     ;; {:max-width "280px"}
      (ui/stack
       ($ mui/FormControl
          {:size "small"}
@@ -521,7 +521,7 @@
      ($ :tr
         (for [feature-id feature-ids]
           ($ :td {:key feature-id
-                  :width "280px"
+                  :width "320px"
                   :style {:vertical-align "top"
                            ;; :padding "0.5rem"
                           }}
