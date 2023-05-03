@@ -28,6 +28,8 @@
   (js/setTimeout #(swap! DIALOG_FORMS dissoc form-id) 1000))
 
 (defn show-form-dialog [form]
+  (log ::show-form-dialog
+       :form form)
   (let [form    (form/initialize form)
         form-id (-> form :id)
         form    (assoc form :open? true)]
@@ -147,8 +149,10 @@
            :required        (-> field :required?)
            :error           (boolean (-> field :error))
            :helperText      (-> field :error)
-           :onChange        #((:on-change field)
-                             (-> % .-target .-value))
+           :onChange       (fn [^js event]
+                             (log ::create-input--TextField--onChange)
+                             ((:on-change field)
+                              (-> event .-target .-value)))
            :onKeyPress      (when-not (-> field :multiline?)
                               #(when (= "Enter" (-> ^js % .-nativeEvent .-code))
                                  ((:on-submit field))))
@@ -161,26 +165,21 @@
                           (str "Beispiel: "
                                input-example)
                           #_(let [multiline? (-> input-example (.indexOf "\n") (>= 0))]
-                            ($ :div
-                               {:style {:color "#999"}}
-                               "Beispiel: "
-                               (if multiline?
-                                 ($ :div
-                                    {:style {:color "#666"
-                                             :word-break "break-word"
-                                             :white-space "pre-wrap"
-                                             :padding-left "8px"}}
-                                    input-example
-                                    )
-                                 ($ :span
-                                    {:style {:color "#666"
-                                             :word-break "break-word"}}
-                                    input-example
-                                    )
-                                 )
-                               )
-                            )
-                          )
+                              ($ :div
+                                 {:style {:color "#999"}}
+                                 "Beispiel: "
+                                 (if multiline?
+                                   ($ :div
+                                      {:style {:color "#666"
+                                               :word-break "break-word"
+                                               :white-space "pre-wrap"
+                                               :padding-left "8px"}}
+                                      input-example)
+                                   ($ :span
+                                      {:style {:color "#666"
+                                               :word-break "break-word"}}
+                                      input-example)))))
+
            :inputProps      (clj->js input-props)
            :InputProps      (clj->js InputProps)
            :InputLabelProps #js {:shrink true}
@@ -591,6 +590,8 @@
        content)))
 
 (defnc FormField [{:keys [field form on-submit update-form]}]
+  (log ::FormField
+       :field field)
   (let [field-id (-> field :id)
         error    (form/field-error form field-id)
         on-change (fn [value]
@@ -633,6 +634,8 @@
 
 (defnc Form [{:keys [form set-form on-close on-cancel
                      grid-template-columns]}]
+  (log ::Form
+       :form form)
   (let [form         (assoc form :update (fn [f]
                                            (set-form (f form))))
         update-form_ (fn [f & args]
@@ -801,6 +804,8 @@
         on-close (fn []
                    (close-form-dialog (-> form :id)))
         [form set-form] (kui/use-state form)]
+    (log ::FormDialog
+         :form form)
     ($ :div
        (let [max-width (or (-> form :max-width)
                            :md)
@@ -809,6 +814,8 @@
                          max-width)]
          ($ mui/Dialog
             {:open      open?
+             ;; :TransitionComponent nil
+             :transitionDuration 0
              :className @DIALOG-CLASS
              :fullWidth true
              :maxWidth max-width
