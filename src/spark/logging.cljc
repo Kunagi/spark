@@ -6,7 +6,8 @@
 
 #?(:clj
    (defmacro log [event-keyword & data-kvs]
-     `(kunagi-logging/log ~event-keyword ~@data-kvs)))
+     ;; `(kunagi-logging/log ~event-keyword ~@data-kvs)
+     ))
 
 #?(:clj
    (defmacro log-error [event-keyword & data-kvs]
