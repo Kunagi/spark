@@ -11,7 +11,9 @@
 ;; https://firebase.google.com/docs/reference/js/firebase.firestore
 
 (defn new-id []
-  (u/nano-id))
+  (str (random-uuid))
+  ;; (u/nano-id)
+  )
 
 (defn doc? [doc]
   (and
