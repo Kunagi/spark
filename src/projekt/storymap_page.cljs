@@ -267,11 +267,14 @@
              ;;
              #_(ui/data story))))))
 
+(def card-width "320px")
+
 (def-ui StoryCards [storys projekt sprint lowest-prio arbeitstage]
   (ui/stack
    (for [story (->> storys (sort-by story/sort-value))]
      (ui/div
-      {:key (-> story :id)}
+      {:key (-> story :id)
+       :min-width card-width}
       ($ kui/ErrorBoundary
          ($ StoryCard
             {:key (-> story :id)
@@ -521,7 +524,6 @@
      ($ :tr
         (for [feature-id feature-ids]
           ($ :td {:key feature-id
-                  :width "320px"
                   :style {:vertical-align "top"
                            ;; :padding "0.5rem"
                           }}
