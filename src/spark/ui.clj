@@ -89,6 +89,7 @@
 
 (def html-element kui.core/html-element)
 
+
 (defmacro center [& style-and-children]
   (html-element :span style-and-children "center" nil))
 
