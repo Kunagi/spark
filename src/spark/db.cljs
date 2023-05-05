@@ -146,7 +146,8 @@
         entity--migrate-path-to-ref
         entity--assert-ref
         entity--update-id
-        (assoc :ts-updated [:db/timestamp]))))
+        ;; (assoc :ts-updated [:db/timestamp])
+        )))
 
 (comment
   (conform-tx-data-entity {})
