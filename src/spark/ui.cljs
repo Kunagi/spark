@@ -1896,7 +1896,7 @@
 
 ;; * misc dialogs
 
-(defnc SelectionList [{:keys [items on-select]}]
+(defnc SelectionList [{:keys [items on-select button-class]}]
   (grid
    [:auto]
    (for [[idx item] (map-indexed vector items)]
@@ -1906,7 +1906,8 @@
                       idx)
          :text (or (-> item :label)
                    (-> item :id))
-         :on-click #(on-select item)}))))
+         :on-click #(on-select item)
+         :class button-class}))))
 
 (defn show-selection-list-dialog [dialog]
   (let [dialog-id     (str "selection-list_" (u/nano-id))
@@ -1919,7 +1920,8 @@
       (u/later> 1 #(on-select (first items)))
       (let [SelectionList ($ SelectionList
                              {:items     items
-                              :on-select on-select})
+                              :on-select on-select
+                              :button-class (-> dialog :button-class)})
             dialog        (assoc dialog
                                  :id dialog-id
                                  :content SelectionList)]
