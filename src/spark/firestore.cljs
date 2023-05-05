@@ -625,7 +625,7 @@
              subdoc? (vector? db-ref)]
          (log ::set>
               :tx-data tx-data
-              :transaction transaction)
+              :transaction (boolean transaction))
          (if subdoc?
            (if (-> tx-data :db/delete (= true))
              (set>--delete-subdoc> transaction tx-data db-ref)
