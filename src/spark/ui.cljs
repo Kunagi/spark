@@ -788,6 +788,21 @@
 ;;; common components
 ;;;
 
+(defn alert--error [content]
+  ($ mui/Alert
+     {:severity "error"}
+     content))
+
+(defn alert--warning [content]
+  ($ mui/Alert
+     {:severity "warning"}
+     content))
+
+(defn alert--info [content]
+  ($ mui/Alert
+     {:severity "info"}
+     content))
+
 (defnc ScrollToTop [{:keys []}]
   (let [location (use-location)]
 
