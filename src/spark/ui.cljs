@@ -2040,6 +2040,7 @@
            on-url-changed
            label
            alt-url
+           change-event-when-loaded-url-differs-from-alt-url?
            children]}]
   (let [[id _set-id] (ui/use-state (or id (str "bild_" (u/nano-id))))
         [url set-url_] (use-state :loading)
@@ -2064,8 +2065,13 @@
 
     (use-effect
       :always
-      (-> (storage/url> storage-path)
-          (.then set-url_))
+      (p/let [loaded-url (storage/url> storage-path)]
+        (set-url_ loaded-url)
+        (when (and loaded-url
+                   on-url-changed
+                   change-event-when-loaded-url-differs-from-alt-url?
+                   (not= loaded-url alt-url))
+          (on-url-changed loaded-url)))
       nil)
 
     ($ mui/CardActionArea
