@@ -477,6 +477,7 @@
        (cond
          (time/instant? v) v
          (instance? js/Date v) (-> v time/instant)
+         (time/date-time? v) (-> v time/instant)
          (string? v) (time/instant v)
          (number? v) (-> v time/instant)
 
