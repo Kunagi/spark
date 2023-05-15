@@ -185,13 +185,16 @@
                            after-doc  (-> change .-after firestore/wrap-doc)]
                        (handler> before-doc after-doc context)))))))
 
-(defn on-doc-write [path handler>]
+(defn on-doc-write [path handler> run-with-opts]
   (let [path-s (->> path
                     (map #(if (keyword? %)
                             (str "{" (name %) "}")
                             %))
-                    (str/join "/"))]
-    (-> (region--europe-west1)
+                    (str/join "/"))
+        function-builder ^js (region--europe-west1)
+        function-builder (-> function-builder
+                             (.runWith (clj->js (or run-with-opts {}))))]
+    (-> function-builder
         .-firestore
         (.document path-s)
         (.onWrite (fn [^js change ^js context]
