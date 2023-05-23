@@ -1765,7 +1765,7 @@
               :text-align   :right
               :color        "lightgrey"
               :font-size    "75%"}}
-     "v1."
+     "v"
      (str (resource/inline "../spa/version.txt"))
      " · "
      (str (resource/inline "../spa/version-time.txt"))))
