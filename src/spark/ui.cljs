@@ -1398,6 +1398,7 @@
         command  (u/trampoline-if command)
         command  (when command (-> command upgrade-legacy-command complete-command))
         text     (or text (-> command :label))
+        text (when text (local/textc text))
         icon     (when-let [icon (or icon (-> command :icon))]
                    (cond
                      (string? icon)  ($ :div {:class "material-icons"} icon)
@@ -1953,7 +1954,7 @@
      (div
       {:text-align :center
        :font-weight :bold}
-      text)
+      (local/textc text))
      content
      (center
       (flex
