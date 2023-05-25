@@ -3,9 +3,9 @@
          org.clojure/spec.alpha    {:mvn/version "0.2.194"}
 
          io.github.kunagi/kunagi-utils
-         {:git/sha "cb83f24a2b78ca64b98934d805dcbb1d02cbef78", :git/tag "v0.1.30"}
+         {:git/sha "e2941fd6733d2395627f1fe14d342c5ce4e04853", :git/tag "v0.1.31"}
          io.github.kunagi/kunagi-mui
-         {:git/sha "2417bbc0eb8af55e704b7a4793ad97c224eac8a5", :git/tag "v0.0.47"}
+         {:git/sha "d1fb10535aabafab5f738ca20e8c5f689096b827", :git/tag "v0.0.48"}
 
          nano-id/nano-id                     {:mvn/version "1.0.0"}
          cljs-bean/cljs-bean                 {:mvn/version "1.9.0"}
