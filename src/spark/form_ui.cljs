@@ -856,7 +856,6 @@
      {:class "FieldLabel"
       :style {:color "grey"
               :font-weight (when emphasized 900)}}
-   ;; TODO (->component text)
      (local/textc text)))
 
 (defnc Field [{:keys [label description children]}]
