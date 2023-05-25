@@ -10,7 +10,8 @@
    [spark.db :as db]
    [spark.form :as form]
    [spark.logging :refer [log]] ;; [spark.mui :as ui]
-   [spark.utils :as u]))
+   [spark.utils :as u]
+   [kunagi.utils.local :as local]))
 
 (defn DEBUG [v]
   (when goog.DEBUG
@@ -856,7 +857,7 @@
       :style {:color "grey"
               :font-weight (when emphasized 900)}}
    ;; TODO (->component text)
-     (str text)))
+     (local/textc text)))
 
 (defnc Field [{:keys [label description children]}]
   ($ :div

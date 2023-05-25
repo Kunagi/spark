@@ -1,42 +1,25 @@
 (ns spark.local
   (:require
    [clojure.string :as str]
+   [kunagi.utils.local :as local]
    [spark.money :as money]
    [spark.time :as time]
    [spark.utils :as u]))
 
-(defonce LANG (atom :de))
+(def LANG local/LANG)
+(def lang local/lang)
 
-(defn lang []
-  @LANG)
-
-(defn ->js-locale-string [lang]
-  (cond
-    (string? lang) lang
-    (= lang :de) "DE-de"
-    (= lang :en) "EN-us"))
-
-;; * numbers
-
-(defn format-decimal
-  ([v]
-   (when v
-     (format-decimal @LANG v)))
-  ([lang v]
-   (when v
-     (-> js/Intl
-         (.NumberFormat (->js-locale-string lang)
-                        (clj->js {:style    "decimal"}))
-         (.format (cond
-                    (number? v) v
-                    :else v))))))
+(def format-decimal local/format-decimal)
+(def textc local/textc)
+(def text local/text)
+(def format-yes-no local/format-yes-no)
 
 ;; * currency
 
 (defn format-currency [lang currency v]
   (when v
     (-> js/Intl
-        (.NumberFormat (->js-locale-string lang)
+        (.NumberFormat (local/->js-locale-string lang)
                        (clj->js {:style    "currency"
                                  :currency currency}))
         (.format (cond
@@ -86,7 +69,7 @@
    (tick-formatter
     lang (case
           lang :de "dd.MM.yyyy"
-          "yyyy-mm-dd"))))
+          "yyyy-MM-dd"))))
 
 (defn format-date
   ([v]
@@ -139,68 +122,3 @@
 (comment
  "js/Date" (format-date+time :de (js/Date.))
  "string" (format-date+time :de "2020-01-01T12:23") := "01.01.2020 12:23")
-
-(comment
-
-;;
- )
-
-;; * texts de
-
-(def texts--de
-  {:yes "Ja"
-   :no "Nein"
-   :ok "OK"
-   :cancel "Abbrechen"
-   :continue "Weiter"
-   :error "Fehler"
-   :delete "Löschen"
-
-
-   :delete-image? "Bild löschen?"
-
-   :authentication-required "Anmeldung erforderlich"
-   :sign-in "Anmelden"
-
-   :invalid-input "Ungültige Eingabe"
-   :form-field-input-required "Eingabe erforderlich"})
-
-;; * texts
-
-(defonce TEXTS (atom {:de texts--de}))
-
-(defn text
-  ([k]
-   (text @LANG k nil))
-  ([k opts]
-   (text @LANG k opts))
-  ([lang k opts]
-   (when k
-     (let [v (get-in @TEXTS [lang k])]
-       (cond
-         (nil? v)    (name k)
-         (fn? v)     (v opts)
-         (string? v) v
-         :else       (str v))))))
-
-(comment
- (text :yes)
- (text :continue)
- (text nil))
-
-(defn ->text--yes-no [b]
-  (text (if b :yes :no)))
-
-;; * boolean
-
-(defn format-yes-no
-  ([b]
-   (format-yes-no @LANG b))
-  ([lang b]
-   (when-not (nil? b)
-     (text lang (if b :yes :no) nil))))
-
-(comment
- "nil" (format-yes-no :de nil) := nil
- "true" (format-yes-no :de true) := "Ja"
- "false" (format-yes-no :de false) := "Nein")
