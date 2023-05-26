@@ -791,17 +791,30 @@
 (defn alert--error [content]
   ($ mui/Alert
      {:severity "error"}
-     content))
+     (ui/div
+      {:white-space :pre-wrap}
+      (local/textc content))))
 
 (defn alert--warning [content]
   ($ mui/Alert
      {:severity "warning"}
-     content))
+     (ui/div
+      {:white-space :pre-wrap}
+      (local/textc content))))
 
 (defn alert--info [content]
   ($ mui/Alert
      {:severity "info"}
-     content))
+     (ui/div
+      {:white-space :pre-wrap}
+      (local/textc content))))
+
+(defn alert--success [content]
+  ($ mui/Alert
+     {:severity "success"}
+     (ui/div
+      {:white-space :pre-wrap}
+      (local/textc content))))
 
 (defnc ScrollToTop [{:keys []}]
   (let [location (use-location)]
@@ -1920,8 +1933,8 @@
         {:key     (or (-> item :id)
                       (-> item :value)
                       idx)
-         :text (or (-> item :label)
-                   (-> item :id))
+         :text (local/textc (or (-> item :label)
+                                (-> item :id)))
          :on-click #(on-select item)
          :class button-class}))))
 
@@ -2108,7 +2121,8 @@
                 (div
                  {:class (str "MuiButtonBase-root MuiButton-root MuiButton-contained "
                               upload-div-class)}
-                 (or upload-text "Bild auswählen..."))))
+                 (local/textc (or upload-text {:de "Bild auswählen..."
+                                               :en "Selct picture..."})))))
             children))))))
 
 (def-ui StorageFileButton [path idx text texts edit-options]
