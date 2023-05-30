@@ -679,29 +679,30 @@
                  (close nil))
 
         on-submit (fn []
-                    (let [form (form/on-submit form)]
-                      (update-form (fn [_] form))
-                      (when-not (form/contains-errors? form)
-                        (let [values (form/values form)]
-                          (log ::Form--on-submit
-                               :form form
-                               :values values)
-                          (when-let [submit (get form :submit)]
-                            (set-waiting true)
-                            (try
-                              (let [p (u/as> (submit values))
-                                    optimistic? (get form :optimistic-submit true)]
-                                (when optimistic? (close p))
-                                (-> p
-                                    (.then (fn [result]
-                                             (when-not optimistic?
-                                               (close result))))
-                                    (.catch (fn [error]
-                                              (update-form (fn [_]
-                                                             (form/set-error form error)))))))
-                              (catch :default ex
-                                (update-form (fn [_]
-                                               (form/set-error form (u/exception-as-text ex)))))))))))]
+                    (when-not (-> form form/waiting?)
+                      (let [form (form/on-submit form)]
+                        (update-form (fn [_] form))
+                        (when-not (form/contains-errors? form)
+                          (let [values (form/values form)]
+                            (log ::Form--on-submit
+                                 :form form
+                                 :values values)
+                            (when-let [submit (get form :submit)]
+                              (set-waiting true)
+                              (try
+                                (let [p (u/as> (submit values))
+                                      optimistic? (get form :optimistic-submit true)]
+                                  (when optimistic? (close p))
+                                  (-> p
+                                      (.then (fn [result]
+                                               (when-not optimistic?
+                                                 (close result))))
+                                      (.catch (fn [error]
+                                                (update-form (fn [_]
+                                                               (form/set-error form error)))))))
+                                (catch :default ex
+                                  (update-form (fn [_]
+                                                 (form/set-error form (u/exception-as-text ex))))))))))))]
     (kui/provider
      {:context FORM
       :value form}
