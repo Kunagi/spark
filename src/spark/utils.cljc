@@ -410,6 +410,12 @@
 
 (def non-blank-string u/non-blank-string)
 
+(defn string-uppercase-first-letter [s]
+  (if (-> s count (< 1))
+    s
+    (str (-> s (subs 0 1) str/upper-case)
+         (-> s (subs 1)))))
+
 (defn split-lines [s]
   (when s
     (when-not (str/blank? s)
