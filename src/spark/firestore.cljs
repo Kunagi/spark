@@ -501,7 +501,9 @@
 
 (defn get>
   ([path]
-   (get> nil path nil))
+   (if path
+     (get> nil path nil)
+     (u/no-op>)))
   ([transaction path]
    (get> transaction path nil))
   ([^js transaction path not-found]
