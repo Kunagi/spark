@@ -902,9 +902,7 @@
       :className "Link--no-styles"}
      children))
 
-;;;
 ;;; SPA
-;;;
 
 (def use-offline (atom-hook browser/OFFLINE))
 
@@ -912,13 +910,10 @@
   (let [[height set-height] (ui/use-state js/window.innerHeight)]
 
     (ui/use-effect
-     :once
-     (let [el (fn []
-                (let [new-height js/window.innerHeight]
-                  (when (not= height new-height)
-                    (set-height new-height))))]
-       (js/window.addEventListener "resize" el)
-       #(js/window.removeEventListener "resize" el)))
+      :once
+      (let [el #(set-height js/window.innerHeight)]
+        (js/window.addEventListener "resize" el)
+        #(js/window.removeEventListener "resize" el)))
 
     height))
 
@@ -927,10 +922,7 @@
 
     (ui/use-effect
      :once
-     (let [el (fn []
-                (let [new-width js/window.innerWidth]
-                  (when (not= width new-width)
-                    (set-width new-width))))]
+     (let [el #(set-width js/window.innerWidth)]
        (js/window.addEventListener "resize" el)
        #(js/window.removeEventListener "resize" el)))
 
@@ -940,13 +932,10 @@
   (let [[offset set-offset] (ui/use-state js/window.pageYOffset)]
 
     (ui/use-effect
-     :once
-     (let [el (fn []
-                (let [new-offset js/window.pageYOffset]
-                  (when (not= offset new-offset)
-                    (set-offset new-offset))))]
-       (js/window.addEventListener "scroll" el)
-       #(js/window.removeEventListener "scroll" el)))
+      :once
+      (let [el #(set-offset js/window.pageYOffset)]
+        (js/window.addEventListener "scroll" el)
+        #(js/window.removeEventListener "scroll" el)))
 
     offset))
 
