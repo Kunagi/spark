@@ -326,16 +326,17 @@
                          (spark/doc-schema-col-path collection-id)
                          collection-id)
          docs-ids (into #{} docs-ids)
-         [docs set-docs] (use-state [])
-         effect-signal (str collection-id (->> docs-ids str))]
+         [docs set-docs] (use-state nil)
+         effect-signal (str collection-id docs-ids)]
 
      (use-effect
       [effect-signal]
+      (set-docs nil)
       (when (and collection-id
                  docs-ids)
         ;; (log ::use-doc--subscribe
         ;;      :path path)
-        (let [DOCS (atom [])
+        (let [DOCS (atom {})
               unsubscribes (->> docs-ids
                                 (map (fn [doc-id]
                                        (when doc-id
@@ -345,7 +346,7 @@
                                                ;;        :path path
                                                ;;        :ref ref)
                                                add-doc (fn [doc]
-                                                         (swap! DOCS conj doc)
+                                                         (swap! DOCS assoc doc-id doc)
                                                          (when (= (count docs-ids) (count @DOCS))
                                                            (set-docs @DOCS)))
                                                on-snapshot (fn [doc-snapshot]
@@ -368,7 +369,10 @@
           #(doseq [unsubscribe (->> unsubscribes (remove nil?))]
              (unsubscribe)))))
 
-     docs)))
+     (when docs
+       (->> docs-ids
+            (map #(get docs %))
+            (remove nil?))))))
 
 (defn use-singleton-doc
   [Doc]
