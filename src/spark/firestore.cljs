@@ -77,6 +77,11 @@
                  v
                  :else nil)]
     (cond
+      (= k :db/set-value) (let [new-value (second v)
+                                new-value (if (map? new-value)
+                                            (inject-FieldValues new-value)
+                                            new-value)]
+                            new-value)
       (= k :db/array-union)  (let [elements (second v)
                                    elements (mapv (fn [v]
                                                     (cond
