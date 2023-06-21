@@ -85,6 +85,14 @@
 
 #?(:clj (def iso-8601-format (java.text.SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ss")))
 
+(defn in-berlin [t]
+  (when t
+    (-> t (in "Europe/Berlin"))))
+
+(defn instant-in-berlin []
+  (-> (instant)
+      in-berlin))
+
 (defn millis
   ([]
    #?(:cljs (-> (js/Date.) .getTime)
