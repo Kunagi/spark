@@ -4,7 +4,8 @@
    [kunagi.utils.local :as local]
    [spark.money :as money]
    [spark.time :as time]
-   [spark.utils :as u]))
+   [spark.utils :as u]
+   [spark.time :as tick]))
 
 (def LANG local/LANG)
 (def lang local/lang)
@@ -102,9 +103,13 @@
    (format-time @LANG v truncate-to))
   ([lang v truncate-to]
    (when v
-     (-> (u/->time v)
-         (time/truncate truncate-to)
-         str))))
+     (let [t (cond
+               (time/time? v) v
+               (string? v) (time/time v)
+               :else (-> v u/->instant time/in-berlin time/time))]
+       (-> t
+           (time/truncate truncate-to)
+           str)))))
 
 (comment
  "js/Date" (format-time (js/Date. "2020-01-01T12:21")) := "12:21")
@@ -114,10 +119,11 @@
    (format-date+time @LANG v))
   ([lang v]
    (when v
-     (let [instant (u/->instant v)]
-       (str (format-date lang (time/date instant))
+     (let [instant (u/->instant v)
+           dt (time/in-berlin instant)]
+       (str (format-date lang (time/date dt))
             " "
-            (format-time lang (time/time instant) :minutes))))))
+            (format-time lang (time/time dt) :minutes))))))
 
 (comment
  "js/Date" (format-date+time :de (js/Date.))
