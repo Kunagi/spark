@@ -18,6 +18,8 @@
         [email set-email]   (ui/use-state (-> email-sign-in :email))
         continue-with-email (fn []
                               (when-not (str/blank? email)
+                                (when-let [on-login-requested (-> @auth/EMAIL_SIGN_IN :on-login-requested)]
+                                  (on-login-requested email))
                                 (swap! auth/EMAIL_SIGN_IN assoc
                                        :email email
                                        :status :sending-email)
@@ -259,16 +261,16 @@ Bitte gib hier den empfangenen Code ein.")
         telephone-sign-in (use-telephone-sign-in)]
 
     (ui/use-effect
-     :once
-     (when (-> methods count (= 1))
-       (case (first methods)
-         :email (auth/sign-in-with-email)
-         :telephone (auth/sign-in-with-telephone (-> opts :telephone))
-         :google (auth/sign-in-with-google)
-         :apple (auth/sign-in-with-apple)
-         :microsoft (auth/sign-in-with-microsoft)
-         :facebook (auth/sign-in-with-facebook)))
-     nil)
+      :once
+      (when (-> methods count (= 1))
+        (case (first methods)
+          :email (auth/sign-in-with-email opts)
+          :telephone (auth/sign-in-with-telephone (-> opts :telephone))
+          :google (auth/sign-in-with-google)
+          :apple (auth/sign-in-with-apple)
+          :microsoft (auth/sign-in-with-microsoft)
+          :facebook (auth/sign-in-with-facebook)))
+      nil)
 
     (cond
       email-sign-in
@@ -308,7 +310,7 @@ Bitte gib hier den empfangenen Code ein.")
                                          (-> opts :telephone))}))
              :email ($ ui/Button
                        {:text     "E-Mail"
-                        :on-click auth/sign-in-with-email})
+                        :on-click #(auth/sign-in-with-email opts)})
              (ui/data method))))
         ($ :div))))))
 

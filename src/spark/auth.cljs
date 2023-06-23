@@ -8,7 +8,9 @@
    [spark.firebase.auth :as spark.firebase.auth]
    [spark.firebase.messaging :as messaging]
    [spark.logging :refer [log]]
-   [spark.utils :as u]))
+   [spark.utils :as u]
+   [clojure.string :as str]
+   ))
 
 (defonce SIGN_IN-F (atom nil))
 (defonce AUTH_COMPLETED (atom false))
@@ -58,9 +60,13 @@
 
 (defn process-sign-in-with-email-link [error-handler]
   (let [href js/window.location.href]
+    (log ::process-sign-in-with-email-link
+         :href href)
     (when (firebase-auth/isSignInWithEmailLink (auth) href)
       (log ::sign-in-with-email-link
            :href href)
+      (when-let [idx (-> href (.indexOf "apiKey="))]
+        (js/window.history.pushState nil "" (-> href (.substring 0 idx))))
       (let [email (or (js/localStorage.getItem "signInEmail")
                       (js/window.prompt "Bitte E-Mail zur Bestätigung eingeben"))]
         (-> (firebase-auth/signInWithEmailLink (auth) email href)
@@ -294,11 +300,12 @@
                          :status :waiting-for-email))
                #(reset! EMAIL_SIGN_IN {:error %})))))
 
-(defn sign-in-with-email []
+(defn sign-in-with-email [opts]
   (log ::sign-in-with-email
        :url (-> js/window.location.href))
   (reset! EMAIL_SIGN_IN {:status :input-email
-                         :url    (-> js/window.location.href)}))
+                         :on-login-requested (-> opts :on-email-login-requested)
+                         :url (-> js/window.location.href)}))
 
 ;; * Telephone
 ;; https://firebase.google.com/docs/auth/web/phone-auth?hl=en
