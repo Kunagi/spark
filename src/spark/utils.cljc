@@ -242,6 +242,12 @@
     m
     (assoc m k v)))
 
+(defn assoc-if-missing-in-other-map
+  [m k other-map v]
+  (if (= ::missing (get other-map k ::missing))
+    (assoc m k v)
+    m))
+
 (defn index-by
   "Returns a map of the elements of coll keyed by the result of f on each
   element. The value at each key will be the last element in coll associated
