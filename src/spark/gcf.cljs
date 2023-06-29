@@ -158,14 +158,17 @@
                      (reject error))))))
     (clj->js result)))
 
-(defn on-call [handler]
-  (-> (region--europe-west1)
-      (.runWith (clj->js {:minInstances 1}))
-      .-https
-      (.onCall (fn [^js data ^js context]
-                 (handle-on-call-result
-                  (handler (js->clj data :keywordize-keys true)
-                           context))))))
+(defn on-call [handler run-with-opts]
+  (let [function-builder (region--europe-west1)
+        function-builder (-> function-builder
+                             (.runWith (clj->js (or run-with-opts {}))))]
+    (-> function-builder
+        (.runWith (clj->js {:minInstances 1}))
+        .-https
+        (.onCall (fn [^js data ^js context]
+                   (handle-on-call-result
+                    (handler (js->clj data :keywordize-keys true)
+                             context)))))))
 
 ;; * on-doc....
 

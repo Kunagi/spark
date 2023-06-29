@@ -125,7 +125,9 @@
      (gcf/on-request--format-output> (partial handle-cmd-request> commands-map))
 
      :cmdCall
-     (gcf/on-call (partial handle-cmd-call> commands-map))}))
+     (gcf/on-call (partial handle-cmd-call> commands-map)
+                  {:timeoutSeconds 60
+                   :memory "8GB"})}))
 
 ;; * registry
 
