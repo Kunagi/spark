@@ -2002,7 +2002,8 @@
   [{:keys [id accept capture
            storage-path append-filename
            then
-           on-upload-started]}]
+           on-upload-started
+           new-file-metadata new-file-cache-hours new-file-cache-days]}]
   ($ :input
      {:id       id
       :type     "file"
@@ -2015,10 +2016,18 @@
                                                (str (u/nano-id)
                                                     "."
                                                     (-> file .-name)))
-                                         storage-path)]
+                                         storage-path)
+                          metadata new-file-metadata
+                          cache-seconds (or (when new-file-cache-hours
+                                              (-> new-file-cache-hours (* 3600)))
+                                            (when new-file-cache-days
+                                              (-> new-file-cache-days (* 86400))))
+                          metadata (if cache-seconds
+                                     (assoc metadata :cacheControl (str "public,max-age=" cache-seconds))
+                                     metadata)]
                       (when on-upload-started
                         (on-upload-started file))
-                      (-> (storage/upload-file> file storage-path)
+                      (-> (storage/upload-file> file storage-path metadata)
                           (.then #(storage/url> storage-path))
                           (.then then)))))
       :style    {:display "none"}}))
@@ -2048,6 +2057,7 @@
            label
            alt-url
            change-event-when-loaded-url-differs-from-alt-url?
+           new-file-metadata new-file-cache-hours new-file-cache-days
            children]}]
   (let [[id _set-id] (ui/use-state (or id (str "bild_" (u/nano-id))))
         [url set-url_] (use-state :loading)
@@ -2071,15 +2081,15 @@
                     (open-file-selector))]
 
     (use-effect
-      :always
-      (p/let [loaded-url (storage/url> storage-path)]
-        (set-url_ loaded-url)
-        (when (and loaded-url
-                   on-url-changed
-                   change-event-when-loaded-url-differs-from-alt-url?
-                   (not= loaded-url alt-url))
-          (on-url-changed loaded-url)))
-      nil)
+     :always
+     (p/let [loaded-url (storage/url> storage-path)]
+       (set-url_ loaded-url)
+       (when (and loaded-url
+                  on-url-changed
+                  change-event-when-loaded-url-differs-from-alt-url?
+                  (not= loaded-url alt-url))
+         (on-url-changed loaded-url)))
+     nil)
 
     ($ mui/CardActionArea
        {:onClick on-click}
@@ -2089,7 +2099,10 @@
               {:id           id
                :accept       "image/jpeg"
                :storage-path storage-path
-               :then         set-url})
+               :then         set-url
+               :new-file-metadata new-file-metadata
+               :new-file-cache-hours new-file-cache-hours
+               :new-file-cache-days new-file-cache-days})
            (stack
             (when label
               ($ FieldLabel {:text label}))
@@ -2166,6 +2179,7 @@
            max-files
            on-uploaded
            on-deleted
+           new-file-metadata new-file-cache-hours new-file-cache-days
            ]}]
   (let [id (or id (u/nano-id))
         max-files (or max-files 99)
@@ -2197,7 +2211,10 @@
           :bucket-name bucket-name
           :append-filename true
           :on-upload-started on-upload-started
-          :then         on-file-uploaded})
+          :then         on-file-uploaded
+          :new-file-metadata new-file-metadata
+          :new-file-cache-hours new-file-cache-hours
+          :new-file-cache-days new-file-cache-days})
       (if (or uploading?
               (not storage-files))
         ($ mui/CircularProgress)

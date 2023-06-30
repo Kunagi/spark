@@ -83,11 +83,13 @@
                      (map (fn [^js item]
                             (.-fullPath item)))))))))
 
-(defn upload-file> [file path]
-  (let [metadata {:contentType (-> file .-type)}]
+(defn upload-file> [file path metadata]
+  (let [metadata (assoc metadata :contentType (or (-> file .-type)
+                                                  (-> metadata :contenType)))]
     (log ::upload-file>
          :file file
-         :path path)
+         :path path
+         :metadata metadata)
     (p/let [ref (ref path)
             result (firebase-storage/uploadBytes ref file (clj->js metadata))]
       result)))
