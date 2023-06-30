@@ -599,14 +599,33 @@
                                  :projekt projekt
                                  :standalone true}))))
 
-     ($ :div
-        (when (projekt/developer-uid? projekt uid)
-          ($ ui/Button
-             {:text "Neue Story"
-              :icon :add
-              :on-click #(show-add-story-form>
-                          projekt
-                          {:sprint-id current-sprint-id})})))
+     (ui/stack-3
+      (when (projekt/developer-uid? projekt uid)
+        (ui/flex
+         ($ ui/Button
+            {:text "Neue Story"
+             :icon :add
+             :on-click #(show-add-story-form>
+                         projekt
+                         {:sprint-id current-sprint-id})})))
+      (when (and (projekt/developer-uid? projekt uid)
+                 current-sprint-id)
+        (let [sprint (-> storymap :sprints (get current-sprint-id))
+              next-sprint-id (-> sprint :id js/parseInt inc str)
+              storys (->> storymap :storys
+                          (filter #(-> % story/sprint-id (= current-sprint-id)))
+                          (remove #(-> % story/aufwand pos?)))]
+          (ui/flex
+           ($ ui/Button
+              {:text (str (count storys) " unfertige Storys zu Sprint #" next-sprint-id)
+               :color :default
+               :on-click (fn []
+                           (->> storys
+                                (map #(db/update-tx % {:sprint-id next-sprint-id}))
+                                db/transact>)
+                           )})
+           (ui/DEBUG_ "storys" storys)))))
+
      ($ :div
         {:style {:display "none"}}
         ($ :textarea
