@@ -279,7 +279,7 @@
                doc-id])))
   ([path]
    ;; (log ::use-doc
-   ;;      :path path)
+        ;; :path path)
    (let [doc (when (db/doc? path) path)
          [doc set-doc] (use-state doc)
          effect-signal (str path)]
@@ -290,8 +290,8 @@
         (set-doc nil)
         (when (and path
                    (not (u/seq-contains-nil? path)))
-          ;; (log ::use-doc--subscribe
-          ;;      :path path)
+          (log ::use-doc--subscribe
+               :path path)
           (let [ref         (firestore/ref path)
                 on-snapshot (fn [doc-snapshot]
                               (let [doc (firestore/wrap-doc doc-snapshot)]
