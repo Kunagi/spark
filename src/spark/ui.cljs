@@ -2098,7 +2098,7 @@
           (div
            ($ HiddenStorageUploadField
               {:id           id
-               :accept       "image/jpeg"
+               :accept       "image/*"
                :storage-path storage-path
                :then         set-url
                :new-file-metadata new-file-metadata
