@@ -426,10 +426,15 @@
 
 ;; * strings
 
-(def non-blank-string u/non-blank-string)
 
 (defn string-trim [s]
   (when s (str/trim s)))
+
+(def non-blank-string u/non-blank-string)
+
+(defn non-blank-string-trimmed [s]
+  (when s
+    (-> s str/trim non-blank-string)))
 
 (defn string-uppercase-first-letter [s]
   (if (-> s count (< 1))
