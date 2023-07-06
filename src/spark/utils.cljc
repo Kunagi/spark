@@ -428,6 +428,9 @@
 
 (def non-blank-string u/non-blank-string)
 
+(defn string-trim [s]
+  (when s (str/trim s)))
+
 (defn string-uppercase-first-letter [s]
   (if (-> s count (< 1))
     s
