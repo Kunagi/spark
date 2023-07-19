@@ -115,7 +115,7 @@
 (defn format-klaerungsbedarf [s]
   (ui/div
    {:white-space "pre-wrap"
-    :word-break "break-all"}
+    :word-break "break-word"}
    (ui/div
     {:font-weight 900
      :color (-> colors .-orange (aget 900))}
@@ -133,7 +133,7 @@
 (defn format-hindernis [s]
   (ui/div
    {:white-space :pre-wrap
-    :word-break "break-all"}
+    :word-break "break-word"}
    (ui/div
     {:font-weight 900
      :color (-> colors .-red (aget 900))}
@@ -232,7 +232,7 @@
                  {:style {:text-align "center"
                           :min-width "200px"
                           :font-weight "bold"
-                          :word-break "break-all"}}
+                          :word-break "break-word"}}
                  (-> story :bez))
 
               (when-not collapsed?
@@ -240,14 +240,14 @@
                   ($ :div
                      {:style {:text-align "center"
                               :white-space "pre-wrap"
-                              :word-break "break-all"}}
+                              :word-break "break-word"}}
                      beschreibung)))
 
               (when-not collapsed?
                 (ui/stack
                  (when-let [tasks (seq (story/parse-tasks story))]
                    ($ :div
-                      {:style {:word-break "break-all"}}
+                      {:style {:word-break "break-word"}}
                       (for [task tasks]
                         (>task task))))
                  (when (-> story story/completed?)
@@ -258,7 +258,7 @@
                         )))
                  (when-let [voraussetzungen (-> story :voraussetzungen)]
                    ($ :div
-                      {:style {:word-break "break-all"}}
+                      {:style {:word-break "break-word"}}
                       ($ :span {:className "b"
                                 :style {:white-space "pre-wrap"}}
                          "Voraussetzungen: ")
