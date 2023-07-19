@@ -114,7 +114,8 @@
 
 (defn format-klaerungsbedarf [s]
   (ui/div
-   {:white-space "pre-wrap"}
+   {:white-space "pre-wrap"
+    :word-break "break-all"}
    (ui/div
     {:font-weight 900
      :color (-> colors .-orange (aget 900))}
@@ -131,7 +132,8 @@
 
 (defn format-hindernis [s]
   (ui/div
-   {:white-space :pre-wrap}
+   {:white-space :pre-wrap
+    :word-break "break-all"}
    (ui/div
     {:font-weight 900
      :color (-> colors .-red (aget 900))}
@@ -162,7 +164,9 @@
          :projekt (-> projekt :id))
     ($ ui/Card
        {:padding 0
-        :sx {:background-color (cond
+        :sx {:min-width "320px"
+             :max-width "90vw"
+             :background-color (cond
                                  completed? (-> colors .-green (aget 50))
                                  (and prio hindernis?) (-> colors .-red (aget 50))
                                  next? (-> colors .-yellow (aget 100))
@@ -175,7 +179,6 @@
                         (show-update-story-form> projekt story uid)))}
           ($ mui/CardContent
              (ui/stack
-
               ;; Prio | # | Aufwände
               (ui/flex
                {:align-items :center
@@ -228,20 +231,23 @@
               ($ :div
                  {:style {:text-align "center"
                           :min-width "200px"
-                          :font-weight "bold"}}
+                          :font-weight "bold"
+                          :word-break "break-all"}}
                  (-> story :bez))
 
               (when-not collapsed?
                 (when-let [beschreibung (-> story :beschreibung)]
                   ($ :div
                      {:style {:text-align "center"
-                              :white-space "pre-wrap"}}
+                              :white-space "pre-wrap"
+                              :word-break "break-all"}}
                      beschreibung)))
 
               (when-not collapsed?
                 (ui/stack
                  (when-let [tasks (seq (story/parse-tasks story))]
                    ($ :div
+                      {:style {:word-break "break-all"}}
                       (for [task tasks]
                         (>task task))))
                  (when (-> story story/completed?)
@@ -252,6 +258,7 @@
                         )))
                  (when-let [voraussetzungen (-> story :voraussetzungen)]
                    ($ :div
+                      {:style {:word-break "break-all"}}
                       ($ :span {:className "b"
                                 :style {:white-space "pre-wrap"}}
                          "Voraussetzungen: ")
@@ -336,9 +343,7 @@
 (defn >features-row [projekt uid feature-ids sprint-id]
   ($ :tr
      (for [feature-id feature-ids]
-       ($ :th {:key feature-id
-               :style {:min-width "320px"
-                       :max-width "90vw"}}
+       ($ :th {:key feature-id}
           ($ mui/Paper
              {:sx (ui/sx {:background-color (-> colors .-grey (aget 400))})}
              ($ :div
