@@ -267,7 +267,6 @@
              ;;
              #_(ui/data story))))))
 
-(def card-width "320px")
 
 (def-ui StoryCards [storys projekt sprint lowest-prio arbeitstage]
   (ui/stack
@@ -338,7 +337,8 @@
   ($ :tr
      (for [feature-id feature-ids]
        ($ :th {:key feature-id
-               :style {:min-width card-width}}
+               :style {:min-width "320px"
+                       :max-width "90vw"}}
           ($ mui/Paper
              {:sx (ui/sx {:background-color (-> colors .-grey (aget 400))})}
              ($ :div
