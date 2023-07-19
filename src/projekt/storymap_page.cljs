@@ -273,8 +273,7 @@
   (ui/stack
    (for [story (->> storys (sort-by story/sort-value))]
      (ui/div
-      {:key (-> story :id)
-       :min-width card-width}
+      {:key (-> story :id)}
       ($ kui/ErrorBoundary
          ($ StoryCard
             {:key (-> story :id)
@@ -338,7 +337,8 @@
 (defn >features-row [projekt uid feature-ids sprint-id]
   ($ :tr
      (for [feature-id feature-ids]
-       ($ :th {:key feature-id}
+       ($ :th {:key feature-id
+               :style {:min-width card-width}}
           ($ mui/Paper
              {:sx (ui/sx {:background-color (-> colors .-grey (aget 400))})}
              ($ :div
