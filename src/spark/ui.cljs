@@ -1034,8 +1034,7 @@
          ;; :sx (clj->js {"background-color" "blue"
                        ;; "outline" "2px soldi blue"}
                       ;; )
-         :sx (->sx (-> dialog :sx))
-         }
+         :sx (->sx (-> dialog :sx))}
         ;; (data dialog-id)
         ;; (DEBUG dialog)
         (when-let [title (-> dialog :title)]
@@ -1048,7 +1047,10 @@
               ($ mui/IconButton
                  {:onClick #(hide-dialog (-> dialog :id))}
                  (div {:class "material-icons"} "close"))))
-           ($ mui/DialogTitle title)))
+           ($ mui/DialogTitle
+              (div
+               {:padding-right 32}
+               title))))
         ($ mui/DialogContent
            (stack
             (-> dialog :content)
@@ -1115,10 +1117,12 @@
                   (local/text :ok))))))))))
 
 (defn show-message-dialog
+  "opts: `title`, `title-close-button`"
   ([message]
    (show-message-dialog message {}))
   ([message opts]
    (show-dialog {:title (-> opts :title)
+                 :title-close-button (-> opts :title-close-button)
                  :content ($ MessageDialogContent
                              {:message message
                               :opts opts})})))
