@@ -2045,10 +2045,11 @@
         :className class
         :style     style})))
 
-(defnc StorageImgDiv [{:keys [path height padding-bottom background-size class]}]
+(defnc StorageImgDiv [{:keys [path height width padding-bottom background-size class]}]
   ;; (js/console.log "DEBUG render StorageImgDiv" path padding-bottom class)
   (let [url (use-storage-url path)]
     (imgdiv url {:height height
+                 :width width
                  :padding-bottom padding-bottom
                  :class          class
                  :background-size (or background-size
