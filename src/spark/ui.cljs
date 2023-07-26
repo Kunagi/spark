@@ -1950,7 +1950,10 @@
                               :button-class (-> dialog :button-class)})
             dialog        (assoc dialog
                                  :id dialog-id
-                                 :content SelectionList)]
+                                 :content (stack
+                                           (-> dialog :north-content)
+                                           SelectionList
+                                           (-> dialog :south-content)))]
         (show-dialog dialog)))))
 
 (defnc Confirmation [{:keys [text content
