@@ -615,21 +615,40 @@
                          {:sprint-id current-sprint-id})})))
       (when (and (projekt/developer-uid? projekt uid)
                  current-sprint-id)
-        (let [sprint (-> storymap :sprints (get current-sprint-id))
-              next-sprint-id (-> sprint :id js/parseInt inc str)
-              storys (->> storymap :storys
-                          (filter #(-> % story/sprint-id (= current-sprint-id)))
-                          (remove #(-> % story/aufwand pos?)))]
-          (when (seq storys)
-            (ui/flex
-             ($ ui/Button
-                {:text (str (count storys) " nicht angefangene Storys zu Sprint #" next-sprint-id)
-                 :color :default
-                 :on-click (fn []
-                             (->> storys
-                                  (map #(db/update-tx % {:sprint-id next-sprint-id}))
-                                  db/transact>))})
-             (ui/DEBUG_ "storys" storys))))))
+        (ui/<>
+
+         (let [sprint (-> storymap :sprints (get current-sprint-id))
+               next-sprint-id (-> sprint :id js/parseInt inc str)
+               storys (->> storymap :storys
+                           (filter #(-> % story/sprint-id (= current-sprint-id)))
+                           (remove #(-> % story/aufwand pos?)))]
+           (when (seq storys)
+             (ui/flex
+              ($ ui/Button
+                 {:text (str (count storys) " nicht angefangene Storys zu Sprint #" next-sprint-id)
+                  :color :default
+                  :on-click (fn []
+                              (->> storys
+                                   (map #(db/update-tx % {:sprint-id next-sprint-id}))
+                                   db/transact>))})
+              (ui/DEBUG_ "storys" storys))))
+
+         (let [sprint (-> storymap :sprints (get current-sprint-id))
+               next-sprint-id (-> sprint :id js/parseInt inc str)
+               storys (->> storymap :storys
+                           (filter #(-> % story/sprint-id (= current-sprint-id)))
+                           (remove #(-> % story/aufwand pos?))
+                           (remove story/prio))]
+           (when (seq storys)
+             (ui/flex
+              ($ ui/Button
+                 {:text (str (count storys) " unpriorisierte Storys zu Sprint #" next-sprint-id)
+                  :color :default
+                  :on-click (fn []
+                              (->> storys
+                                   (map #(db/update-tx % {:sprint-id next-sprint-id}))
+                                   db/transact>))})
+              (ui/DEBUG_ "storys" storys)))))))
 
      ($ :div
         {:style {:display "none"}}
