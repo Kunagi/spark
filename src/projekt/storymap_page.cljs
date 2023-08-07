@@ -650,7 +650,7 @@
               (ui/DEBUG_ "storys" storys))))
 
          (let [sprint (-> storymap :sprints (get current-sprint-id))
-               next-sprint-id (-> sprint :id js/parseInt inc str)
+               next-sprint-id "99"
                storys (->> storymap :storys
                            (filter #(-> % story/sprint-id (= current-sprint-id)))
                            (remove #(-> % story/aufwand pos?))
