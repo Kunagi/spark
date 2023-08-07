@@ -1,7 +1,8 @@
 (ns projekt.sprint
   (:require
    [spark.core :as spard :refer [def-field def-subdoc]]
-   [spark.time :as time]))
+   [spark.time :as time]
+   [spark.local :as local]))
 
 (def-field Entwickler
   [:string
@@ -33,6 +34,8 @@
 
 (defn id [this]
   (-> this :id))
+
+
 
 (defn datum-abgeschlossen [this]
   (-> this :datum-abgeschlossen))
@@ -69,3 +72,14 @@
 (defn closed? [this]
   (or (-> this datum-abgeschlossen boolean)
       (-> this id (> 99999))))
+
+(defn long-label [this]
+  (str "Sprint #" (-> this id)
+       (when-let [s (-> this entwickler)]
+         (str " | " s))
+       (when-let [s (-> this datum-abgeschlossen)]
+         (str " | " (-> s local/format-date)))
+       (when (-> this id (= "99"))
+         " | später")
+       (when (-> this id (= "99999"))
+         " | zurückgestellt")))

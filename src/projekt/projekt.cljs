@@ -16,6 +16,9 @@
    {:label "Sprints"}
    :string sprint/Sprint])
 
+(defn sprints [this]
+  (-> this :sprints vals))
+
 (def-doc Projekt
   [{:firestore/collection "singletons"}
    [:storys {:optional true} Storys]

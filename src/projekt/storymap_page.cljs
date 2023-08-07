@@ -16,7 +16,8 @@
    [projekt.sprint :as sprint]
    [projekt.projekt :as projekt]
    [clojure.string :as str]
-   [kunagi.mui.api :as kui]))
+   [kunagi.mui.api :as kui]
+   [spark.core :as spark]))
 
 (defn show-add-story-form> [projekt values]
   (ui/show-form-dialog>
@@ -43,11 +44,15 @@
                     (hide-dialog))})))
 
 (defn show-update-story-form> [projekt story uid]
-  (let [fields (if (projekt/developer-uid? projekt uid)
+  (let [dev? (projekt/developer-uid? projekt uid)
+        sprints (-> projekt projekt/sprints)
+        _ (tap> sprints)
+        fields (if dev?
                  [story/Bez
                   story/Beschreibung
                   story/Voraussetzungen
-                  story/Feature-id story/Sprint-id
+                  story/Feature-id
+                  story/Sprint-id
                   story/Aufwandschaetzung
                   story/Aufwand
                   story/Prio
@@ -55,7 +60,22 @@
                   story/Hindernis
                   story/Tasks]
                  [story/Prio
-                  story/Klaerungsbedarf])]
+                  story/Klaerungsbedarf
+                  (when (and (not (-> story story/aufwand pos?)))
+                    {:id :sprint-id
+                     :label "Sprint"
+                     :type :select
+                     :required? true
+                     :options (concat
+                               (->> sprints
+                                    (remove sprint/datum-abgeschlossen)
+                                    (map (fn [sprint]
+                                           {:value (-> sprint sprint/id)
+                                            :label (-> sprint sprint/long-label)})))
+                               [{:value "99"
+                                 :label "Sprint #99 | später"}
+                                {:value "99999"
+                                 :label "Sprint #99999 | zurückgestellt"}])})])]
     (ui/show-form-dialog>
      {:fields fields
       :values story
@@ -80,7 +100,7 @@
                                :else
                                values)]
                   (db/update> story values)))
-      :extra-buttons (when (projekt/developer-uid? projekt uid)
+      :extra-buttons (when dev?
                        ($ StoryDeleteButton {:story story}))})))
 
 (defn show-update-sprint> [sprint]
@@ -405,11 +425,7 @@
                 ($ mui/MenuItem
                    {:key sprint-id
                     :value sprint-id}
-                   (str "Sprint #" sprint-id
-                        (when-let [s (-> sprint sprint/entwickler)]
-                          (str " | " s))
-                        (when-let [s (-> sprint sprint/datum-abgeschlossen)]
-                          (str " | " (-> s local/format-date)))))))
+                   (-> sprint sprint/long-label))))
             ($ mui/MenuItem
                {:value "_alle"}
                "* Alle Sprints *")))
