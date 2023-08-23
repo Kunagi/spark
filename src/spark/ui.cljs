@@ -1595,11 +1595,6 @@
 (def FieldLabel form-ui/FieldLabel)
 (def Field form-ui/Field)
 
-(defnc FieldCardContent [{:keys [label description children]}]
-  ($ mui/CardContent
-     ($ Field {:label label
-               :description description}
-        children)))
 
 ;;;
 ;;; desktop
@@ -2281,7 +2276,83 @@
                   (when on-changed (on-changed values)))))
     :extra-buttons extra-buttons}))
 
-;; * db components
+
+;;; Cards
+
+(def-ui LinedCard [children class sx]
+  ($ mui/Card
+     {:className (str  "LinedCard" " " class)
+      :sx (->sx sx)}
+     children))
+
+(defnc CardContent [{:keys [to on-click href target
+                            sx sx-ActionArea class children]}]
+  (cond
+
+    on-click
+    ($ mui/CardActionArea
+       {:onClick on-click
+        :className class
+        :sx (->sx sx-ActionArea)}
+       ($ mui/CardContent
+          {:sx (->sx sx)}
+          children))
+
+    to
+    ($ mui/CardActionArea
+       {:to (coerce-link-to to)
+        :component router/Link
+        :className class
+        :sx (->sx sx-ActionArea)
+        }
+       ($ mui/CardContent
+          {:sx (->sx sx)}
+          children))
+
+    href
+    ($ mui/CardActionArea
+       {:href href
+        :target target
+        :className class
+        :sx (->sx sx-ActionArea)}
+       ($ mui/CardContent
+          {:sx (->sx sx)}
+          children))
+
+    :else
+    ($ mui/CardContent
+       {:className class
+        :sx (->sx sx)}
+       children)))
+
+(defnc FieldCardContent [{:keys [label description on-click children]}]
+  ($ CardContent
+     {:on-click on-click}
+     ($ Field {:label label
+               :description description}
+        children)))
+
+(defnc Card [{:keys [to on-click
+                     children padding highlight
+                     class
+                     sx]}]
+  (let [Card     ($ mui/Paper
+                    {:className (str (when highlight "HighlightOutline")
+                                     (when class
+                                       (str " " class)))
+                     :sx (->sx sx)}
+                    (div
+                     {:padding (or padding 16)
+                      :display :grid}
+                     children))]
+    (if (or to on-click)
+      ($ Link--no-styles
+         {:to       to
+          :on-click on-click}
+         Card)
+      Card)))
+
+;;; db components
 
 (defnc EntityFieldCardActionArea [{:keys [on-click
                                           label children
@@ -2409,71 +2480,3 @@
         {:key    (-> field spark/field-schema-field-id)
          :entity entity
          :field  field}))))
-
-;; * Cards
-
-(def-ui LinedCard [children class sx]
-  ($ mui/Card
-     {:className (str  "LinedCard" " " class)
-      :sx (->sx sx)}
-     children))
-
-(defnc CardContent [{:keys [to on-click href target
-                            sx sx-ActionArea class children]}]
-  (cond
-
-    on-click
-    ($ mui/CardActionArea
-       {:onClick on-click
-        :className class
-        :sx (->sx sx-ActionArea)}
-       ($ mui/CardContent
-          {:sx (->sx sx)}
-          children))
-
-    to
-    ($ mui/CardActionArea
-       {:to (coerce-link-to to)
-        :component router/Link
-        :className class
-        :sx (->sx sx-ActionArea)
-        }
-       ($ mui/CardContent
-          {:sx (->sx sx)}
-          children))
-
-    href
-    ($ mui/CardActionArea
-       {:href href
-        :target target
-        :className class
-        :sx (->sx sx-ActionArea)}
-       ($ mui/CardContent
-          {:sx (->sx sx)}
-          children))
-
-    :else
-    ($ mui/CardContent
-       {:className class
-        :sx (->sx sx)}
-       children)))
-
-(defnc Card [{:keys [to on-click
-                     children padding highlight
-                     class
-                     sx]}]
-  (let [Card     ($ mui/Paper
-                    {:className (str (when highlight "HighlightOutline")
-                                     (when class
-                                       (str " " class)))
-                     :sx (->sx sx)}
-                    (div
-                     {:padding (or padding 16)
-                      :display :grid}
-                     children))]
-    (if (or to on-click)
-      ($ Link--no-styles
-         {:to       to
-          :on-click on-click}
-         Card)
-      Card)))
