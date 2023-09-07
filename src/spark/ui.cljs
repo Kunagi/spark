@@ -1932,7 +1932,8 @@
 
 (defn show-selection-list-dialog [dialog]
   (let [dialog-id     (str "selection-list_" (u/nano-id))
-        items (-> dialog :items)
+        items (->> dialog :items
+                   (remove nil?))
         on-select (fn [item]
                     (hide-dialog dialog-id)
                     ((or (-> item :on-select)
