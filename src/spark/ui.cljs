@@ -1938,7 +1938,8 @@
                     (hide-dialog dialog-id)
                     ((or (-> item :on-select)
                          (-> dialog :on-select)) item))]
-    (if (-> items count (= 1))
+    (if (and (-> items count (= 1))
+             (not (-> dialog :no-auto-select)))
       (u/later> 1 #(on-select (first items)))
       (let [SelectionList ($ SelectionList
                              {:items     items
