@@ -707,6 +707,15 @@
     {:width  width
      :height height})))
 
+(defn v-scroll-pane [opts content]
+  (ui/div
+   {:overflow-y :auto
+    ;; :overflow-x :hidden
+    ;; :background-color "yellow"
+    :border-top "1px solid rgba(0,0,0,0.3)"
+    :border-bottom "1px solid rgba(0,0,0,0.3)"}
+   content))
+
 (defn rect-in-viewport? [rect]
   (and (>= js/window.screen.height (-> rect .-bottom))
        (>= js/window.screen.width (-> rect .-right))
