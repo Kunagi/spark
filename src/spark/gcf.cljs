@@ -153,10 +153,13 @@
        (-> result
            (.then #(resolve (handle-on-call-result %))
                   (fn [error]
-                    (-> functions
+                    #_(-> functions
                           .-logger
                           (.error (str "Error in GCF call:")
                                   error))
+                    (log ::handle-on-call-result--error
+                         :error error
+                         :error-data (ex-data error))
                     (resolve {:error "Error in cloud function. See logs for details."}))))))
     (clj->js result)))
 
