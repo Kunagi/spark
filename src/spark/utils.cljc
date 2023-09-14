@@ -21,6 +21,7 @@
 #?(:clj
    (defmacro assert [assertion & [message data]]
      (let [assertion-formated (with-out-str (pprint assertion))
+           assertion-formated (-> assertion-formated (str/replace "\n" " "))
            in-function (str (-> &env :fn-scope first :info :ns) "." (-> &env :fn-scope first :name))
            in-file (-> &env :ns :meta :file)
            in-line (-> &env :line)]
@@ -33,7 +34,7 @@
                              (when ~message (str  ~message " | "))
                              "Assertion failed. | "
                              ~assertion-formated
-                             "in " ~in-function " (" ~in-file ":" ~in-line ")")
+                             "| in " ~in-function " (" ~in-file ":" ~in-line ")")
                             (assoc ~data
                                    :value result#
                                    :assertion-form '~assertion
