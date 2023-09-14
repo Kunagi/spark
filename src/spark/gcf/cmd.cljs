@@ -107,32 +107,32 @@
       (-> (execute-command> commands-map command-key command-args)
           (.catch (fn [error]
                     #_(log ::handle-cmd-call>--error
-                         :command command-key
-                         :args command-args
-                         :error error)
+                           :command command-key
+                           :args command-args
+                           :error error)
                     #_(-> firebase-functions
-                        .-logger
-                        (.error (str "Error executing command via cmdCall GCF: "
-                                           (name (or command-key
-                                                     :_no-command))
-                                           ":")
-                                error))
+                          .-logger
+                          (.error (str "Error executing command via cmdCall GCF: "
+                                       (name (or command-key
+                                                 :_no-command))
+                                       ":")
+                                  error))
                     #_(js/console.error (str "Error executing command: "
-                                           (name (or command-key
-                                                     :_no-command))
-                                           ":")
-                                      error)
+                                             (name (or command-key
+                                                       :_no-command))
+                                             ":")
+                                        error)
                     #_(u/resolve> {:_spark-cmd-error (ku/error->data error)})
                     #_(throw (js/Error. (str "Error executing command: " (name (or command-key
                                                                                    :_no-command))
                                              " | " error)
                                         (clj->js {:cause error})))
                     (throw (ex-info (str "Error executing command: " (name (or command-key
-                                                                               :_no-command))
-                                         " | " error)
+                                                                               :_no-command)))
                                     {:command command-key
                                      :args command-args
-                                     :error error}
+                                     ;; :error error
+                                     }
                                     error))))))))
 
 (def default-commands-map

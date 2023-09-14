@@ -199,7 +199,7 @@
                                     (log ::on-doc-update--error
                                          :error error
                                          :error-data (ex-data error))
-                                    (throw error))))))))))
+                                    nil)))))))))
 
 (defn on-doc-write [path handler> run-with-opts]
   (let [path-s (->> path
@@ -223,7 +223,7 @@
                                     (log ::on-doc-write--error
                                          :error error
                                          :error-data (ex-data error))
-                                    (throw error))))))))))
+                                    nil)))))))))
 
 (defn on-doc-create [path handler>]
   (let [path-s (->> path
@@ -243,7 +243,7 @@
                                     (log ::on-doc-create--error
                                          :error error
                                          :error-data (ex-data error))
-                                    (throw error))))))))))
+                                    nil)))))))))
 
 ;; * storage
 
