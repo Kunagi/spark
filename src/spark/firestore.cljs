@@ -688,25 +688,32 @@
         u/tap>))
 
 ;; https://firebase.google.com/docs/reference/js/v8/firebase.firestore.Firestore#runtransaction
-(defn transact> [transaction>]
-  (log ::transact>)
-  (let [starttime (js/Date.)]
-    (if (fn? transaction>)
+(defn transact>
+  ([transaction>]
+   (transact> nil transaction>))
+  ([message transaction>]
+   (log ::transact>
+        :message message
+        :tx-data (when-not (fn? transaction>)
+                   transaction>))
+   (let [starttime (js/Date.)]
+     (if (fn? transaction>)
 
       ;; transaction function
-      (-> (firestore)
-          (.runTransaction
-           (fn [^js transaction]
-             (log ::transact>--2
-                  :runtime (- (-> (js/Date.) .getTime) (-> starttime .getTime)))
-             (p/let [result (transaction> {:get> (partial get> transaction)
-                                           :set> (partial set> transaction)})]
-               (log ::transact>--fn-completed
-                    :result result)
-               result))))
+       (-> (firestore)
+           (.runTransaction
+            (fn [^js transaction]
+              (log ::transact>--2
+                   :message message
+                   :runtime (- (-> (js/Date.) .getTime) (-> starttime .getTime)))
+              (p/let [result (transaction> {:get> (partial get> transaction)
+                                            :set> (partial set> transaction)})]
+                (log ::transact>--fn-completed
+                     :result result)
+                result))))
 
       ;; transaction data
-      (set> transaction>))))
+       (set> transaction>)))))
 
 (comment
 
