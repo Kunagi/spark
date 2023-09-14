@@ -153,11 +153,12 @@
        (-> result
            (.then #(resolve (handle-on-call-result %))
                   (fn [error]
-                    (-> functions
-                        .-logger
-                        (.error (str "Error in GCF call:")
-                                error))
-                    (reject error))))))
+                    #_(-> functions
+                          .-logger
+                          (.error (str "Error in GCF call:")
+                                  error))
+                    (reject (js/Error. (str "CMD call failed: " error)
+                                       (clj->js {:cause error}))))))))
     (clj->js result)))
 
 (defn on-call [handler run-with-opts]

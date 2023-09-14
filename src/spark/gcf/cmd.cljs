@@ -110,7 +110,7 @@
                          :command command-key
                          :args command-args
                          :error error)
-                    (-> firebase-functions
+                    #_(-> firebase-functions
                         .-logger
                         (.error (str "Error executing command via cmdCall GCF: "
                                            (name (or command-key
