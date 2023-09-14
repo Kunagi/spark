@@ -549,27 +549,29 @@
         tx-data (if create?
                   tx-data
                   (flatten-entity-map tx-data))
-        js-data (unwrap-doc tx-data)]
+        js-data (unwrap-doc tx-data)
 
-    (-> (if autocreate?
-          (if transaction
-            (if create?
-              (.set transaction ref js-data)
-              (.update transaction ref js-data))
-            (-> (.update ref js-data)
-                (.catch (fn [_err]
-                          (.set ref js-data (clj->js {:merge true}))))))
-          (if transaction
-            (u/resolve> (.update transaction ref js-data))
-            (.update ref js-data)))
-        (.then (fn [_ok] tx-data)
-               (fn [error]
-                 (throw (ex-info (str "Error while set>--set-doc> for " ref
-                                      " | " error)
-                                 {:error error
-                                  :tx-data tx-data}
-                                 error))
-                 )))))
+        result (if autocreate?
+                   (if transaction
+                     (if create?
+                       (.set transaction ref js-data)
+                       (.update transaction ref js-data))
+                     (-> (.update ref js-data)
+                         (.catch (fn [_err]
+                                   (.set ref js-data (clj->js {:merge true}))))))
+                   (if transaction
+                     (u/resolve> (.update transaction ref js-data))
+                     (.update ref js-data)))]
+    (if (instance? js/Promise result)
+        (-> result
+            (.then (fn [_ok] tx-data)
+                   (fn [error]
+                     (throw (ex-info (str "Error while set>--set-doc> for " ref
+                                          " | " error)
+                                     {:error error
+                                      :tx-data tx-data}
+                                     error)))))
+        (u/resolve> result))))
 
 (defn- set>--delete-doc> [^js transaction tx-data]
   (let [path (or (-> tx-data :firestore/path)
