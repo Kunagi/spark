@@ -109,18 +109,23 @@
                          :command command-key
                          :args command-args
                          :error error)
+                    (js/console.error (str "Error executing command: "
+                                           (name (or command-key
+                                                     :_no-command))
+                                           ":")
+                                      error)
                     #_(u/resolve> {:_spark-cmd-error (ku/error->data error)})
-                    (throw error)
                     #_(throw (js/Error. (str "Error executing command: " (name (or command-key
-                                                                                 :_no-command))
-                                           " | " error)
-                                      (clj->js {:cause error})))
-                    #_(throw (ex-info (str "Error executing command: " (name (or command-key
-                                                                                 :_no-command))
-                                           " | " error)
-                                      {:command command-key
-                                       :args command-args}
-                                      error))))))))
+                                                                                   :_no-command))
+                                             " | " error)
+                                        (clj->js {:cause error})))
+                    (throw (ex-info (str "Error executing command: " (name (or command-key
+                                                                               :_no-command))
+                                         " | " error)
+                                    {:command command-key
+                                     :args command-args
+                                     :error error}
+                                    error))))))))
 
 (def default-commands-map
   {:dummy {:public true
