@@ -841,12 +841,16 @@
                     (->> results
                          (map (fn [^js result]
                                 (when-let [error (-> result .-reason)]
-                                  (js/console.error error)
-                                  (throw (ex-info (str "A promise in all> was rejected: "
-                                                       error)
-                                                  {:error error
-                                                   :result result}
-                                                  error)))
+                                  (js/console.error "Error while spark.utils/all>" error))
+                                result))
+                         (map (fn [^js result]
+                                (when-let [error (-> result .-reason)]
+                                  (throw error)
+                                  #_(throw (ex-info (str "A promise in all> was rejected: "
+                                                         error)
+                                                    {:error error
+                                                     :result result}
+                                                    error)))
                                 (-> result .-value)))
                          vec)))))))
 
