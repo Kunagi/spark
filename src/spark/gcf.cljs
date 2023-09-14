@@ -151,7 +151,8 @@
     (js/Promise.
      (fn [resolve reject]
        (-> result
-           (.then #(resolve (handle-on-call-result %))
+           (.then (fn [result]
+                    (resolve (handle-on-call-result result)))
                   (fn [error]
                     #_(-> functions
                           .-logger
