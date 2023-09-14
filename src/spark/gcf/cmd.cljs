@@ -105,10 +105,13 @@
                            (assoc :uid uid))]
       (-> (execute-command> commands-map command-key command-args)
           (.catch (fn [error]
-                    (log ::handle-cmd-call>--catch!!!!!!
+                    (log ::handle-cmd-call>--error
+                         :command command-key
+                         :args command-args
                          :error error)
                     #_(u/resolve> {:_spark-cmd-error (ku/error->data error)})
-                    (throw (js/Error. (str "Error executing command: " (name (or command-key
+                    (throw error)
+                    #_(throw (js/Error. (str "Error executing command: " (name (or command-key
                                                                                  :_no-command))
                                            " | " error)
                                       (clj->js {:cause error})))
