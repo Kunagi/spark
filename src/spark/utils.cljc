@@ -839,7 +839,7 @@
              (js/Promise.all promises))
            (.then (fn [results]
                     (->> results
-                         (map (fn [^js result]
+                         #_(map (fn [^js result]
                                 (when-let [error (-> result .-reason)]
                                   (js/console.error "Error while spark.utils/all>" error))
                                 result))
