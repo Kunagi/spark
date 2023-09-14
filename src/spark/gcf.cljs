@@ -192,7 +192,14 @@
         (.onUpdate (fn [^js change ^js context]
                      (let [before-doc (-> change .-before firestore/wrap-doc)
                            after-doc  (-> change .-after firestore/wrap-doc)]
-                       (handler> before-doc after-doc context)))))))
+                       (-> (handler> before-doc after-doc context)
+                           (.then (fn [result]
+                                    result)
+                                  (fn [error]
+                                    (log ::on-doc-update--error
+                                         :error error
+                                         :error-data (ex-data error))
+                                    (throw error))))))))))
 
 (defn on-doc-write [path handler> run-with-opts]
   (let [path-s (->> path
@@ -209,7 +216,14 @@
         (.onWrite (fn [^js change ^js context]
                     (let [before-doc (-> change .-before firestore/wrap-doc)
                           after-doc  (-> change .-after firestore/wrap-doc)]
-                      (handler> before-doc after-doc context)))))))
+                      (-> (handler> before-doc after-doc context)
+                          (.then (fn [result]
+                                    result)
+                                  (fn [error]
+                                    (log ::on-doc-write--error
+                                         :error error
+                                         :error-data (ex-data error))
+                                    (throw error))))))))))
 
 (defn on-doc-create [path handler>]
   (let [path-s (->> path
@@ -222,7 +236,14 @@
         (.document path-s)
         (.onCreate (fn [^js doc ^js context]
                      (let [doc (-> doc firestore/wrap-doc)]
-                       (handler> doc context)))))))
+                       (-> (handler> doc context)
+                           (.then (fn [result]
+                                    result)
+                                  (fn [error]
+                                    (log ::on-doc-create--error
+                                         :error error
+                                         :error-data (ex-data error))
+                                    (throw error))))))))))
 
 ;; * storage
 
