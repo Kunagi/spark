@@ -604,7 +604,6 @@
                                      tx-data)]
     (set>--set-doc> transaction entity false)))
 
-(declare set>)
 (declare transact>)
 
 (defn set>
@@ -699,7 +698,7 @@
    (let [starttime (js/Date.)]
      (if (fn? transaction>)
 
-      ;; transaction function
+       ;; transaction function
        (-> (firestore)
            (.runTransaction
             (fn [^js transaction]
@@ -710,9 +709,16 @@
                                             :set> (partial set> transaction)})]
                 (log ::transact>--fn-completed
                      :result result)
-                result))))
+                result)))
+           (.then identity
+                  (fn [error]
+                    (throw (ex-info (str "Error in transaction '"
+                                         message
+                                         "' | " error)
+                                    {:transaction transaction>}
+                                    error)))))
 
-      ;; transaction data
+       ;; transaction data
        (set> transaction>)))))
 
 (comment
