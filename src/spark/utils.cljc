@@ -30,8 +30,8 @@
                                :message ~message
                                :data ~data)
             (throw (ex-info (str
-                             (when ~message (str  ~message "\n"))
-                             "Assertion failed.\n"
+                             (when ~message (str  ~message " | "))
+                             "Assertion failed. | "
                              ~assertion-formated
                              "in " ~in-function " (" ~in-file ":" ~in-line ")")
                             (assoc ~data
