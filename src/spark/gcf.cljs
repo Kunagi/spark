@@ -151,11 +151,13 @@
     (js/Promise.
      (fn [resolve reject]
        (-> result
-           (.then #(resolve (handle-on-call-result %)))
-           (.catch (fn [error]
-                     (log ::handle-on-call-result--call-handler-failed!
-                          :error error)
-                     (reject error))))))
+           (.then #(resolve (handle-on-call-result %))
+                  (fn [error]
+                    (-> functions
+                        .-logger
+                        (.error (str "Error in GCF call:")
+                                error))
+                    (reject error))))))
     (clj->js result)))
 
 (defn on-call [handler run-with-opts]

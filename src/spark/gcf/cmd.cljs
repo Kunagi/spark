@@ -1,6 +1,7 @@
 (ns spark.gcf.cmd
   (:require-macros [spark.gcf.cmd :refer [def-cmd]])
   (:require
+   ["firebase-functions" :as firebase-functions]
    [kunagi.utils :as ku]
    [spark.db :as db]
    [spark.gcf :as gcf]
@@ -105,11 +106,18 @@
                            (assoc :uid uid))]
       (-> (execute-command> commands-map command-key command-args)
           (.catch (fn [error]
-                    (log ::handle-cmd-call>--error
+                    #_(log ::handle-cmd-call>--error
                          :command command-key
                          :args command-args
                          :error error)
-                    (js/console.error (str "Error executing command: "
+                    (-> firebase-functions
+                        .-logger
+                        (.error (str "Error executing command via cmdCall GCF: "
+                                           (name (or command-key
+                                                     :_no-command))
+                                           ":")
+                                error))
+                    #_(js/console.error (str "Error executing command: "
                                            (name (or command-key
                                                      :_no-command))
                                            ":")
