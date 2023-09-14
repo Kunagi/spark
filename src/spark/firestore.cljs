@@ -551,24 +551,25 @@
                   (flatten-entity-map tx-data))
         js-data (unwrap-doc tx-data)]
 
-    (u/=> (if autocreate?
-            (if transaction
-              (if create?
-                (.set transaction ref js-data)
-                (.update transaction ref js-data))
-              ;; (u/=> (get> transaction path)
-              ;;       (fn [doc]
-              ;;         (if doc
-              ;;           (.update transaction ref data)
-              ;;           (.set transaction ref data (clj->js {:merge true}))     )))
-              ;;
-              (-> (.update ref js-data)
-                  (.catch (fn [_err]
-                            (.set ref js-data (clj->js {:merge true}))))))
-            (if transaction
-              (u/resolve> (.update transaction ref js-data))
-              (.update ref js-data)))
-          (fn [_] tx-data))))
+    (-> (if autocreate?
+          (if transaction
+            (if create?
+              (.set transaction ref js-data)
+              (.update transaction ref js-data))
+            (-> (.update ref js-data)
+                (.catch (fn [_err]
+                          (.set ref js-data (clj->js {:merge true}))))))
+          (if transaction
+            (u/resolve> (.update transaction ref js-data))
+            (.update ref js-data)))
+        (.then (fn [_ok] tx-data)
+               (fn [error]
+                 (throw (ex-info (str "Error while set>--set-doc> for " ref
+                                      " | " error)
+                                 {:error error
+                                  :tx-data tx-data}
+                                 error))
+                 )))))
 
 (defn- set>--delete-doc> [^js transaction tx-data]
   (let [path (or (-> tx-data :firestore/path)
@@ -610,9 +611,13 @@
   ([^js transaction tx-data]
    ;; (log ::set>
    ;;      :tx-data tx-data)
-   (if (sequential? tx-data)
+   (cond
+
+     (nil? tx-data)
+     (u/no-op>)
 
      ;; sequential tx-data
+     (sequential? tx-data)
      (if (empty? tx-data)
        (u/no-op>)
        (if (-> tx-data count (> 500))
@@ -626,20 +631,19 @@
                         (u/all-in-sequence> (map #(set> %) tx-data)))))))
 
      ;; not sequential tx-data (just entity)
-     (if-not tx-data
-       (u/no-op>)
-       (let [db-ref  (-> tx-data :db/ref)
-             subdoc? (vector? db-ref)]
-         (log ::set>
-              :tx-data tx-data
-              :transaction (boolean transaction))
-         (if subdoc?
-           (if (-> tx-data :db/delete (= true))
-             (set>--delete-subdoc> transaction tx-data db-ref)
-             (set>--set-subdoc> transaction tx-data db-ref))
-           (if (-> tx-data :db/delete (= true))
-             (set>--delete-doc> transaction tx-data)
-             (set>--set-doc> transaction tx-data true))))))))
+     :else
+     (let [db-ref  (-> tx-data :db/ref)
+           subdoc? (vector? db-ref)]
+       (log ::set>
+            :tx-data tx-data
+            :transaction (boolean transaction))
+       (if subdoc?
+         (if (-> tx-data :db/delete (= true))
+           (set>--delete-subdoc> transaction tx-data db-ref)
+           (set>--set-subdoc> transaction tx-data db-ref))
+         (if (-> tx-data :db/delete (= true))
+           (set>--delete-doc> transaction tx-data)
+           (set>--set-doc> transaction tx-data true)))))))
 
 (comment
 
