@@ -108,12 +108,16 @@
                     (log ::handle-cmd-call>--catch!!!!!!
                          :error error)
                     #_(u/resolve> {:_spark-cmd-error (ku/error->data error)})
-                    (throw (ex-info (str "Error executing command: " (name (or command-key
-                                                                               :_no-command))
-                                         " | " error)
-                                    {:command command-key
-                                     :args command-args}
-                                    error))))))))
+                    (throw (js/Error. (str "Error executing command: " (name (or command-key
+                                                                                 :_no-command))
+                                           " | " error)
+                                      (clj->js {:cause error})))
+                    #_(throw (ex-info (str "Error executing command: " (name (or command-key
+                                                                                 :_no-command))
+                                           " | " error)
+                                      {:command command-key
+                                       :args command-args}
+                                      error))))))))
 
 (def default-commands-map
   {:dummy {:public true
