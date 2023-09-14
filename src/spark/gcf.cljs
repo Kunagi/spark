@@ -161,7 +161,7 @@
                     (log ::handle-on-call-result--error
                          :error error
                          :error-data (ex-data error))
-                    (resolve {:error "Error in cloud function. See logs for details."}))))))
+                    (resolve (clj->js {:error "Error in cloud function. See logs for details."})))))))
     (clj->js result)))
 
 (defn on-call [handler run-with-opts]
