@@ -4,7 +4,8 @@
    [promesa.core :as p]
    [spark.core :as spark]
    [spark.firestore :as firestore]
-   [spark.utils :as u]))
+   [spark.utils :as u]
+   [spark.logging :refer [log]]))
 
 ;; * common
 
@@ -73,6 +74,9 @@
   ([path]
    (firestore/get> (coerce-path path)))
   ([entity-type id]
+   ;; (log ::get>
+   ;;      :entity-type entity-type
+   ;;      :id id)
    (u/assert entity-type)
    (u/assert id)
    (get> (entity-type->ref entity-type id))))

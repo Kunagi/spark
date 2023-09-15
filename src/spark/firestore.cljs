@@ -710,8 +710,7 @@
                 (log ::transact>--fn-completed
                      :result result)
                 result)))
-           (.then (fn [^js _transaction]
-                    {:ok true})
+           (.then identity
                   (fn [error]
                     (throw (ex-info (str "Error in transaction '"
                                          message
