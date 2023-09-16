@@ -162,7 +162,12 @@
                          :error error
                          :error-data (ex-data error))
                     (resolve (clj->js {:error "Error in cloud function. See logs for details."})))))))
-    (clj->js result)))
+    ;; TODO FIXME crash
+    (try
+      (clj->js result)
+      (catch js/Error ex
+        nil
+        #_(str result)))))
 
 (defn on-call [handler run-with-opts]
   (let [function-builder (region--europe-west1)
