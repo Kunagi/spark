@@ -1136,6 +1136,17 @@
                              {:message message
                               :opts opts})})))
 
+(defn show-message-dialog>
+  "opts: `title`, `title-close-button`"
+  ([message]
+   (show-message-dialog> message {}))
+  ([message opts]
+   (show-dialog> {:title (-> opts :title)
+                 :title-close-button (-> opts :title-close-button)
+                 :content ($ MessageDialogContent
+                             {:message message
+                              :opts opts})})))
+
 ;; ** PromiseProgress
 
 (def-ui PromiseProgress [promise]
