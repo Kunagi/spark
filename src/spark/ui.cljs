@@ -337,35 +337,39 @@
         ;; (log ::use-doc--subscribe
         ;;      :path path)
         (let [DOCS (atom {})
-              unsubscribes (->> docs-ids
-                                (map (fn [doc-id]
-                                       (when doc-id
-                                         (let [path (str collection-id "/" doc-id)
-                                               ref         (firestore/ref path)
-                                               ;; _ (log ::use-docs
-                                               ;;        :path path
-                                               ;;        :ref ref)
-                                               add-doc (fn [doc]
-                                                         (swap! DOCS assoc doc-id doc)
-                                                         (when (= (count docs-ids) (count @DOCS))
-                                                           (set-docs @DOCS)))
-                                               on-snapshot (fn [doc-snapshot]
-                                                             (let [doc (firestore/wrap-doc doc-snapshot)]
-                                                               ;; (log ::use-docs--doc-snapshot-received
-                                                               ;;      :path path
-                                                               ;;      ;; :doc doc
-                                                               ;;      :docs (count docs))
-                                                               (add-doc doc)))
-                                               on-error    (fn [^js error]
-                                                             (log-error error)
-                                                             (log ::use-docs--error
-                                                                  :path path
-                                                                  :exception error)
-                                                             (add-doc nil))
-                                               unsubscribe (.onSnapshot ref on-snapshot on-error)]
+              unsubscribes (if (empty? docs-ids)
+                             (do
+                               (set-docs [])
+                               nil)
+                             (->> docs-ids
+                                  (map (fn [doc-id]
+                                         (when doc-id
+                                           (let [path (str collection-id "/" doc-id)
+                                                 ref         (firestore/ref path)
+                                                 ;; _ (log ::use-docs
+                                                 ;;        :path path
+                                                 ;;        :ref ref)
+                                                 add-doc (fn [doc]
+                                                           (swap! DOCS assoc doc-id doc)
+                                                           (when (= (count docs-ids) (count @DOCS))
+                                                             (set-docs @DOCS)))
+                                                 on-snapshot (fn [doc-snapshot]
+                                                               (let [doc (firestore/wrap-doc doc-snapshot)]
+                                                                 ;; (log ::use-docs--doc-snapshot-received
+                                                                 ;;      :path path
+                                                                 ;;      ;; :doc doc
+                                                                 ;;      :docs (count docs))
+                                                                 (add-doc doc)))
+                                                 on-error    (fn [^js error]
+                                                               (log-error error)
+                                                               (log ::use-docs--error
+                                                                    :path path
+                                                                    :exception error)
+                                                               (add-doc nil))
+                                                 unsubscribe (.onSnapshot ref on-snapshot on-error)]
 
-                                           unsubscribe))))
-                                doall)]
+                                             unsubscribe))))
+                                  doall))]
           #(doseq [unsubscribe (->> unsubscribes (remove nil?))]
              (unsubscribe)))))
 
