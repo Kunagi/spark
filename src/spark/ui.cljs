@@ -374,6 +374,46 @@
             (map #(get docs %))
             (remove nil?))))))
 
+(defn use-cached-doc
+  ([collection-id doc-id]
+   (let [collection-id (if (spark/doc-schema? collection-id)
+                         (spark/doc-schema-col-path collection-id)
+                         collection-id)
+         [docs-map set-docs-map] (use-state nil)
+         _ (log ::use-cached-doc
+                :doc-id doc-id
+                :docs-map-ids (keys docs-map))]
+
+     (use-effect
+       [collection-id doc-id]
+
+       (when (and collection-id
+                  doc-id)
+        ;; (log ::use-doc--subscribe
+        ;;      :path path)
+         (let [path (str collection-id "/" doc-id)
+               ref (firestore/ref path)
+              ;; _ (log ::use-docs
+              ;;        :path path
+              ;;        :ref ref)
+               on-snapshot (fn [doc-snapshot]
+                             (let [doc (firestore/wrap-doc doc-snapshot)]
+                              ;; (log ::use-docs--doc-snapshot-received
+                              ;;      :path path
+                              ;;      ;; :doc doc
+                              ;;      :docs (count docs))
+                               (set-docs-map (assoc docs-map (-> doc :id) doc))))
+               on-error    (fn [^js error]
+                             (log-error error)
+                             (log ::use-cached-doc--error
+                                  :error error
+                                  :path path))
+               _unsubscribe (.onSnapshot ref on-snapshot on-error)]
+
+           nil)))
+
+     (get docs-map doc-id))))
+
 (defn use-singleton-doc
   [Doc]
   (use-doc (spark/doc-schema-singleton-doc-path Doc)))
