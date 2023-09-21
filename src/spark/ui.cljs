@@ -383,10 +383,10 @@
    (let [collection-id (if (spark/doc-schema? collection-id)
                          (spark/doc-schema-col-path collection-id)
                          collection-id)
-         [docs-map set-docs-map] (use-state nil)
-         _ (log ::use-cached-doc
+         [docs-map set-docs-map] (use-state nil)]
+     #_(log ::use-cached-doc
                 :doc-id doc-id
-                :docs-map-ids (keys docs-map))]
+                :docs-map-ids (keys docs-map))
 
      (use-effect
        [collection-id doc-id]
