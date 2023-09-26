@@ -751,13 +751,13 @@
     {:width  width
      :height height})))
 
-(defn v-scroll-pane [opts content]
+(defn v-scroll-pane [{:keys [without-bars?]} content]
   (ui/div
    {:overflow-y :auto
-    ;; :overflow-x :hidden
+    :overflow-x :hidden
     ;; :background-color "yellow"
-    :border-top "1px solid rgba(0,0,0,0.3)"
-    :border-bottom "1px solid rgba(0,0,0,0.3)"}
+    :border-top (when-not without-bars? "1px solid rgba(0,0,0,0.3)")
+    :border-bottom (when-not without-bars? "1px solid rgba(0,0,0,0.3)")}
    content))
 
 (defn rect-in-viewport? [rect]
