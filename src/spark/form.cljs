@@ -238,6 +238,17 @@
                      (-> value (str/includes? " ") not))
         (local/text :invalid-input)))))
 
+(defn default-url-validator [form field]
+  (fn [value form]
+    (when-let [value (str value)]
+      (when-not
+          (and (-> value (str/includes? "."))
+               (or (and (-> value (.startsWith "http://"))
+                        (-> value count (> 10)))
+                   (and (-> value (.startsWith "https://"))
+                        (-> value count (> 11)))))
+          "Keine gültige URL"))))
+
 (defn default-field-validator [form field-id]
   (let [field (field-by-id form field-id)]
     (case (-> field :type)
@@ -245,6 +256,7 @@
       :int (default-number-validator form field)
       :eur (default-eur-validator form field)
       :email (default-email-validator form field)
+      :url (default-url-validator form field)
       nil)))
 
 (defn field-validator [form field-id]
