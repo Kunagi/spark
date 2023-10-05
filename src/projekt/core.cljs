@@ -1,4 +1,6 @@
-(ns projekt.core)
+(ns projekt.core
+  (:require
+   [projekt.projekt :as projekt]))
 
 (defn story-sprint-id [story]
   (get story :sprint-id "99999"))
@@ -19,10 +21,11 @@
                                                        conj story))
                                              {} storys)
         feature-reihenfolge-map (->> projekt
-                                     :feature-reihenfolge
+                                     projekt/feature-reihenfolge
                                      (map-indexed (fn [idx id] [id idx]))
                                      (into {}))
         feature-ids (->> features
+                         sort
                          (sort-by #(get feature-reihenfolge-map % 99999)))
         sprints (->> sprints-ids
                      (reduce (fn [m sprint-id]
