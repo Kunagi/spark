@@ -305,7 +305,7 @@
   (u/assert (or (-> data :url)
                 (-> data :text)
                 (-> data :files)))
-  (if js/navigator.share
+  (if (share-available?)
     (if (-> data :files seq)
       (js/navigator.share (clj->js {:files (-> data :files)}))
       (js/navigator.share (clj->js data)))
