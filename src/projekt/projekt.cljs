@@ -20,7 +20,7 @@
   (-> this :sprints vals))
 
 (def-doc Projekt
-  [{:firestore/collection "singletons"}
+  [{:firestore/collection "projekte"}
    [:storys {:optional true} Storys]
    [:sprints {:optional true} Sprints]
    [:developers [:set :string]]])

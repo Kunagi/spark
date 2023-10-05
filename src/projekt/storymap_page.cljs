@@ -15,6 +15,7 @@
    [projekt.story :as story]
    [projekt.sprint :as sprint]
    [projekt.projekt :as projekt]
+   [projekt.altprojekt :as altprojekt]
    [clojure.string :as str]
    [kunagi.mui.api :as kui]
    [spark.core :as spark]))
@@ -582,6 +583,29 @@
     (->> storys
          (filter #(story/matches-suchtext % search-text)))))
 
+(def-ui Migration [projekt]
+  {:from-context [projekt]}
+  (let [altprojekt (ui/use-doc altprojekt/Altprojekt "projekt")]
+    ($ ui/LinedCard
+       ($ ui/CardContent
+          (ui/stack
+           (ui/div
+            "Migration")
+           ($ ui/ValueLoadGuard {:value altprojekt}
+              (ui/stack
+               (ui/DEBUG_ "altprojekt" altprojekt)
+               (ui/DEBUG_ "projekt" projekt)
+               ($ ui/Button
+                  {:text "Migrate!"
+                   :on-click (fn []
+                               (db/update> projekt
+                                           (select-keys altprojekt
+                                                        [:sprints
+                                                         :storys
+                                                         :developers
+                                                         :feature-reihenfolge])
+                                           ))}))))))))
+
 (def-ui Storymap [projekt uid]
   {:from-context [projekt uid]}
   (let [search-opts (use-search-opts)
@@ -594,6 +618,10 @@
         sprints-ids (-> storymap :sprints-ids)
         current-sprint-id (use-current-sprint-id storymap)]
     (ui/stack
+
+     (when (empty? sprints-ids)
+       ($ Migration))
+
      ;; (ui/DEBUG storys)
      ;; (ui/data (-> projekt :sprints))
      ;; (ui/data (macroexpand-1 '(def-ui Hello []
@@ -678,4 +706,4 @@
    :wait-for [:projekt]
    :title "Project StoryMap"
    :update-context (fn [context]
-                     (assoc context :projekt (ui/use-singleton-doc projekt/Projekt)))})
+                     (assoc context :projekt (ui/use-doc projekt/Projekt "singleton")))})
