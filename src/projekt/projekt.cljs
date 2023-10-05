@@ -41,6 +41,9 @@
   {:bug "Fehler"
    :debt "Verbindlichkeiten"})
 
+(defn feature-reihenfolge [this]
+  (-> this :feature-reihenfolge))
+
 (defn developers [this]
   (-> this :developers))
 

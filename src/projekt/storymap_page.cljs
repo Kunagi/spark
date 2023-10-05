@@ -373,14 +373,31 @@
                          :align-items "center"
                          :padding "0 1rem"}}
                 ($ :div feature-id)
-                (when (projekt/developer-uid? projekt uid)
-                  ($ ui/Button
-                     {:on-click #(show-add-story-form>
-                                  projekt
-                                  {:feature-id feature-id
-                                   :sprint-id sprint-id})
-                      :icon :add
-                      :size "small"}))))))))
+                ($ :div
+                   {:style {:display "flex"}}
+                   (when (projekt/developer-uid? projekt uid)
+                     (if (-> (into #{} (-> projekt projekt/feature-reihenfolge))
+                             (contains? feature-id))
+                       ($ ui/Button
+                          {:color :primary
+                           :on-click #(db/update> projekt
+                                                  {:feature-reihenfolge [:db/array-remove [feature-id]]})
+                           :icon :push_pin
+                           :size "small"})
+                       ($ ui/Button
+                          {:color :default
+                           :on-click #(db/update> projekt
+                                                  {:feature-reihenfolge [:db/array-union [feature-id]]})
+                           :icon :push_pin
+                           :size "small"})))
+                   (when (projekt/developer-uid? projekt uid)
+                     ($ ui/Button
+                        {:on-click #(show-add-story-form>
+                                     projekt
+                                     {:feature-id feature-id
+                                      :sprint-id sprint-id})
+                         :icon :add
+                         :size "small"})))))))))
 
 (defonce SEARCH_OPTS (atom {:auch-abgeschlossene false}))
 (def use-search-opts (ui/atom-hook SEARCH_OPTS))
