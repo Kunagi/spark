@@ -3,7 +3,7 @@
          org.clojure/spec.alpha    {:mvn/version "0.2.194"}
 
          io.github.kunagi/kunagi-utils
-         {:git/sha "1b3d8575433a0a193028cb8632966ede8ff1b203", :git/tag "v0.1.40"}
+         {:git/sha "a027b69fe68934a856f8c792051e6c55fc305e6e", :git/tag "v0.1.41"}
          io.github.kunagi/kunagi-mui
          {:git/sha "4ae964f954db0cbec7b1a2b1ad8bd53f036996a0", :git/tag "v0.0.57"}
 
