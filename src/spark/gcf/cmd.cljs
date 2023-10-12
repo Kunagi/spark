@@ -127,8 +127,9 @@
                                                                                    :_no-command))
                                              " | " error)
                                         (clj->js {:cause error})))
-                    (throw (ex-info (str "Error executing command: " (name (or command-key
-                                                                               :_no-command)))
+                    (throw (ex-info (str "Error executing command '"
+                                         (name (or command-key :_no-command))
+                                         "': " error)
                                     {:command command-key
                                      :args command-args
                                      ;; :error error
