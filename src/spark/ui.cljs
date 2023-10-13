@@ -2468,7 +2468,9 @@
                                    option (->> options
                                                (filter #(-> % :value (= value)))
                                                first)]
-                               (or (-> option :label)
+                               (or (when-let [mapper (-> field :option-mapper)]
+                                     (mapper value))
+                                   (-> option :label)
                                    (str value)))
 
                              (and (-> field :type (= :checkboxes))
