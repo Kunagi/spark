@@ -636,7 +636,8 @@
         current-sprint-id (use-current-sprint-id storymap)]
     (ui/stack
 
-     (when (empty? sprints-ids)
+     (when (and (ui/debug?)
+                (empty? sprints-ids))
        ($ Migration))
 
      ;; (ui/DEBUG storys)
