@@ -73,6 +73,11 @@
                                     (nil? (get record record-key))))
                           count)
 
+                     (-> footer :type (= :count-true))
+                     (->> records
+                          (filter #(get % record-key))
+                          count)
+
                      (-> footer :type (= :sum))
                      (let [aggregator (cond
 
@@ -97,7 +102,8 @@
             (ui/div
              {:font-weight 900
               :text-align (cond
-                            (-> footer :type (= :count)) "right"
+                            ;; (-> footer :type (= :count)) "right"
+                            ;; (-> footer :type (= :count-true)) "right"
                             :else (-> col :align))}
              value)))))
   )
