@@ -3,7 +3,8 @@
    ["firebase/storage" :as firebase-storage]
    [promesa.core :as p]
    [spark.env-config :as env-config]
-   [spark.logging :refer [log]]))
+   [spark.logging :refer [log]]
+   [spark.utils :as u]))
 
 ;; https://firebase.google.com/docs/reference/js/firebase.storage.Reference
 
@@ -70,7 +71,9 @@
   ([path]
    (list-files> nil path))
   ([bucket-name path]
-   (firebase-storage/listAll (ref bucket-name path))))
+   (if path
+     (firebase-storage/listAll (ref bucket-name path))
+     (u/resolve> nil))))
 
 (defn list-files-paths>
   ([path]
