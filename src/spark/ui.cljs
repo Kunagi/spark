@@ -546,12 +546,12 @@
   ([bucket-name path]
    (let [[files set-files] (use-state nil)
          reload-f          (fn []
-                             (-> (storage/list-files> bucket-name path)
-                                 (.then (fn [^js result]
-                                          (set-files (->> result
-                                                          .-items
-                                                          (map (fn [^js item]
-                                                                 (.-fullPath item)))))))))]
+                             (p/let [^js result (storage/list-files> bucket-name path)
+                                     items (when result (-> result .-items))
+                                     paths (->> items
+                                                (map (fn [^js item]
+                                                       (.-fullPath item))))]
+                               (set-files paths)))]
 
      (use-effect
       [(str path)]

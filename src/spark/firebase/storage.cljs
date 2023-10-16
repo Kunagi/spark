@@ -79,12 +79,12 @@
   ([path]
    (list-files-paths> nil path))
   ([bucket-name path]
-   (-> (list-files> bucket-name path)
-       (.then (fn [^js result]
-                (->> result
-                     .-items
-                     (map (fn [^js item]
-                            (.-fullPath item)))))))))
+   (p/let [^js result (list-files> bucket-name path)
+           items (when result (-> result .-items))
+           paths (->> items
+                      (map (fn [^js item]
+                             (.-fullPath item))))]
+     paths)))
 
 (defn upload-file> [file path metadata]
   (let [metadata (assoc metadata :contentType (or (-> file .-type)
