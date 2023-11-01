@@ -2529,11 +2529,12 @@
                   :description description}
                  (ui/div
                   {:font-size "16px"}
-                  (if (and value-component
+                  (if (and children
+                           (sequential? children)
                            (seq children))
                     (<>
-                     (div value-component)
-                     (div children))
+                       (div value-component)
+                       (div children))
                     (<> value-component children))))]
     (if on-click
       ($ mui/CardActionArea
