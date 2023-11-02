@@ -29,13 +29,29 @@
     :type "number"}])
 
 (def-subdoc Sprint
-  [{}])
+  [{}
+   [:gesamtleistung-pro-tag
+    {:optional true}
+    [:map-of
+     :string ; Datum
+     :int ; Anzahl Stunden
+     ]]])
 
 
 (defn id [this]
   (-> this :id))
 
+(defn gesamtleistung-am [this datum]
+  (-> this :gesamtleistung-pro-tag
+      (get (str datum))))
 
+(defn gesamtleistung-vor [this datum]
+  (->> this :gesamtleistung-pro-tag
+       (filter #(-> % first time/date (time/< datum)))
+       (sort-by first)
+       reverse
+       first
+       second))
 
 (defn datum-abgeschlossen [this]
   (-> this :datum-abgeschlossen))

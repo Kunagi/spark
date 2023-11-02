@@ -310,8 +310,10 @@
              :lowest-prio lowest-prio
              :arbeitstage arbeitstage}))))))
 
-(defn >sprint-card [sprint projekt uid]
-  (let [sprint-id (-> sprint :id)
+(def-ui SprintCard [sprint projekt uid]
+  (let [instant (ui/use-instant-10)
+        heute (time/date instant)
+        sprint-id (-> sprint :id)
         storys (-> projekt projekt/storys)
         stunden-geschaetzt (reduce (fn [aufwand story]
                                      (when aufwand
@@ -327,7 +329,21 @@
                                         (let [story-aufwand (-> story :aufwand)]
                                           (+ aufwand story-aufwand))
                                         aufwand)))
-                                  0 storys)]
+                                  0 storys)
+        gesamtleistung-heute (sprint/gesamtleistung-am sprint heute)
+        gesamtleistung-gestern (sprint/gesamtleistung-vor sprint heute)
+        leistung-heute (- gesamtleistung-heute gesamtleistung-gestern)]
+
+    (ui/use-effect
+     [stunden-geleistet gesamtleistung-heute]
+     (when (and (projekt/developer-uid? projekt uid)
+                (-> sprint sprint/datum-beginn)
+                (-> sprint sprint/datum-beginn time/date (time/<= heute))
+                (not (-> sprint sprint/datum-abgeschlossen))
+                (not= stunden-geleistet gesamtleistung-heute))
+       (db/update> sprint {:gesamtleistung-pro-tag {(str heute) stunden-geleistet}}))
+     nil)
+
     ($ ui/Card
        {:class "StoryMap-SprintCard"
         :on-click #(when (projekt/developer-uid? projekt uid)
@@ -336,9 +352,11 @@
        (ui/div
         {:padding "8px 16px"}
         (if (> sprint-id 9999)
+
           (ui/div
            {:padding "8px 0"}
            (str "Sprint #" sprint-id " - Noch nicht eingeplant"))
+
           (ui/flex
            (ui/div "Sprint #" sprint-id)
            (when-let [entwickler (-> sprint :entwickler)]
@@ -359,7 +377,18 @@
              (ui/div
               {:font-weight "normal"
                :color "#eee"}
-              "Abgeschlossen am " datum))))))))
+              "Abgeschlossen am " datum))
+           (when (and (projekt/developer-uid? projekt uid)
+                      (-> sprint sprint/datum-beginn)
+                      (-> sprint sprint/datum-beginn time/date (time/<= heute))
+                      (not (-> sprint sprint/datum-abgeschlossen)))
+             (ui/div
+              {:font-weight "normal"
+               :color "#eee"}
+              #_(ui/DEBUG {:gesamtleistung-heute gesamtleistung-heute
+                         :gesamtleistung-gestern gesamtleistung-gestern})
+              (ui/span {:font-weight 900} "Heute: ")
+              leistung-heute " Stunden"))))))))
 
 (defn >features-row [projekt uid feature-ids sprint-id]
   ($ :tr
@@ -555,7 +584,10 @@
      ($ :tr
         ($ :td
            {:colSpan (count feature-ids)}
-           (>sprint-card sprint projekt uid)
+           ($ SprintCard
+              {:sprint sprint
+               :projekt projekt
+               :uid uid})
            ;; (ui/DEBUG arbeitstage)
            ;; (ui/DEBUG story-projections)
            ))
