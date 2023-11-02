@@ -735,7 +735,8 @@
                ($ :div
                   {:style {:display "grid"
                            :grid-gap "8px"
-                           :grid-template-columns grid-template-columns}}
+                           :grid-template-columns (or grid-template-columns
+                                                      (-> form :grid-template-columns))}}
                   (for [[idx field] (->> (get form :fields)
                                          (remove (fn [field]
                                                    (let [hidden (-> field :hidden)]
