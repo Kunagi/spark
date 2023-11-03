@@ -1085,8 +1085,8 @@
          :className (str class " " (-> dialog :class))
          :maxWidth (get dialog :max-width "sm")
          ;; :sx (clj->js {"background-color" "blue"
-                       ;; "outline" "2px soldi blue"}
-                      ;; )
+         ;; "outline" "2px soldi blue"}
+         ;; )
          :sx (->sx (-> dialog :sx))}
         ;; (data dialog-id)
         ;; (DEBUG dialog)
@@ -1097,9 +1097,18 @@
               {:position :absolute
                :right 0
                :top 0}
-              ($ mui/IconButton
-                 {:onClick #(hide-dialog (-> dialog :id))}
-                 (div {:class "material-icons"} "close"))))
+              (ui/div
+               {:padding-top 16
+                :padding-right 16}
+               (if (string? (-> dialog :title-close-button))
+                 ($ mui/Button
+                    {:onClick #(hide-dialog (-> dialog :id))
+                     :variant "contained"
+                     :color "primary"}
+                    (-> dialog :title-close-button))
+                 ($ mui/IconButton
+                    {:onClick #(hide-dialog (-> dialog :id))}
+                    (div {:class "material-icons"} "close"))))))
            ($ mui/DialogTitle
               (div
                {:padding-right 32}
