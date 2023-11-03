@@ -1098,8 +1098,8 @@
                :right 0
                :top 0}
               (ui/div
-               {:padding-top 16
-                :padding-right 16}
+               {:padding-top 12
+                :padding-right 12}
                (if (string? (-> dialog :title-close-button))
                  ($ mui/Button
                     {:onClick #(hide-dialog (-> dialog :id))
