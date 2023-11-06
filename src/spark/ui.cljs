@@ -1099,12 +1099,14 @@
                :top 0}
               (ui/div
                {:padding-top 12
-                :padding-right 12}
+                :padding-right 12
+                :padding-left 12}
                (if (string? (-> dialog :title-close-button))
                  ($ mui/Button
                     {:onClick #(hide-dialog (-> dialog :id))
                      :variant "contained"
-                     :color "primary"}
+                     :color "primary"
+                     :className (-> dialog :title-close-button-class)}
                     (-> dialog :title-close-button))
                  ($ mui/IconButton
                     {:onClick #(hide-dialog (-> dialog :id))}
