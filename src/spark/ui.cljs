@@ -2131,7 +2131,7 @@
                                       "cover")})))
 
 (defnc StorageImageActionArea
-  [{:keys [id storage-path
+  [{:keys [id storage-path url
            upload-text upload-div-class
            img-style div-style
            on-url-changed
@@ -2141,36 +2141,37 @@
            new-file-metadata new-file-cache-hours new-file-cache-days
            children]}]
   (let [[id _set-id] (ui/use-state (or id (str "bild_" (u/nano-id))))
-        [url set-url_] (use-state :loading)
+        [storage-url set-storage-url_] (use-state :loading)
         set-url        (fn [new-url]
-                         (when (not= url new-url)
+                         (when (not= storage-url new-url)
                            (log ::file-uploaded
                                 :url new-url
                                 :on-url-changed on-url-changed)
                            (when on-url-changed
                              (on-url-changed new-url))
-                           (set-url_ new-url)))
+                           (set-storage-url_ new-url)))
         open-file-selector #(-> (js/document.getElementById id)
                                 .click)
         delete-file #(u/=> (storage/delete> storage-path)
                            (fn [_]
                              (set-url nil)))
-        on-click #(if (and url (not= url :loading))
+        on-click #(if (and storage-url (not= storage-url :loading))
                     (show-confirmation-dialog {:text (local/text :delete-image?)
                                                :confirmation-text (local/text :delete)
                                                :on-confirm delete-file})
                     (open-file-selector))]
 
     (use-effect
-     :always
-     (p/let [loaded-url (storage/url> storage-path)]
-       (set-url_ loaded-url)
-       (when (and loaded-url
-                  on-url-changed
-                  change-event-when-loaded-url-differs-from-alt-url?
-                  (not= loaded-url alt-url))
-         (on-url-changed loaded-url)))
-     nil)
+      :always
+      (when-not url
+        (p/let [loaded-url (storage/url> storage-path)]
+          (set-storage-url_ loaded-url)
+          (when (and loaded-url
+                     on-url-changed
+                     change-event-when-loaded-url-differs-from-alt-url?
+                     (not= loaded-url alt-url))
+            (on-url-changed loaded-url))))
+      nil)
 
     ($ mui/CardActionArea
        {:onClick on-click}
@@ -2188,9 +2189,10 @@
             (when label
               ($ FieldLabel {:text label}))
 
-            (if (= :loading url)
+            (if (and (not url)
+                     (= :loading storage-url))
               (center ($ mui/CircularProgress))
-              (if-let [url (or url alt-url)]
+              (if-let [url (or url storage-url alt-url)]
                 (cond
                   div-style ($ :div
                                {:style (merge
