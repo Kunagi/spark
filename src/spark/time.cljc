@@ -17,7 +17,12 @@
    (tick/date))
   ([thing]
    (when thing
-     (tick/date thing))))
+     (try
+       (tick/date thing)
+       (catch :default ex
+           (throw (ex-info (str "Unsupported date string: '" thing "': " ex)
+                           {}
+                           ex)))))))
 
 (defn time
   ([]
