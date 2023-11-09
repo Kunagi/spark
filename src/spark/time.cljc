@@ -19,10 +19,11 @@
    (when thing
      (try
        (tick/date thing)
-       (catch :default ex
-           (throw (ex-info (str "Unsupported date string: '" thing "': " ex)
-                           {}
-                           ex)))))))
+       (catch #?(:cljs :default
+                 :clj Exception) ex
+         (throw (ex-info (str "Unsupported date string: '" thing "': " ex)
+                         {}
+                         ex)))))))
 
 (defn time
   ([]
