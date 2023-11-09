@@ -162,24 +162,25 @@
            :multiline       (get field :multiline?)
            :minRows            (get field :rows (when (get field :multiline?) 5))
            :autoFocus       (-> field :auto-focus?)
-           :placeholder (when-let [input-example (-> field :input-example)]
-                          (str "Beispiel: "
-                               input-example)
-                          #_(let [multiline? (-> input-example (.indexOf "\n") (>= 0))]
-                              ($ :div
-                                 {:style {:color "#999"}}
-                                 "Beispiel: "
-                                 (if multiline?
-                                   ($ :div
-                                      {:style {:color "#666"
-                                               :word-break "break-word"
-                                               :white-space "pre-wrap"
-                                               :padding-left "8px"}}
-                                      input-example)
-                                   ($ :span
-                                      {:style {:color "#666"
-                                               :word-break "break-word"}}
-                                      input-example)))))
+           :placeholder (or (-> field :placeholder)
+                            (when-let [input-example (-> field :input-example)]
+                              (str "Beispiel: "
+                                   input-example)
+                              #_(let [multiline? (-> input-example (.indexOf "\n") (>= 0))]
+                                  ($ :div
+                                     {:style {:color "#999"}}
+                                     "Beispiel: "
+                                     (if multiline?
+                                       ($ :div
+                                          {:style {:color "#666"
+                                                   :word-break "break-word"
+                                                   :white-space "pre-wrap"
+                                                   :padding-left "8px"}}
+                                          input-example)
+                                       ($ :span
+                                          {:style {:color "#666"
+                                                   :word-break "break-word"}}
+                                          input-example))))))
 
            :inputProps      (clj->js input-props)
            :InputProps      (clj->js InputProps)
