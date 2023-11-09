@@ -834,15 +834,13 @@
 #?(:cljs
    (defn all> [& promises-or-lists-of-promises]
      (let [promises (as-promises-vector promises-or-lists-of-promises)]
-       (-> (if (fn? js/Promise.allSettled)
-             (js/Promise.allSettled promises)
-             (js/Promise.all promises))
+       (-> (js/Promise.allSettled promises)
            (.then (fn [results]
                     (->> results
                          #_(map (fn [^js result]
-                                (when-let [error (-> result .-reason)]
-                                  (js/console.error "Error while spark.utils/all>" error))
-                                result))
+                                  (when-let [error (-> result .-reason)]
+                                    (js/console.error "Error while spark.utils/all>" error))
+                                  result))
                          (map (fn [^js result]
                                 (when-let [error (-> result .-reason)]
                                   (throw error)
