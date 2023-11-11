@@ -12,6 +12,8 @@
 ;; * config
 ;; https://firebase.google.com/docs/functions/config-env
 
+(def default-run-with-opts {:memory "1GB"})
+
 (defn config
   ([path]
    (reduce (fn [^js o path-item]
@@ -79,7 +81,7 @@
   ([handler run-with-opts]
    (let [function-builder ^js (region--europe-west1)
          function-builder (-> function-builder
-                              (.runWith (clj->js (or run-with-opts {}))))]
+                              (.runWith (clj->js (merge default-run-with-opts run-with-opts))))]
      (-> function-builder
          .-https
          (.onRequest handler)))))
@@ -133,7 +135,7 @@
 (defn on-schedule [schedule-pattern handler> run-with-opts]
   (let [function-builder ^js (region--europe-west1)
         function-builder (-> function-builder
-                             (.runWith (clj->js (or run-with-opts {}))))]
+                             (.runWith (clj->js (merge default-run-with-opts run-with-opts))))]
     (-> function-builder
         .-pubsub
         (.schedule schedule-pattern)
@@ -172,7 +174,7 @@
 (defn on-call [handler run-with-opts]
   (let [function-builder (region--europe-west1)
         function-builder (-> function-builder
-                             (.runWith (clj->js (or run-with-opts {}))))]
+                             (.runWith (clj->js (merge default-run-with-opts run-with-opts))))]
     (-> function-builder
         (.runWith (clj->js {:minInstances 1}))
         .-https
@@ -215,7 +217,7 @@
                     (str/join "/"))
         function-builder ^js (region--europe-west1)
         function-builder (-> function-builder
-                             (.runWith (clj->js (or run-with-opts {}))))]
+                             (.runWith (clj->js (merge default-run-with-opts run-with-opts))))]
     (-> function-builder
         .-firestore
         (.document path-s)
@@ -232,13 +234,16 @@
                                          :path path-s)
                                     nil)))))))))
 
-(defn on-doc-create [path handler>]
+(defn on-doc-create [path handler> run-with-opts]
   (let [path-s (->> path
                     (map #(if (keyword? %)
                             (str "{" (name %) "}")
                             %))
-                    (str/join "/"))]
-    (-> (region--europe-west1)
+                    (str/join "/"))
+        function-builder ^js (region--europe-west1)
+        function-builder (-> function-builder
+                             (.runWith (clj->js (merge default-run-with-opts run-with-opts))))]
+    (-> function-builder
         .-firestore
         (.document path-s)
         (.onCreate (fn [^js doc ^js context]
