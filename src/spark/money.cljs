@@ -29,7 +29,7 @@
       (string? v)
       (let [f (u/parse-float v)]
         (when (js/isNaN f)
-          (throw (ex-info (str "Value is not a number: " v)
+          (throw (ex-info (str "Money value is not a number: " v)
                           {:v v})))
         (money {:amount (-> f
                             (* 100)
@@ -39,14 +39,19 @@
       (let [amount   (or (-> v :amount) 0)
             currency (or (-> v :currency)
                          (default-currency))]
-        (dinero (clj->js {:amount   amount
-                          :currency currency})))
+        (try
+          (dinero (clj->js {:amount   amount
+                            :currency currency}))
+          (catch :default ex
+            (throw (ex-info (str "Money amout '" v "' invalid: " ex)
+                            {:v v}
+                            ex)))))
 
       (.hasOwnProperty v "toUnit")
       v
 
       :else
-      (throw (ex-info (str "Unsupported money value: " v)
+      (throw (ex-info (str "Money value unsupported: " v)
                       {:v v})))))
 
 (comment
