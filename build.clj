@@ -13,8 +13,8 @@
   (mui/update-package-json!))
 
 (defn release [{:keys []}]
-  (kb/release-2 {:project 'kunagi-build})
-  (kb/release-2 {:project 'kunagi-utils})
-  (kb/release-2 {:project 'kunagi-mui})
-  (kb/release-2 {:project 'spark})
+  (kb/release {:project 'kunagi-build})
+  (kb/release {:project 'kunagi-utils})
+  (kb/release {:project 'kunagi-mui})
+  (kb/release {:project 'spark})
   )
