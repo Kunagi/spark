@@ -19,6 +19,8 @@
 (defn default-currency []
   @DEFAULT_CURRENCY)
 
+(def ZERO "0")
+
 (defn money [v]
   (when v
     (cond
