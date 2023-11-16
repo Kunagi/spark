@@ -520,7 +520,12 @@
          (time/instant (+ (-> v :_seconds (* 1000))
                           (-> v :_nanoseconds (/ 1000))))
 
-         :else (throw (ex-info (str "Unsupported time instant format: " v)
+         (and (-> ^js v .-seconds)
+              (-> ^js v .-nanoseconds))
+         (time/instant (+ (-> ^js v .-seconds (* 1000))
+                          (-> ^js v .-nanoseconds (/ 1000))))
+
+         :else (throw (ex-info (str "Unsupported time instant format: '" v "' of type '" (type v) "'")
                                {:value v
                                 :type (type v)}))))))
 
