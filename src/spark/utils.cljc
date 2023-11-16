@@ -435,7 +435,7 @@
 
 (defn non-blank-string-trimmed [s]
   (when s
-    (-> s str/trim non-blank-string)))
+    (-> s str str/trim non-blank-string)))
 
 (defn string-uppercase-first-letter [s]
   (if (-> s count (< 1))
