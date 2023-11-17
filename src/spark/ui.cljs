@@ -2002,6 +2002,7 @@
                       idx)
          :text (local/textc (or (-> item :label)
                                 (-> item :id)))
+         :color (-> item :button-color)
          :on-click #(on-select item)
          :class button-class}))))
 
