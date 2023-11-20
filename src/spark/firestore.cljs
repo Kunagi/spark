@@ -635,9 +635,10 @@
      :else
      (let [db-ref  (-> tx-data :db/ref)
            subdoc? (vector? db-ref)]
-       (log ::set>
-            :tx-data tx-data
-            :transaction (boolean transaction))
+       (when-not transaction
+         (log ::set>
+              :tx-data tx-data
+              :transaction (boolean transaction)))
        (if subdoc?
          (if (-> tx-data :db/delete (= true))
            (set>--delete-subdoc> transaction tx-data db-ref)
