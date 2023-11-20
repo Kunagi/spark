@@ -67,11 +67,19 @@
     ))
 ;; * region
 
-(defn region--europe-west1 []
-  (-> functions (.region "europe-west1")))
+(defn region--europe-west1 [run-with-opts]
+  (let [function-builder ^js (-> functions
+                                 (.region "europe-west1"))
+        function-builder (-> function-builder
+                             (.runWith (clj->js (merge default-run-with-opts run-with-opts))))]
+    function-builder))
 
-(defn region--us-central1 []
-  (-> functions (.region "us-central1")))
+(defn region--us-central1 [run-with-opts]
+  (let [function-builder ^js (-> functions
+                                 (.region "us-central1"))
+        function-builder (-> function-builder
+                             (.runWith (clj->js (merge default-run-with-opts run-with-opts))))]
+    function-builder))
 
 ;; * on-request
 
@@ -79,12 +87,9 @@
   ([handler]
    (on-request handler nil))
   ([handler run-with-opts]
-   (let [function-builder ^js (region--europe-west1)
-         function-builder (-> function-builder
-                              (.runWith (clj->js (merge default-run-with-opts run-with-opts))))]
-     (-> function-builder
-         .-https
-         (.onRequest handler)))))
+   (-> ^js (region--europe-west1 run-with-opts)
+       .-https
+       (.onRequest handler))))
 
 (defn on-request>
   ([handler>]
@@ -133,15 +138,12 @@
 ;; https://firebase.google.com/docs/reference/functions/function_configuration_.schedule
 
 (defn on-schedule [schedule-pattern handler> run-with-opts]
-  (let [function-builder ^js (region--europe-west1)
-        function-builder (-> function-builder
-                             (.runWith (clj->js (merge default-run-with-opts run-with-opts))))]
-    (-> function-builder
-        .-pubsub
-        (.schedule schedule-pattern)
-        (.timeZone "Europe/Berlin")
-        (.onRun (fn [^js context]
-                  (handler> context))))))
+  (-> ^js (region--europe-west1 run-with-opts)
+      .-pubsub
+      (.schedule schedule-pattern)
+      (.timeZone "Europe/Berlin")
+      (.onRun (fn [^js context]
+                (handler> context)))))
 
 ;; * on-call
 
@@ -172,28 +174,25 @@
         #_(str result)))))
 
 (defn on-call [handler run-with-opts]
-  (let [function-builder (region--europe-west1)
-        function-builder (-> function-builder
-                             (.runWith (clj->js (merge default-run-with-opts run-with-opts))))]
-    (-> function-builder
-        (.runWith (clj->js {:minInstances 1}))
-        .-https
-        (.onCall (fn [^js data ^js context]
-                   (handle-on-call-result
-                    (handler (js->clj data :keywordize-keys true)
-                             context)))))))
+  (-> (region--europe-west1 run-with-opts)
+      (.runWith (clj->js {:minInstances 1}))
+      .-https
+      (.onCall (fn [^js data ^js context]
+                 (handle-on-call-result
+                  (handler (js->clj data :keywordize-keys true)
+                           context))))))
 
 ;; * on-doc....
 
 ;; https://firebase.google.com/docs/functions/database-events
 
-(defn on-doc-update [path handler>]
+(defn on-doc-update [path handler> run-with-opts]
   (let [path-s (->> path
                     (map #(if (keyword? %)
                             (str "{" (name %) "}")
                             %))
                     (str/join "/"))]
-    (-> (region--europe-west1)
+    (-> (region--europe-west1 run-with-opts)
         .-firestore
         (.document path-s)
         (.onUpdate (fn [^js change ^js context]
@@ -214,11 +213,8 @@
                     (map #(if (keyword? %)
                             (str "{" (name %) "}")
                             %))
-                    (str/join "/"))
-        function-builder ^js (region--europe-west1)
-        function-builder (-> function-builder
-                             (.runWith (clj->js (merge default-run-with-opts run-with-opts))))]
-    (-> function-builder
+                    (str/join "/"))]
+    (->  ^js (region--europe-west1 run-with-opts)
         .-firestore
         (.document path-s)
         (.onWrite (fn [^js change ^js context]
@@ -239,11 +235,8 @@
                     (map #(if (keyword? %)
                             (str "{" (name %) "}")
                             %))
-                    (str/join "/"))
-        function-builder ^js (region--europe-west1)
-        function-builder (-> function-builder
-                             (.runWith (clj->js (merge default-run-with-opts run-with-opts))))]
-    (-> function-builder
+                    (str/join "/"))]
+    (-> ^js (region--europe-west1 run-with-opts)
         .-firestore
         (.document path-s)
         (.onCreate (fn [^js doc ^js context]
@@ -260,8 +253,8 @@
 
 ;; * storage
 
-(defn on-storage-object-finalize [handler>]
-  (-> (region--europe-west1)
+(defn on-storage-object-finalize [handler> run-with-opts]
+  (-> (region--europe-west1 run-with-opts)
       .-storage
       .object
       (.onFinalize (fn [^js object]
