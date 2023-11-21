@@ -2160,12 +2160,20 @@
                     (show-confirmation-dialog {:text (local/text :delete-image?)
                                                :confirmation-text (local/text :delete)
                                                :on-confirm delete-file})
-                    (open-file-selector))]
+                    (open-file-selector))
+        reload-sig (str storage-path url alt-url)]
 
     (use-effect
-      :always
+      [reload-sig]
+      (log ::StorageImageActionArea--effect
+           :reload-sig reload-sig
+           :url url
+           :storage-path storage-path
+           :alt-url alt-url)
       (when-not url
         (p/let [loaded-url (storage/url> storage-path)]
+          (log ::StorageImageActionArea--loaded
+               :loaded-url loaded-url)
           (set-storage-url_ loaded-url)
           (when (and loaded-url
                      on-url-changed
