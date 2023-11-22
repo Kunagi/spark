@@ -296,6 +296,10 @@
   (add-child-tx ["devtest/db-1" :group "g1"] :children {:some "child"}))
 
 (defn add-child> [parent-thing path values]
+  #_(log ::add-child>
+       :parent parent-thing
+       :path path
+       :values values)
   (transact> (add-child-tx parent-thing path values)))
 
 (comment
