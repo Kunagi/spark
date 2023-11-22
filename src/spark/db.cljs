@@ -78,7 +78,7 @@
    ;;      :entity-type entity-type
    ;;      :id id)
    (u/assert entity-type)
-   (u/assert id)
+   (u/assert id (str "Missing 'id' for entity '" entity-type "'."))
    (get> (entity-type->ref entity-type id))))
 
 (comment
