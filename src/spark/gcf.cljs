@@ -215,13 +215,13 @@
                             %))
                     (str/join "/"))]
     (->  ^js (region--europe-west1 run-with-opts)
-        .-firestore
-        (.document path-s)
-        (.onWrite (fn [^js change ^js context]
-                    (let [before-doc (-> change .-before firestore/wrap-doc)
-                          after-doc  (-> change .-after firestore/wrap-doc)]
-                      (-> (handler> before-doc after-doc context)
-                          (.then (fn [result]
+         .-firestore
+         (.document path-s)
+         (.onWrite (fn [^js change ^js context]
+                     (let [before-doc (-> change .-before firestore/wrap-doc)
+                           after-doc  (-> change .-after firestore/wrap-doc)]
+                       (-> (u/as> (handler> before-doc after-doc context))
+                           (.then (fn [result]
                                     result)
                                   (fn [error]
                                     (log ::on-doc-write--error
