@@ -1,5 +1,5 @@
 (ns spark.money
-  (:refer-clojure :exclude [pos? zero? min max + < > <= >=])
+  (:refer-clojure :exclude [pos? zero? min max + < > <= >= divide])
   (:require
    ["dinero.js" :as dinero]
    [spark.utils :as u]))
@@ -154,6 +154,11 @@
 (defn ->number-string [m]
   (when-let [cents (->cents m)]
     (-> cents (/ 100) (.toFixed 2))))
+
+(defn divide [m divisor]
+  (when m
+    (-> (money m)
+        ^js (.divide divisor "HALF_UP"))))
 
 (defn multiply [m factor]
   (when m
