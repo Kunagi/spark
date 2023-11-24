@@ -2526,6 +2526,9 @@
                              (-> field :type (= :eur))
                              (local/format-eur value)
 
+                             (-> field :type (= :decimal))
+                             (local/format-decimal value (or (-> field :fraction-digits) 2))
+
                              (-> field :type (= :date))
                              (local/format-date value)
 

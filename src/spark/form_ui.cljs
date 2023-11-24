@@ -329,6 +329,22 @@
                          :input-props input-props
                          :end-adornment "€"))))
 
+(defmethod create-input "decimal" [field]
+  (let [input-props (-> field :input-props)
+        min-value (-> field :min)
+        max-value (-> field :max)
+        input-props (assoc input-props
+                           :min min-value
+                           :max max-value
+                           :step "0.01"
+                           :inputMode "decimal"
+                           )]
+    (create-input (assoc field
+                         :type "text"
+                         :input-type "number"
+                         :input-props input-props
+                         :end-adornment (-> field :value-suffix)))))
+
 (defmethod create-input "tel" [field]
   (create-input (assoc field
                        :type "text"
