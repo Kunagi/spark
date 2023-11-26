@@ -555,10 +555,13 @@
                ;;      :transaction transaction)
                ret))))))
 
+(def get-doc> get>)
+(def get-col> get>)
+
 (comment
-  (u/=> (get> ["devtest" "dummy-1"]) u/tap>)
-  (u/=> (get> "devtest/dummy-1") u/tap>)
-  (u/=> (get> ["devtest"]) u/tap>))
+  (u/=> (get-doc> ["devtest" "dummy-1"]) u/tap>)
+  (u/=> (get-doc> "devtest/dummy-1") u/tap>)
+  (u/=> (get-col> ["devtest"]) u/tap>))
 
 (defn- set>--set-doc> [^js transaction tx-data autocreate?]
   ;; (log ::set>--set-doc>
@@ -682,9 +685,9 @@
           {:firestore/path "devtest/dummy-2" :set-2 [:db/timestamp]}]))
   (set> {:firestore/path "devtest/dummy-1" :hello [:db/delete]})
   (u/tap> (set> {:firestore/path "devtest/dummy-1" :db/delete true}))
-  (u/tap> (get> "devtest/dummy-1"))
+  (u/tap> (get-doc> "devtest/dummy-1"))
 
-  (u/=> (get> "devtest/dummy-1")
+  (u/=> (get-doc> "devtest/dummy-1")
         (fn [doc]
           (js/console.log "LOADED" doc)
           (set> [{:db/ref   "devtest/dummy-1"
@@ -698,7 +701,7 @@
   (u/tap> (set> {:db/ref    ["devtest/dummy-1" :children "b"]
                  :db/delete true}))
 
-  (u/=> (get> "devtest/dummy-1")
+  (u/=> (get-doc> "devtest/dummy-1")
         (fn [doc]
           (js/console.log "LOADED" doc)
           (set> [{:db/ref ["devtest/dummy-1" :children "c"]
@@ -728,6 +731,8 @@
                    :message message
                    :runtime (- (-> (js/Date.) .getTime) (-> starttime .getTime)))
               (p/let [result (transaction> {:get> (partial get> transaction)
+                                            :get-doc> (partial get-doc> transaction)
+                                            :get-col> (partial get-col> transaction)
                                             :set> (partial set> transaction)})]
                 (log ::transact>--fn-completed
                      :result result)
@@ -770,7 +775,7 @@
                               :hello  :world})))))
 
 (defn delete-docs> [path]
-  (p/let [docs (get> path)]
+  (p/let [docs (get-col> path)]
     (transact>
      (mapv (fn [doc]
              {:firestore/path (-> doc :firestore/path)
@@ -778,7 +783,7 @@
            docs))))
 
 (comment
-  (p/let [doc-1 (get> "devtest/dummy-1")
-          doc-2 (get> "devtest/dummy-2")]
+  (p/let [doc-1 (get-doc> "devtest/dummy-1")
+          doc-2 (get-doc> "devtest/dummy-2")]
     (u/tap> {:doc-1 doc-1
              :doc-2 doc-2})))

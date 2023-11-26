@@ -81,6 +81,9 @@
    (u/assert id (str "Missing 'id' for entity '" entity-type "'."))
    (get> (entity-type->ref entity-type id))))
 
+(def get-doc> get>)
+(def get-col> get>)
+
 (comment
   (u/tap> (get> "devtest" "dummy-1"))
   (u/tap> (get> :devtest "dummy-1"))
