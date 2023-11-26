@@ -266,32 +266,26 @@
   (get @DOC_SCHEMAS col-id))
 
 (defn wrap-doc [^js query-doc-snapshot]
-  (let [data       (-> query-doc-snapshot .data)
-        path       (-> query-doc-snapshot .-ref .-path)
-        col-id     (.substring path 0 (.indexOf path "/"))
+  (let [firestore-data (-> query-doc-snapshot .data)
+        firestore-ref (-> query-doc-snapshot .-ref)
+        path (-> firestore-ref .-path)
+        col-id (.substring path 0 (.indexOf path "/"))
         doc-schema (doc-schema col-id)
         db-doc-ref [path]]
-    (-> data
+    (-> firestore-data
         (conform-doc-data doc-schema db-doc-ref)
         (assoc :firestore/id (-> query-doc-snapshot .-id)
                :firestore/path path
-               :firestore/exists? (boolean data)
+               :firestore/exists? (boolean firestore-data)
+               :firestore/ref firestore-ref
+               ;; :firestore/data firestore-data
                :db/id (-> query-doc-snapshot .-id)
-               :db/exists (boolean data)
+               :db/exists (boolean firestore-data)
                :db/ref path
                :db/type col-id))))
 
 (defn wrap-docs [^js query-snapshot]
   (mapv wrap-doc (-> query-snapshot .-docs)))
-
-(defn doc-id [doc]
-  (-> doc :db/id))
-
-(defn doc-path [doc]
-  (-> doc :db/ref))
-
-(defn doc-exists? [doc]
-  (-> doc :db/exists boolean))
 
 (defn ^js unwrap-doc [doc]
   ;; (log ::unwrap-doc
@@ -303,6 +297,8 @@
                 :firestore/exists?
                 :firestore/schema
                 :firestore/create
+                :firestore/ref
+                :firestore/data
                 :db/id
                 :db/exists
                 :db/ref)
@@ -310,6 +306,17 @@
         remove-metadata
         entity--encode-keys
         clj->js)))
+
+(defn doc-id [doc]
+  (-> doc :db/id))
+
+(defn doc-path [doc]
+  (-> doc :db/ref))
+
+(defn doc-exists? [doc]
+  (-> doc :db/exists boolean))
+
+
 
 ;;; collection and doc references
 
@@ -320,7 +327,7 @@
     (keyword? thing) [(name thing)]
     :else            (do (s/assert ::path thing) thing)))
 
-(declare ref)
+;; (declare ref)
 
 (defn- fs-collection [source path-elem]
   (if (map? path-elem)
@@ -336,9 +343,9 @@
           collection (if-not order-by
                        collection
                        (-> ^js collection (.orderBy (first order-by) (second order-by))))
-          collection (if-not start-after
-                       collection
-                       (-> ^js collection (.startAfter (ref start-after))))
+          ;; collection (if-not start-after
+          ;;              collection
+          ;;              (-> ^js collection (.startAfter (ref start-after))))
           collection (if-not start-at
                        collection
                        (-> ^js collection (.startAt start-at)))
@@ -351,39 +358,51 @@
       collection)
     (-> ^js source (.collection path-elem))))
 
-(defn ^js ref [path]
+(defn ^js ref [thing]
   ;; (log ::ref
   ;;      :path path)
-  (s/assert ::opt-path path)
-  (when path
-    (loop [col  nil
-           doc  nil
-           path (as-path path)]
-      (if (empty? path)
-        (if doc doc col)
-        (cond
+  (s/assert ::opt-path thing)
+  (when thing
+    (or
 
-          doc
-          (recur (-> ^js doc (fs-collection (first path)))
-                 nil
-                 (rest path))
+     (when (map? thing)
+       (-> thing :firestore/ref))
 
-          col
-          (recur nil
-                 (-> ^js col (.doc (first path)))
-                 (rest path))
+     (loop [col  nil
+            doc  nil
+            path (as-path thing)]
+       (if (empty? path)
+         (if doc doc col)
+         (cond
 
-          :else
-          (recur (-> (firestore) (fs-collection (first path)))
-                 nil
-                 (rest path)))))))
+           doc
+           (recur (-> ^js doc (fs-collection (first path)))
+                  nil
+                  (rest path))
+
+           col
+           (recur nil
+                  (-> ^js col (.doc (first path)))
+                  (rest path))
+
+           :else
+           (recur (-> (firestore) (fs-collection (first path)))
+                  nil
+                  (rest path))))))))
+
+
+(defn doc-ref [thing]
+  (ref thing))
+
+(defn col-ref [thing]
+  (ref thing))
 
 ;;;
 
 (defn doc> [path]
   (js/Promise.
    (fn [resolve reject]
-     (-> (ref path)
+     (-> (doc-ref path)
          .get
          (.then (fn [^js doc]
                   (resolve (wrap-doc doc)))
@@ -394,7 +413,7 @@
   ;;      :path path)
   (js/Promise.
    (fn [resolve reject]
-     (-> (ref path)
+     (-> (col-ref path)
          .get
          (.then (fn [^js query-snapshot]
                   (resolve (wrap-docs query-snapshot)))
@@ -412,7 +431,7 @@
        :path path
        :data data)
   (s/assert ::path path)
-  (let [^js ref  (ref path)
+  (let [^js ref  (doc-ref path)
         col-ref? (-> ref .-where boolean)]
     (if col-ref?
       (-> ref (.add (unwrap-doc data)))
@@ -424,7 +443,7 @@
   (s/assert doc? doc)
   (-> doc
       doc-path
-      ref
+      doc-ref
       (.set ^js (unwrap-doc doc))))
 
 (defn update-fields>
@@ -436,7 +455,7 @@
   (s/assert ::path doc-path)
   (s/assert map? fields)
   (-> doc-path
-      ref
+      doc-ref
       (.update (unwrap-doc fields))))
 
 (defn- flatten-entity-map
@@ -474,7 +493,7 @@
   [doc-or-path]
   (log ::delete-doc
        :doc doc-or-path)
-  (-> doc-or-path ref .delete))
+  (-> doc-or-path doc-ref .delete))
 
 (defn load-and-save>
   "Load, update and save/delete.
@@ -502,15 +521,17 @@
                     :else
                     (js/Promise.resolve nil)))))))
 
-;; * transactions
+;;; transactions
 
 (defn get>
   ([path]
    (if path
      (get> nil path nil)
      (u/no-op>)))
+
   ([transaction path]
    (get> transaction path nil))
+
   ([^js transaction path not-found]
    (log ::get>
         :path        path
@@ -542,9 +563,9 @@
 (defn- set>--set-doc> [^js transaction tx-data autocreate?]
   ;; (log ::set>--set-doc>
   ;;      :tx-data tx-data)
-  (let [path (or (-> tx-data :firestore/path)
-                 (-> tx-data :db/ref))
-        ref  (ref path)
+  (let [ref  (or (-> tx-data :firestore/ref)
+                 (doc-ref (or (-> tx-data :firestore/path)
+                              (-> tx-data :db/ref))))
         create? (-> tx-data :firestore/create)
         tx-data (if create?
                   tx-data
@@ -552,31 +573,31 @@
         js-data (unwrap-doc tx-data)
 
         result (if autocreate?
-                   (if transaction
-                     (if create?
-                       (.set transaction ref js-data)
-                       (.update transaction ref js-data))
-                     (-> (.update ref js-data)
-                         (.catch (fn [_err]
-                                   (.set ref js-data (clj->js {:merge true}))))))
-                   (if transaction
-                     (u/resolve> (.update transaction ref js-data))
-                     (.update ref js-data)))]
+                 (if transaction
+                   (if create?
+                     (.set transaction ref js-data)
+                     (.update transaction ref js-data))
+                   (-> (.update ref js-data)
+                       (.catch (fn [_err]
+                                 (.set ref js-data (clj->js {:merge true}))))))
+                 (if transaction
+                   (u/resolve> (.update transaction ref js-data))
+                   (.update ref js-data)))]
     (if (instance? js/Promise result)
-        (-> result
-            (.then (fn [_ok] tx-data)
-                   (fn [error]
-                     (throw (ex-info (str "Error while set>--set-doc> for " ref
-                                          " | " error)
-                                     {:error error
-                                      :tx-data tx-data}
-                                     error)))))
-        (u/resolve> result))))
+      (-> result
+          (.then (fn [_ok] tx-data)
+                 (fn [error]
+                   (throw (ex-info (str "Error while set>--set-doc> for " ref
+                                        " | " error)
+                                   {:error error
+                                    :tx-data tx-data}
+                                   error)))))
+      (u/resolve> result))))
 
 (defn- set>--delete-doc> [^js transaction tx-data]
-  (let [path (or (-> tx-data :firestore/path)
-                 (-> tx-data :db/ref))
-        ref  (ref path)]
+  (let [ref (or (-> tx-data :firestore/ref)
+                (doc-ref (or (-> tx-data :firestore/path)
+                             (-> tx-data :db/ref))))]
     (u/=> (if transaction
             (u/resolve> (.delete transaction ref))
             (.delete ref))

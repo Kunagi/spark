@@ -292,7 +292,7 @@
                    (not (u/seq-contains-nil? path)))
           (log ::use-doc--subscribe
                :path path)
-          (let [ref         (firestore/ref path)
+          (let [ref (firestore/doc-ref path)
                 on-snapshot (fn [doc-snapshot]
                               (let [doc (firestore/wrap-doc doc-snapshot)]
                                 ;; (log ::doc-snapshot-received
@@ -345,7 +345,7 @@
                                   (map (fn [doc-id]
                                          (when doc-id
                                            (let [path (str collection-id "/" doc-id)
-                                                 ref         (firestore/ref path)
+                                                 ref (firestore/doc-ref path)
                                                  ;; _ (log ::use-docs
                                                  ;;        :path path
                                                  ;;        :ref ref)
@@ -396,7 +396,7 @@
         ;; (log ::use-doc--subscribe
         ;;      :path path)
          (let [path (str collection-id "/" doc-id)
-               ref (firestore/ref path)
+               ref (firestore/doc-ref path)
               ;; _ (log ::use-docs
               ;;        :path path
               ;;        :ref ref)
@@ -432,38 +432,38 @@
         effect-signal   (or (str path) "_nil")]
 
     (use-effect
-     [effect-signal]
-     (when path
-       (log ::use-col--subscribe
-            :path path)
-       (set-docs nil)
-       (when path
-         (let [col-ref     (firestore/ref path)
-               on-snap     (fn [^js query-col-snapshot]
+      [effect-signal]
+      (when path
+        (log ::use-col--subscribe
+             :path path)
+        (set-docs nil)
+        (when path
+          (let [col-ref     (firestore/col-ref path)
+                on-snapshot (fn [^js query-col-snapshot]
                              ;; (log ::query-snapshot-received
                              ;;      :collection path
                              ;;      :count (-> query-col-snapshot .-docs count)
                              ;;      :snapshot query-col-snapshot)
-                             (->> ^js query-col-snapshot
-                                  .-docs
-                                  (map firestore/wrap-doc)
-                                  set-docs))
-               on-error    (fn [^js firestore-error]
+                              (->> ^js query-col-snapshot
+                                   .-docs
+                                   (map firestore/wrap-doc)
+                                   set-docs))
+                on-error    (fn [^js firestore-error]
                              ;; FIXME debug
-                             (when (debug?)
-                               (js/alert firestore-error))
-                             (let [msg (str "Loading collection " (u/->edn path) " failed: "
-                                            (str firestore-error))
-                                   error (js/Error. msg (clj->js {:cause firestore-error}))]
-                               (js/console.error error firestore-error)
-                               (log-error error)))
-               debug-id [path (u/nano-id)]
-               _ (debug/reg-item :col debug-id)
-               firestore-unsubscribe (.onSnapshot col-ref on-snap on-error)
-               unsubscribe (fn []
-                             (debug/unreg-item :col debug-id)
-                             (firestore-unsubscribe))]
-           unsubscribe))))
+                              (when (debug?)
+                                (js/alert (str "spark.ui/use-col error from firestore: " firestore-error)))
+                              (let [msg (str "Loading collection " (u/->edn path) " failed: "
+                                             (str firestore-error))
+                                    error (js/Error. msg (clj->js {:cause firestore-error}))]
+                                (js/console.error error firestore-error)
+                                (log-error error)))
+                debug-id [path (u/nano-id)]
+                _ (debug/reg-item :col debug-id)
+                firestore-unsubscribe (.onSnapshot col-ref on-snapshot on-error)
+                unsubscribe (fn []
+                              (debug/unreg-item :col debug-id)
+                              (firestore-unsubscribe))]
+            unsubscribe))))
 
     docs))
 
