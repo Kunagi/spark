@@ -221,14 +221,14 @@
 (defn transact>
   ([tx-data]
    (transact> nil tx-data))
-  ([message tx-data]
+  ([message tx-data-or-f]
    (firestore/transact>
     message
-    (if (fn? tx-data)
+    (if (fn? tx-data-or-f)
 
      ;; transaction function
       (fn [{:keys [get> set>] :as ops}]
-        (tx-data (assoc ops
+        (tx-data-or-f (assoc ops
                         :get> (fn _get>
                                 ([path]
                                  (get> path))
@@ -240,7 +240,7 @@
                                    (set> (update-tx thing values))))))
 
      ;; transaction data
-      (conform-tx-data tx-data)))))
+      (conform-tx-data tx-data-or-f)))))
 
 (comment
   (u/tap>
