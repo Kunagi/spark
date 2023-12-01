@@ -128,6 +128,7 @@
         ;; prepare cols
         cols (->> table
                   :cols
+                  (remove nil?)
                   (map-indexed (fn [idx col]
                                  (if (map? col)
                                    (let [type (-> col :type)
