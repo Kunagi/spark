@@ -1,6 +1,6 @@
 ;; * ns
 (ns spark.utils
-  (:refer-clojure :exclude [assert pos? zero? min max tap> text])
+  (:refer-clojure :exclude [assert pos? zero? min max tap>])
   #?(:cljs (:require-macros [spark.utils :refer [assert try>]]))
   (:require
    #?(:clj [clojure.pprint :refer [pprint]]
@@ -1041,31 +1041,7 @@
         (nth field 2)
         field-schema))))
 
+;;; texts
 
-;;; Texts
-
-
-(defonce LOCAL_TEXTS (atom {}))
-
-(defn get-text [k de-text]
-  (get @LOCAL_TEXTS k de-text))
-
-#?(:clj
-   (let [file-path "src/hg/base/texts_de.edn"]
-     (defonce DE_TEXTS (do
-                         (prn "[kunagi.utils/text] loading " file-path)
-                         (atom (read-edn (slurp file-path)))))
-
-     (defn register-de-text [k text]
-       (when (not= text (get @DE_TEXTS k))
-         (do
-           (prn "[kunagi.utils/text] new text: " k text)
-           (swap! DE_TEXTS assoc k text)
-           (spit file-path (pr-str @DE_TEXTS)))))
-
-     (defmacro text [k de-text]
-       (assert (simple-keyword? k))
-       (assert (string? de-text))
-       (register-de-text k de-text)
-       `(get-text ~k ~de-text))
-     ))
+(def LOCAL_TEXTS u/LOCAL_TEXTS)
+(defmacro text [k de-text] `(u/text ~k ~de-text))
