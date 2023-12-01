@@ -1,11 +1,12 @@
 ;; * ns
 (ns spark.utils
-  (:refer-clojure :exclude [assert pos? zero? min max tap>])
+  (:refer-clojure :exclude [assert pos? zero? min max tap> text])
   #?(:cljs (:require-macros [spark.utils :refer [assert try>]]))
   (:require
    #?(:clj [clojure.pprint :refer [pprint]]
       :cljs [cljs.pprint :refer [pprint]])
    #?(:cljs ["json-prune" :as json-prune])
+   [shadow.resource :as resource]
    [clojure.string :as str]
    [flatland.ordered.map :as ordered.map]
    [kunagi.utils :as u]
@@ -1039,3 +1040,32 @@
       (if (map? field-schema)
         (nth field 2)
         field-schema))))
+
+
+;;; Texts
+
+
+(defonce LOCAL_TEXTS (atom {}))
+
+(defn get-text [k de-text]
+  (get @LOCAL_TEXTS k de-text))
+
+#?(:clj
+   (let [file-path "src/hg/base/texts_de.edn"]
+     (defonce DE_TEXTS (do
+                         (prn "[kunagi.utils/text] loading " file-path)
+                         (atom (read-edn (slurp file-path)))))
+
+     (defn register-de-text [k text]
+       (when (not= text (get @DE_TEXTS k))
+         (do
+           (prn "[kunagi.utils/text] new text: " k text)
+           (swap! DE_TEXTS assoc k text)
+           (spit file-path (pr-str @DE_TEXTS)))))
+
+     (defmacro text [k de-text]
+       (assert (simple-keyword? k))
+       (assert (string? de-text))
+       (register-de-text k de-text)
+       `(get-text ~k ~de-text))
+     ))
