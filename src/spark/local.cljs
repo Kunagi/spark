@@ -9,8 +9,10 @@
 
 (def LANG local/LANG)
 (def lang local/lang)
+(def set-lang! local/set-lang!)
 
 (def format-decimal local/format-decimal)
+(def TEXTS local/TEXTS)
 (def textc local/textc)
 (def text local/text)
 (def format-yes-no local/format-yes-no)
