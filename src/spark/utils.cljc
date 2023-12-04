@@ -1044,4 +1044,4 @@
 ;;; texts
 
 (def LOCAL_TEXTS u/LOCAL_TEXTS)
-(defmacro text [k de-text] `(u/text ~k ~de-text))
+(defmacro text [k de-text & [arg-map]] `(u/text ~k ~de-text ~arg-map))
