@@ -77,15 +77,19 @@
                               (name id)
                               (str id))))
 
-        auto-focus-first-field? (get form :auto-focus-first-field? true)]
+        auto-focus-first-field? (get form :auto-focus-first-field? true)
+        label (or (-> field :label)
+                  (-> field :name)
+                  field-name)
+        label (if (fn? label)
+                (label)
+                (str label))]
     (-> field
         (assoc :id id
                :auto-focus? (boolean (and auto-focus-first-field?
                                           (= 0 idx)))
                :name field-name
-               :label (or (-> field :label)
-                          (-> field :name)
-                          field-name)
+               :label label
                :type field-type
                :multiline? (or (-> field :multiline?)
                                (-> field :rows boolean))
