@@ -2456,6 +2456,9 @@
                 (spark/field-schema? field) (get field 1))
         label           (or label
                             (-> field :label))
+        label (if (fn? label)
+                (label)
+                (str label))
         description (or description
                         (-> field :description))
         field-id        (-> field :id)

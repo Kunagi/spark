@@ -893,7 +893,7 @@
          :style {:min-height "15px"}}
         children)
      (when description
-       ($ :div description))))
+       ($ :div (if (fn? description) (description) description)))))
 
 (defnc StringVectorChips [{:keys [values]}]
   ($ :div
