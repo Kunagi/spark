@@ -163,7 +163,7 @@
            :minRows            (get field :rows (when (get field :multiline?) 5))
            :autoFocus       (-> field :auto-focus?)
            :placeholder (or (-> field :placeholder)
-                            (when-let [input-example (-> field :input-example)]
+                            (when-let [input-example (-> field :input-example local/textc)]
                               (str "Beispiel: "
                                    input-example)
                               #_(let [multiline? (-> input-example (.indexOf "\n") (>= 0))]
@@ -646,7 +646,7 @@
                    :size    "small"}
                   (-> action :label))))
          Input)
-       (when-let [input-hint (-> field :input-hint)]
+       (when-let [input-hint (-> field :input-hint local/textc)]
          ($ :div
             {:style {:color "#999"}}
             input-hint))

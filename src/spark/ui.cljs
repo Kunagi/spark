@@ -2481,7 +2481,7 @@
                               (span
                                {:font-weight :normal}
                                "Beispiel: ")
-                              (-> field :input-example)
+                              (-> field :input-example local/textc)
                               (when-let [suffix (or (-> field :value-suffix)
                                                     (when (-> field :type (= :eur))
                                                       "€"))]
