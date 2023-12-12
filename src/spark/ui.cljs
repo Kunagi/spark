@@ -850,7 +850,10 @@
      {:severity "error"}
      (ui/div
       {:white-space :pre-wrap}
-      (local/textc content))))
+      (if (or (string? content)
+              (fn? content))
+        (local/textc content)
+        content))))
 
 (defn alert--warning [content]
   ($ mui/Alert
