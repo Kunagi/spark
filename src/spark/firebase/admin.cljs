@@ -21,13 +21,14 @@
        :title title
        :body body
        :image image
+       :url url
        :data data)
   (let [messaging-service (messaging-service)
         message (clj->js {:token device-token
                           :notification {:title title
                                          :body body
                                          :image image}
-                          :webpush {:fcm_options {:link url}}
+                          :webpush {:fcmOptions {:link url}}
                           :apns {:payload {:aps {:sound "default"
                                                  :badge badge-count}}}
                           :data data})]
