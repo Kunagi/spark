@@ -54,10 +54,13 @@
   ([]
    (->joda-locale @LANG))
   ([lang]
-   (cond
+     (-> js/JSJodaLocale .-Locale .-GERMANY)
+   #_(cond
      (string? lang) (->joda-locale (keyword lang))
      (= lang :de) (-> js/JSJodaLocale .-Locale .-GERMANY)
-     (= lang :en) (-> js/JSJodaLocale .-Locale .-US))))
+     (= lang :en) (-> js/JSJodaLocale .-Locale .-US)
+     :else (-> js/JSJodaLocale .-Locale .-GERMANY)
+     )))
 
 (defn tick-formatter
   ([pattern]
