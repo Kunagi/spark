@@ -239,6 +239,7 @@
 
                ($ mui/TableBody
 
+                  ;; Prefix Row
                   (when-let [rows (-> table :prefix-rows)]
                     (for [[row-idx row] (map-indexed vector rows)]
                       ($ mui/TableRow
@@ -251,6 +252,7 @@
                                   component
                                   (ui/data cell))))))))
 
+                  ;; Filter Row
                   (when filter-row?
                     ($ mui/TableRow
                        (for [[col-idx col] (map-indexed vector cols)]
@@ -262,6 +264,7 @@
                                                              (assoc col-filters-values
                                                                     (-> col :id) %))}))))))
 
+                  ;; Content Rows
                   (for [[row-idx record] (map-indexed vector records)]
                     ($ mui/TableRow
                        {:key (or (record-id-getter record)
@@ -284,7 +287,8 @@
                                :className (when on-click "CursorPointer")}
                               (ui/div
                                {:text-align (-> col :align)
-                                :white-space "nowrap"}
+                                :white-space (when-not (-> col :allow-wrap) "nowrap")
+                                }
                                (if (p/promise? value)
                                  ($ ui/Promise
                                     {:value value
