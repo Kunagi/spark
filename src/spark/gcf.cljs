@@ -154,6 +154,7 @@
   (if (instance? js/Promise result)
     (js/Promise.
      (fn [resolve reject]
+       (log ::handle-on-call-result--1)
        (-> result
            (.then (fn [result]
                     (resolve (handle-on-call-result result)))
@@ -166,10 +167,11 @@
                          :error error
                          :error-data (ex-data error))
                     (resolve (clj->js {:error "Error in cloud function. See logs for details."})))))))
-    ;; TODO FIXME crash
     (try
-      (clj->js result)
+      (clj->js result)      
       (catch js/Error ex
+        (log ::handle-on-call-result--error--clj->js
+             :result result)
         nil
         #_(str result)))))
 
