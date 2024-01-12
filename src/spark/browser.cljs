@@ -69,6 +69,13 @@
   (or (ios-platforms (-> js/navigator.platform))
       (js/navigator.userAgent.includes "Mac")))
 
+;; * Printing
+
+(defn print-document []
+  (if (ios?)
+    (js/document.executeCommand "print" false nil)
+    (js/window.print)))
+
 ;; * E-Mail
 
 (defn email-href [to fields]
