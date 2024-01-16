@@ -73,7 +73,7 @@
 
 (defn print-document []
   (if (ios?)
-    (js/document.executeCommand "print" false nil)
+    (js/document.execCommand "print" false nil)
     (js/window.print)))
 
 ;; * E-Mail
