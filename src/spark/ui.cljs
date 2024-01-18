@@ -2228,6 +2228,21 @@
 
 (def-ui StorageFileButton [path idx text texts edit-options]
   (let [url (use-storage-url path)
+        filename (when (string? url)
+                   (let [s url
+                         ?-idx (-> s (.indexOf "?"))
+                         s (if (pos? ?-idx)
+                             (-> s (.substring 0 ?-idx))
+                             s)
+                         slash-idx (-> s (.lastIndexOf "/"))
+                         s (if (pos? slash-idx)
+                             (-> s (.substring (inc slash-idx)))
+                             s)]
+                     (u/non-blank-string s)))
+        ext (when filename
+              (when-let [idx (-> filename (.lastIndexOf "."))]
+                (-> filename (.substring (inc idx)) u/non-blank-string str/lower-case)))
+        image? (contains? #{"png" "jpg" "jpeg" "gif" "webm"} ext)
         open-on-click (fn []
                         (js/window.open url "_blank"))
         options (into
@@ -2247,16 +2262,25 @@
       ($ mui/CircularProgress)
       (let [text (or (get texts idx)
                      (str (or text "Datei") " " (inc idx)))]
-        ($ Button
-           {:key url
-            :text text
-            :color :secondary
-             ;; :href url
-             ;; :target "_blank"
-            :on-click on-click})))))
+        (div
+         (if image?
+           ($ :img
+              {:src url
+               :on-click on-click
+               :style {:max-width "60px"
+                       :max-height "60px"
+                       :border "1px solid #eee"
+                       :border-radius "8px"}})
+           ($ Button
+              {:text text
+              :color :secondary
+              ;; :href url
+              ;; :target "_blank"
+              :on-click on-click})))))))
 
 (def-ui StorageFilesButtons [paths text texts edit-options]
   (flex
+   {:align-items :center}
    (for [[idx path] (map-indexed vector paths)]
      ($ StorageFileButton
         {:key path
