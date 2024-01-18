@@ -2266,7 +2266,10 @@
          (if image?
            ($ :img
               {:src url
-               :on-click on-click
+               :on-click (when on-click
+                           (fn [ev]
+                             (event-prevent-default ev)
+                             (on-click ev)))
                :style {:max-width "60px"
                        :max-height "60px"
                        :border "1px solid #eee"
