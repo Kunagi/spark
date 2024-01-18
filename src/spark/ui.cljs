@@ -2316,15 +2316,16 @@
         (stack
          ($ StorageFilesButtons
             {:paths storage-files
-             :edit-options [{:text (local/text :delete)
-                             :on-click (fn [path]
-                                         (u/=> (storage/delete> path)
-                                               (fn []
-                                                 (when on-change (on-change))
-                                                 (when on-deleted (on-deleted path))
-                                                 (js/setTimeout
-                                                  #(reload-storage-files)
-                                                  500))))}]})
+             :edit-options (when-not read-only
+                             [{:text (local/text :delete)
+                              :on-click (fn [path]
+                                          (u/=> (storage/delete> path)
+                                                (fn []
+                                                  (when on-change (on-change))
+                                                  (when on-deleted (on-deleted path))
+                                                  (js/setTimeout
+                                                   #(reload-storage-files)
+                                                   500))))}])})
          (when (and storage-files
                     (not read-only)
                     (-> storage-files count (< max-files)))
