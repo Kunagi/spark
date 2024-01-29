@@ -428,7 +428,7 @@
   An existing document will be replaced."
   [path data]
   (log ::create-doc>
-       :path path
+       :value path
        :data data)
   (s/assert ::path path)
   (let [^js ref  (doc-ref path)
@@ -450,7 +450,7 @@
   "Updates fields in an existing document."
   [doc-path fields]
   (log ::update-fields>
-       :doc-path doc-path
+       :value doc-path
        :fields fields)
   (s/assert ::path doc-path)
   (s/assert map? fields)
@@ -492,7 +492,7 @@
 (defn delete-doc>
   [doc-or-path]
   (log ::delete-doc
-       :doc doc-or-path)
+       :value doc-or-path)
   (-> doc-or-path doc-ref .delete))
 
 (defn load-and-save>
@@ -500,7 +500,7 @@
   Deletes the document if `update-f` returns nil."
   [doc-path update-f]
   (log ::load-and-save>
-       :doc-path doc-path
+       :value doc-path
        :update-f update-f)
   (s/assert ::path doc-path)
   (-> (doc> doc-path)
@@ -534,7 +534,7 @@
 
   ([^js transaction path not-found]
    (log ::get>
-        :path        path
+        :value        path
         :transaction (boolean transaction))
    (let [ref      (ref path)
          col-ref? (-> ref .-where boolean)]
@@ -716,7 +716,7 @@
    (transact> nil transaction>))
   ([message transaction>]
    (log ::transact>
-        :message message
+        :value message
         :tx-data (when-not (fn? transaction>)
                    transaction>))
    (let [starttime (js/Date.)]

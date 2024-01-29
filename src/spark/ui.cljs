@@ -291,7 +291,7 @@
         (when (and path
                    (not (u/seq-contains-nil? path)))
           (log ::use-doc--subscribe
-               :path path)
+               :value path)
           (let [ref (firestore/doc-ref path)
                 on-snapshot (fn [doc-snapshot]
                               (let [doc (firestore/wrap-doc doc-snapshot)]
@@ -411,7 +411,7 @@
                              (log-error error)
                              (log ::use-cached-doc--error
                                   :error error
-                                  :path path))
+                                  :value path))
                _unsubscribe (.onSnapshot ref on-snapshot on-error)]
 
            nil)))
@@ -435,7 +435,7 @@
       [effect-signal]
       (when path
         (log ::use-col--subscribe
-             :path path)
+             :value path)
         (set-docs nil)
         (when path
           (let [col-ref     (firestore/col-ref path)
