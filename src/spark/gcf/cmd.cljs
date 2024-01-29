@@ -63,7 +63,7 @@
 
 (defn execute-command> [commands-map command-key args]
   (log ::execute-command>
-       :command command-key
+       :value command-key
        :args args)
   (let [command (get commands-map command-key)
         _ (u/assert command (str "Command does not exist: " command-key))
@@ -85,7 +85,7 @@
                             {}))
         uid (when-let [auth (->> req .-auth)]
               (-> ^js auth .-uid))]
-    (log ::hande-cmd-request>
+    (log ::handle-cmd-request>
          :request params
          :uid uid)
     (let [command-key (-> params :cmd keyword)
@@ -97,7 +97,7 @@
 (defn handle-cmd-call> [commands-map data ^js context]
   (let [uid (when-let [auth (-> context .-auth)]
               (-> ^js auth .-uid))]
-    (log ::hande-cmd-call>
+    (log ::handle-cmd-call>
          :data data
          :uid uid)
     (let [command-key (-> data :cmd keyword)
