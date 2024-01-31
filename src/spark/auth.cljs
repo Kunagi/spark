@@ -82,7 +82,7 @@
 (defn- email-domain [email]
   (when email (-> email (.substring (-> email (.indexOf "@") inc)))))
 
-(defn update-user-doc [doc-schema auth-user update-user messaging-vapid-key]
+(defn update-user-doc> [doc-schema auth-user update-user messaging-vapid-key]
   (log ::update-user-doc
        :doc-schema doc-schema)
   (let [uid   (-> auth-user :uid)
@@ -126,8 +126,11 @@
                 (db/add> col-path user-changes))]
       (when update-user
         (p/let [user (db/get> doc-path)
-                user (u/update-if user update-user auth-user)]
-          (db/update> user user))))))
+                changes (when user
+                          (update-user user auth-user))]
+          (log ::update-user-doc>
+               :value changes)
+          (db/update> user changes))))))
 
 (defn- import-user [^js u]
   (log ::import-user
@@ -187,7 +190,7 @@
                (when user
                  (when user-doc-schema
                    (reset! AUTH_STATUS_MESSAGE "Aktualisiere Benutzer Datensatz")
-                   (update-user-doc user-doc-schema user update-user messaging-vapid-key)))
+                   (update-user-doc> user-doc-schema user update-user messaging-vapid-key)))
                (when set-user
                  (set-user user)))
              (when-not auth-completed?
