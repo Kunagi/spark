@@ -1,22 +1,31 @@
 {:paths ["src" "resources"]
- :deps  {;;
-         org.clojure/spec.alpha    {:mvn/version "0.2.194"}
+ :deps  { ;;
+
+         ;; https://github.com/clojure/spec.alpha
+         org.clojure/spec.alpha {:mvn/version "0.2.194"}
 
          io.github.kunagi/kunagi-utils
          {:git/sha "376930feb942b78521ca9538c4fdc7ebd808071c", :git/tag "v0.1.57"}
          io.github.kunagi/kunagi-mui
          {:git/sha "b8df5619818129e53a9116442055a03900ba49be", :git/tag "v0.0.73"}
 
-         nano-id/nano-id                     {:mvn/version "1.0.0"}
-         cljs-bean/cljs-bean                 {:mvn/version "1.9.0"}
-         tick/tick                           {:mvn/version "0.6.0"}
-         metosin/malli                       {:mvn/version "0.10.4"}
+         ;; https://github.com/zelark/nano-id
+         nano-id/nano-id {:mvn/version "1.1.0"}
+
+         ;; https://github.com/mfikes/cljs-bean
+         cljs-bean/cljs-bean {:mvn/version "1.9.0"}
+
+         ;; https://github.com/juxt/tick
+         tick/tick {:mvn/version "0.7.5"}
+
+         ;; https://github.com/metosin/malli
+         metosin/malli {:mvn/version "0.14.0"}
          }
 
  :aliases
  {:build
   {:paths ["src"]
-   :deps {;;
+   :deps { ;;
           io.github.kunagi/kunagi-build {:local/root "/p/kunagi-build"}
           io.github.kunagi/kunagi-utils {:local/root "/p/kunagi-utils"}
           io.github.kunagi/kunagi-mui {:local/root "/p/kunagi-mui"}
@@ -24,5 +33,10 @@
           }
    :ns-default build}
 
-  :test {:extra-deps {lambdaisland/kaocha {:mvn/version "1.66.1034"}}
+  :test {
+         :extra-deps {
+                      ;; https://github.com/lambdaisland/kaocha
+                      lambdaisland/kaocha {:mvn/version "1.66.1034"}
+                      }
+         
          :main-opts ["-m" "kaocha.runner"]}}}
