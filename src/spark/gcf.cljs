@@ -200,7 +200,7 @@
         (.onUpdate (fn [^js change ^js context]
                      (let [before-doc (-> change .-before firestore/wrap-doc)
                            after-doc  (-> change .-after firestore/wrap-doc)]
-                       (-> (handler> before-doc after-doc context)
+                       (-> (u/as> (handler> before-doc after-doc context))
                            (.then (fn [result]
                                     result)
                                   (fn [error]
@@ -243,7 +243,7 @@
         (.document path-s)
         (.onCreate (fn [^js doc ^js context]
                      (let [doc (-> doc firestore/wrap-doc)]
-                       (-> (handler> doc context)
+                       (-> (u/as> (handler> doc context))
                            (.then (fn [result]
                                     result)
                                   (fn [error]
