@@ -29,6 +29,7 @@
        `(let [result# ~assertion]
           (when-not result#
             (spark.logging/log ::assert--failed
+                               :error (str "Assertion failed: " ~message)
                                :message ~message
                                :data ~data)
             (throw (ex-info (str

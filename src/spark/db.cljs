@@ -222,6 +222,10 @@
   ([tx-data]
    (transact> nil tx-data))
   ([message tx-data-or-f]
+   ;; (log ::transact>
+   ;;      :value message
+   ;;      :tx-data-or-f tx-data-or-f
+   ;;      :fn? (fn? tx-data-or-f))
    (firestore/transact>
     message
     (if (fn? tx-data-or-f)

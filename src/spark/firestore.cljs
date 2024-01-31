@@ -717,8 +717,7 @@
   ([message transaction>]
    (log ::transact>
         :value message
-        :tx-data (when-not (fn? transaction>)
-                   transaction>))
+        :tx-data (str transaction>))
    (let [starttime (js/Date.)]
      (if (fn? transaction>)
 
@@ -729,13 +728,15 @@
               (log ::transact>--2
                    :message message
                    :runtime (- (-> (js/Date.) .getTime) (-> starttime .getTime)))
-              (p/let [result (transaction> {:get> (partial get> transaction)
-                                            :get-doc> (partial get-doc> transaction)
-                                            :get-col> (partial get-col> transaction)
-                                            :set> (partial set> transaction)})]
-                (log ::transact>--fn-completed
-                     :result result)
-                result)))
+              (u/as>
+               (p/let [result (transaction> {:get> (partial get> transaction)
+                                             :get-doc> (partial get-doc> transaction)
+                                             :get-col> (partial get-col> transaction)
+                                             :set> (partial set> transaction)})]
+                 (log ::transact>--fn-completed
+                      :message message
+                      :result result)
+                 result))))
            (.then identity
                   (fn [error]
                     (throw (ex-info (str "Error in transaction '"

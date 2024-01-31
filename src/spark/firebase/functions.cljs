@@ -21,7 +21,7 @@
 
 (defn call> [gcf-name data]
   (log ::call>
-       :gcf-name gcf-name
+       :value gcf-name
        :data data)
   (let [callable (firebase-functions/httpsCallable (functions) gcf-name)
         ;; callable (-> (functions) (.httpsCallable gcf-name))
