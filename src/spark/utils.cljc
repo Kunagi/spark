@@ -831,10 +831,14 @@
                  (instance? js/Promise promise-or-list)
                  (conj promises promise-or-list)
 
-                 :else
+                 (sequential? promise-or-list)
                  (->> promise-or-list
                       (map as>)
-                      (into promises))))
+                      (into promises))
+
+                 :else
+                 (conj promises (as> promise-or-list))
+                 ))
              [] promises-or-lists-of-promises)))
 
 #?(:cljs
