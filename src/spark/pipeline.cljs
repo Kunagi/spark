@@ -3,6 +3,7 @@
   on a common `context` map."
 
   (:require
+   [spark.utils :as u]
    [spark.logging :refer [log]]))
 
 (declare continue>)
@@ -50,7 +51,7 @@
       (let [[_ k f & args] op
             v (get context k)
             result (apply f (into [v] args))]
-        (if (instance? js/Promise result)
+        (if (u/promise? result)
           (-> result
               (.then (fn [result]
                        (assoc context k result))))
@@ -62,7 +63,7 @@
     (fn with [context]
       (let [[_ k f] op
             result (f context)]
-        (if (instance? js/Promise result)
+        (if (u/promise? result)
           (-> result
               (.then (fn [result]
                        (assoc context k result))))
@@ -84,7 +85,7 @@
                op
                (op-impl op))
           result (op context)]
-      (if (instance? js/Promise result)
+      (if (u/promise? result)
         (-> result
             (.then #(-> %
                         (process-op-result context op)

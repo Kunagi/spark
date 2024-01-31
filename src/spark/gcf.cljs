@@ -151,7 +151,7 @@
 ;; https://firebase.google.com/docs/reference/functions/providers_https_#oncall
 
 (defn handle-on-call-result [result]
-  (if (instance? js/Promise result)
+  (if (u/promise? result)
     (js/Promise.
      (fn [resolve reject]
        (log ::handle-on-call-result--1)

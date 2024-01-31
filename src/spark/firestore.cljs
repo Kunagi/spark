@@ -586,7 +586,7 @@
                  (if transaction
                    (u/resolve> (.update transaction ref js-data))
                    (.update ref js-data)))]
-    (if (instance? js/Promise result)
+    (if (u/promise? result)
       (-> result
           (.then (fn [_ok] tx-data)
                  (fn [error]

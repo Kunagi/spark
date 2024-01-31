@@ -1230,7 +1230,8 @@
 
 (defn eval-with-progress-dialog [f>]
   (let [promise (if (fn? f>) (f>) f>)]
-    (when (instance? js/Promise promise)
+    (js/console.log "eval-with-progress-dialog" (p/promise? promise) promise)
+    (when (p/promise? promise)
       (show-dialog
        {:content (div
                   {:min-width "100px"
@@ -1296,7 +1297,7 @@
     (fn [& args]
       (try
         (let [result (apply f args)]
-          (if (instance? js/Promise result)
+          (if (u/promise? result)
             (-> result
                 (.catch (fn [error]
                           (show-error error)
@@ -1458,7 +1459,7 @@
     f
     (fn [event]
       (let [result (f event)]
-        (if-not (instance? js/Promise result)
+        (if-not (u/promise? result)
           (hide-dialog)
           (u/=> result
                 (fn [result]

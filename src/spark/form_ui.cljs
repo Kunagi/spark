@@ -671,7 +671,7 @@
 
         update-form (fn [f & args]
                       (let [result (apply f (into [form] args))]
-                        (if (instance? js/Promise result)
+                        (if (u/promise? result)
                           (do
                             (-> result
                                 (.then (fn [f]

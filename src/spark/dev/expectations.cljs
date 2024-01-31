@@ -1,9 +1,11 @@
 (ns spark.dev.expectations
-  (:require-macros [spark.dev.expectations :refer [expect]]))
+  (:require-macros [spark.dev.expectations :refer [expect]])
+  (:require
+   [spark.utils :as u]))
 
 
 (defn expect> [expected provided expect-form test-form]
-  (if (instance? js/Promise provided)
+  (if (u/promise? provided)
     (-> provided
         (.then #(expect> expected % expect-form test-form)))
     (js/Promise.resolve

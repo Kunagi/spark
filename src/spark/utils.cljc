@@ -58,23 +58,6 @@
 #?(:clj
    (defmacro try> [& body] `(u/try> ~@body)))
 
-;; * tap
-
-#?(:cljs (defn tap> [value]
-           (let [start-time (-> (js/Date.) .getTime)]
-             (if (instance? js/Promise value)
-               (-> value (.then (fn [result]
-                                  (clojure.core/tap> {:promise/resolved result
-                                                      :promise/runtime (- (-> (js/Date.) .getTime)
-                                                                          start-time)}))
-                                (fn [error]
-                                  (clojure.core/tap> {:promise/rejected error
-                                                      :promise/runtime (- (-> (js/Date.) .getTime)
-                                                                          start-time)}))))
-               (clojure.core/tap> value)))
-           value)
-   :clj (def tap> clojure.core/tap>))
-
 (comment
   (tap> "hello world")
   (tap> {:name "Witek"})
@@ -781,6 +764,8 @@
 
 ;; * promises
 
+(def promise? u/promise?)
+
 #?(:cljs
    (defn promise> [f-with-resolve-and-reject]
      (js/Promise. f-with-resolve-and-reject)))
@@ -805,7 +790,7 @@
        (nil? thing)
        (no-op>)
 
-       (instance? js/Promise thing)
+       (promise? js/Promise thing)
        thing
 
        (fn? thing)
@@ -829,7 +814,7 @@
                  (nil? promise-or-list)
                  promises
 
-                 (instance? js/Promise promise-or-list)
+                 (promise? promise-or-list)
                  (conj promises promise-or-list)
 
                  (sequential? promise-or-list)
@@ -902,8 +887,7 @@
       (fn [resolve _]
         (js/setTimeout #(resolve millis)
                        millis)))))
-#?(:cljs
-   (def later> u/later>))
+(def later> u/later>)
 
 #?(:cljs
    (defn => [promise & thens]
@@ -962,6 +946,24 @@
          (-> (fn> input-value)
              (.then #(chain-promise-fns> % (rest fns))))
          (js/Promise.resolve input-value)))))
+
+;; * tap
+
+#?(:cljs (defn tap> [value]
+           (let [start-time (-> (js/Date.) .getTime)]
+             (if (promise? value)
+               (-> value (.then (fn [result]
+                                  (clojure.core/tap> {:promise/resolved result
+                                                      :promise/runtime (- (-> (js/Date.) .getTime)
+                                                                          start-time)}))
+                                (fn [error]
+                                  (clojure.core/tap> {:promise/rejected error
+                                                      :promise/runtime (- (-> (js/Date.) .getTime)
+                                                                          start-time)}))))
+               (clojure.core/tap> value)))
+           value)
+   :clj (def tap> clojure.core/tap>))
+
 
 ;; * deprecations
 

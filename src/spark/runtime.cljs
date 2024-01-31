@@ -83,7 +83,7 @@
   ;; (validate-command-context command context)
   (let [f (get command :f)
         result (f context)]
-    (when-not (instance? js/Promise result)
+    (when-not (u/promise? result)
       (log ::execute-command>--WARN-result-is-not-a-promise
            :result result))
     (u/as> result)))
