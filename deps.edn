@@ -5,9 +5,9 @@
          org.clojure/spec.alpha {:mvn/version "0.2.194"}
 
          io.github.kunagi/kunagi-utils
-         {:git/sha "b3d426acedc8393c22f99d5ec9d5e8c1965f271f", :git/tag "v0.1.58"}
+         {:git/sha "9ac12d860d83b96734a50e622c1f2e2883415f14", :git/tag "v0.1.59"}
          io.github.kunagi/kunagi-mui
-         {:git/sha "b2fb3a0adfe7f6a7c212874a67e6d431b4a80874", :git/tag "v0.0.74"}
+         {:git/sha "95835fec385b04a1b1489abea447155636dbc4d5", :git/tag "v0.0.75"}
 
          ;; https://github.com/zelark/nano-id
          nano-id/nano-id {:mvn/version "1.1.0"}
