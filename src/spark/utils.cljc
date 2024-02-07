@@ -809,22 +809,24 @@
 
 #?(:cljs
    (defn- as-promises-vector [promises-or-lists-of-promises]
-     (reduce (fn [promises promise-or-list]
+     (reduce (fn [result promise-or-list]
                (cond
                  (nil? promise-or-list)
-                 promises
+                 result
 
                  (promise? promise-or-list)
-                 (conj promises promise-or-list)
+                 (conj result promise-or-list)
 
                  (sequential? promise-or-list)
-                 (->> promise-or-list
-                      (map as>)
-                      (into promises))
+                 (concat result
+                         (->> promise-or-list
+                              (map as>)))
 
                  :else
-                 (conj promises (as> promise-or-list))
-                 ))
+                 (throw (ex-info (str "Unsupported promise type: "
+                                      (type promise-or-list) ": "
+                                      promise-or-list)
+                                 {}))))
              [] promises-or-lists-of-promises)))
 
 #?(:cljs
