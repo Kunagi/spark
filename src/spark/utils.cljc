@@ -216,9 +216,16 @@
     (assoc m k v)))
 
 (defn assoc-if-not-nil
-  "Assoc if the value `v` ist not nil."
+  "Assoc if the value `v` is not nil."
   [m k v]
   (if (nil? v)
+    m
+    (assoc m k v)))
+
+(defn assoc-if-not-blank
+  "Assoc if the value `v` is not blank."
+  [m k v]
+  (if (str/blank? v)
     m
     (assoc m k v)))
 
