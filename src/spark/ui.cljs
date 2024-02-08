@@ -1097,6 +1097,7 @@
          :sx (->sx (-> dialog :sx))}
         ;; (data dialog-id)
         ;; (DEBUG dialog)
+        ;; (DEBUG (get dialog :sx))
         (when-let [title (-> dialog :title)]
           (div
            (when (-> dialog :title-close-button)
@@ -1194,6 +1195,8 @@
   ([message opts]
    (show-dialog {:title (-> opts :title)
                  :title-close-button (-> opts :title-close-button)
+                 :max-width (-> opts :max-width)
+                 :sx (-> opts :sx)
                  :content ($ MessageDialogContent
                              {:message message
                               :opts opts})})))
