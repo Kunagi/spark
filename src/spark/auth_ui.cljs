@@ -98,17 +98,19 @@ Bitte E-Mail Adresse eingeben.")
                 :on-click continue-with-email})))))))))
 
 ;; * Telephone
+;; https://firebase.google.com/docs/auth/web/phone-auth#set-up-the-recaptcha-verifier
 
 (defn initialize-telephone-sign-in []
   (log ::initialize-telephone-sign-in
        :reCAPTCHA firebase-auth/RecaptchaVerifier)
   (let [verifier (firebase-auth/RecaptchaVerifier.
+                  (auth/auth)
                   "recaptcha-container"
                   (clj->js {:size     :invisible
                             :callback (fn [^js response]
                                         (log ::recaptcha-verivier-initialized
                                              :response response))})
-                  (auth/auth))]
+                  )]
     (-> js/window .-recaptchaVerifier (set! verifier))))
 
 (def use-telephone-sign-in (ui/atom-hook auth/TELEPHONE_SIGN_IN))
