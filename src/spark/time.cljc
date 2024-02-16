@@ -121,3 +121,9 @@
           :clj (-> iso-8601-format
                    (.parse (str thing))
                    .getTime))))))
+
+(defn secs
+  ([]
+   (-> (millis) (/ 1000) long))
+  ([thing]
+   (when thing (-> (millis thing) (/ 1000) long))))
