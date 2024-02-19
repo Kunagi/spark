@@ -220,7 +220,7 @@
 
 (defn transact>
   ([tx-data]
-   (transact> nil tx-data))
+   (transact> (str tx-data) tx-data))
   ([message tx-data-or-f]
    ;; (log ::transact>
    ;;      :value message
