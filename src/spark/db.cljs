@@ -253,10 +253,12 @@
       (update> "devtest/db-1" {:name "hogi"})))))
 
 (defn add> [entity-type values]
-  (transact> (add-tx entity-type values)))
+  (transact> (str "add>") (add-tx entity-type values)))
 
 (defn get-or-add> [entity-type id constructor]
-  (p/let [entity (transact> (fn [{:keys [get> set>]}]
+  (p/let [entity (transact>
+                  (str "get-or-add>")
+                  (fn [{:keys [get> set>]}]
                               (p/let [ref (entity-type->ref entity-type id)
                                       entity (get> ref)]
                                 (if entity
@@ -272,7 +274,7 @@
       (get-or-add> entity-type id constructor))))
 
 (defn update> [thing values]
-  (transact> (update-tx thing values)))
+  (transact> (str "update> " values) (update-tx thing values)))
 
 (defn delete-tx [thing]
   (when thing
