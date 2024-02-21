@@ -7,7 +7,7 @@
          io.github.kunagi/kunagi-utils
          {:git/sha "a4b4163f167610bee0c7cd5f3a123db5ec82ea7b", :git/tag "v0.1.61"}
          io.github.kunagi/kunagi-mui
-         {:git/sha "273dfb9b09540f088e5576de3b63f538caa6ed3d", :git/tag "v0.0.77"}
+         {:git/sha "009703ee77606f64aaaa990cc78d1905c54a5826", :git/tag "v0.0.78"}
 
          ;; https://github.com/zelark/nano-id
          nano-id/nano-id {:mvn/version "1.1.0"}
