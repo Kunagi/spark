@@ -1513,9 +1513,11 @@
                         [nil #(redirect to)]
                         [to on-click])
 
+        hide-form-dialog (use-hide-form-dialog)
         hide-dialog (use-hide-dialog)
         on-click    (if auto-hide-dialog
-                      (wrap-on-click-in-hide-dialog on-click hide-dialog)
+                      (wrap-on-click-in-hide-dialog on-click
+                                                    (or hide-form-dialog hide-dialog))
                       on-click)
 
         on-click (when on-click
